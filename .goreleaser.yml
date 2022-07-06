@@ -1,0 +1,37 @@
+project_name: bluetuith
+
+builds:
+  - env:
+      - CGO_ENABLED=0 GOPROXY=https://proxy.golang.org GO111MODULE=on
+
+    goos:
+      - linux
+
+    goarch:
+      - arm
+      - 386
+      - arm64
+      - amd64
+
+    goarm:
+      - 5
+      - 6
+      - 7
+
+archives:
+  - replacements:
+      linux: Linux
+      386: i386
+      amd64: x86_64
+
+    files:
+      - LICENSE
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  skip: true
