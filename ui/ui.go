@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 )
@@ -42,11 +40,7 @@ func StartUI() {
 		return event
 	})
 
-	if err := setupDevices(); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
+	setupDevices()
 	InfoMessage("bluetuith is ready.", false)
 
 	if err := App.SetRoot(Pages, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {

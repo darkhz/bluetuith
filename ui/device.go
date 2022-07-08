@@ -48,11 +48,9 @@ func deviceTable() *tview.Table {
 
 // setupDevices initializes the bluez DBus interface, sets up
 // a bluez event listener via watchEvent, and lists the devices.
-func setupDevices() error {
+func setupDevices() {
 	listDevices()
 	go watchEvent()
-
-	return nil
 }
 
 // listDevices lists the devices belonging to the selected adapter.
