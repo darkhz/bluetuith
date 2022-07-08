@@ -119,14 +119,17 @@ func change() {
 	})
 }
 
-// quit stops the adapter's discovery mode, closes the bluez connection
+// quit stops discovery mode for all existing adapters, closes the bluez connection
 // and exits the application.
 func quit() {
 	if !confirmQuit() {
 		return
 	}
 
-	BluezConn.StopDiscovery(BluezConn.GetCurrentAdapterID())
+	for _, adapter := range BluezConn.GetAdapters() {
+		BluezConn.StopDiscovery(adapter.Path)
+	}
+
 	BluezConn.Close()
 
 	StopUI()
