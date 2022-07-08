@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -51,8 +53,13 @@ func adapterChange() {
 			return
 		}
 
-		BluezConn.StopDiscovery(BluezConn.GetCurrentAdapterID())
-		InfoMessage("", false)
+		if err := BluezConn.StopDiscovery(BluezConn.GetCurrentAdapter().Path); err == nil {
+			setMenuItemToggle("adapter", "scan", false, struct{}{})
+		}
+
+		if strings.Contains(MessageBox.GetText(true), "Scanning for devices") {
+			InfoMessage("Scanning stopped on "+BluezConn.GetCurrentAdapterID(), false)
+		}
 
 		BluezConn.SetCurrentAdapter(adapter)
 
@@ -64,7 +71,7 @@ func adapterChange() {
 			maxWidth = len(adapter.Name)
 		}
 
-		if adapter == BluezConn.GetCurrentAdapter() {
+		if adapter.Path == BluezConn.GetCurrentAdapter().Path {
 			currentIndex = row
 		}
 
