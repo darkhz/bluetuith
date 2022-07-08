@@ -22,7 +22,7 @@ This project is currently in the alpha stage.
 
 ## Installation
 If the `go` compiler is present in your system, you can install it via the following command:
-`go install github.com/darkhz/bluetuith@latest`
+`go install github.com/darkhz/bluetuith@latest`. Make sure that `$HOME/go/bin` is in your `$PATH`.
 
 Or you can navigate to the releases section and download a binary that matches your architecture.
 
