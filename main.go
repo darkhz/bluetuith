@@ -19,4 +19,6 @@ func main() {
 	ui.SetBluezConn(bluezConn)
 
 	ui.StartUI()
+
+	agent.RemoveAgent()
 }
