@@ -37,6 +37,9 @@ func StartUI() {
 	App.SetFocus(flex)
 	App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
+		case tcell.KeyCtrlC:
+			return nil
+
 		case tcell.KeyCtrlZ:
 			appSuspend = true
 
