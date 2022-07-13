@@ -133,7 +133,7 @@ func getDeviceFromSelection(lock bool) bluez.Device {
 func setDeviceTableInfo(row int, device bluez.Device) {
 	var props string
 
-	name := device.Name
+	name := device.Name + " (" + device.Type + ")"
 	propColor := "[grey::b]"
 
 	if device.Connected {

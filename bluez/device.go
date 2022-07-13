@@ -49,6 +49,7 @@ type Adapter struct {
 type Device struct {
 	Path      string
 	Name      string
+	Type      string
 	Alias     string
 	Address   string
 	Adapter   string
@@ -56,6 +57,7 @@ type Device struct {
 	Connected bool
 	Trusted   bool
 	Blocked   bool
+	Class     uint32
 }
 
 // StoreObject holds an Adapter and the Devices that belong to it.
@@ -246,9 +248,14 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 	devices := []Device{}
 	for k, v := range values {
 		var name string
+		var class uint32
 
 		if n, ok := v["Name"].Value().(string); ok {
 			name = n
+		}
+
+		if c, ok := v["Class"].Value().(uint32); ok {
+			class = c
 		}
 
 		switch k {
@@ -257,6 +264,8 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 			devices = append(devices, Device{
 				Path:      path,
 				Name:      name,
+				Class:     class,
+				Type:      GetDeviceType(class),
 				Alias:     v["Alias"].Value().(string),
 				Address:   v["Address"].Value().(string),
 				Adapter:   string(adapter),
@@ -269,6 +278,95 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 	}
 
 	return devices
+}
+
+//gocyclo: ignore
+// GetDeviceType parses the device class and returns its type.
+func GetDeviceType(class uint32) string {
+	/*
+		Adapted from:
+		https://gitlab.freedesktop.org/upower/upower/-/blob/master/src/linux/up-device-bluez.c#L64
+	*/
+	switch (class & 0x1f00) >> 8 {
+	case 0x01:
+		return "Computer"
+
+	case 0x02:
+		switch (class & 0xfc) >> 2 {
+		case 0x01, 0x02, 0x03, 0x05:
+			return "Phone"
+
+		case 0x04:
+			return "Modem"
+		}
+
+	case 0x03:
+		return "Network"
+
+	case 0x04:
+		switch (class & 0xfc) >> 2 {
+		case 0x01, 0x02:
+			return "Headset"
+
+		case 0x05:
+			return "Speakers"
+
+		case 0x06:
+			return "Headphones"
+
+		case 0x0b, 0x0c, 0x0d:
+			return "Video"
+
+		default:
+			return "Audio device"
+		}
+
+	case 0x05:
+		switch (class & 0xc0) >> 6 {
+		case 0x00:
+			switch (class & 0x1e) >> 2 {
+			case 0x01, 0x02:
+				return "Gaming input"
+
+			case 0x03:
+				return "Remote control"
+			}
+
+		case 0x01:
+			return "Keyboard"
+
+		case 0x02:
+			switch (class & 0x1e) >> 2 {
+			case 0x05:
+				return "Tablet"
+
+			default:
+				return "Mouse"
+			}
+		}
+
+	case 0x06:
+		if (class & 0x80) > 0 {
+			return "Printer"
+		}
+		if (class & 0x40) > 0 {
+			return "Scanner"
+		}
+		if (class & 0x20) > 0 {
+			return "Camera"
+		}
+		if (class & 0x10) > 0 {
+			return "Monitor"
+		}
+
+	case 0x07:
+		return "Wearable"
+
+	case 0x08:
+		return "Toy"
+	}
+
+	return "Unknown"
 }
 
 // GetDeviceProperties gathers all the properties for a bluetooth device.
