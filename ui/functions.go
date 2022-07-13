@@ -135,6 +135,23 @@ func quit() {
 	StopUI()
 }
 
+// createPower sets the oncreate handler for the power submenu option.
+func createPower() bool {
+	adapterPath := BluezConn.GetCurrentAdapter().Path
+
+	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	if err != nil {
+		return false
+	}
+
+	powered, ok := props["Powered"].Value().(bool)
+	if !ok {
+		return false
+	}
+
+	return powered
+}
+
 // createConnect sets the oncreate handler for the connect submenu option.
 func createConnect() bool {
 	device := getDeviceFromSelection(false)

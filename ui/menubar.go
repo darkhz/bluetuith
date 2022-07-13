@@ -69,6 +69,7 @@ func setupMenuOptions() {
 			togglestr:  "Power off",
 			keybinding: 'o',
 			onclick:    onClickFunc("power"),
+			oncreate:   createPower,
 		},
 		{
 			index:      1,
