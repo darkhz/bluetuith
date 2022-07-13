@@ -26,6 +26,15 @@ If the `go` compiler is present in your system, you can install it via the follo
 
 Or you can navigate to the releases section and download a binary that matches your architecture.
 
+It is also available in the AUR as the `bluetuith-bin` package.
+
+## Usage
+    bluetuith [<flags>]
+
+    Flags:
+      --adapter <adapter>      Specify an adapter to use. (For example, hci0)
+      --list-adapters          List available adapters.
+
 ## Keybindings
 |Operation                       |Keybinding                   |
 |--------------------------------|-----------------------------|
@@ -39,13 +48,13 @@ Or you can navigate to the releases section and download a binary that matches y
 |Pair with selected device       |<kbd>p</kbd>                 |
 |Trust selected device           |<kbd>t</kbd>                 |
 |Remove device from adapter      |<kbd>r</kbd>                 |
+|Cancel operation                |<kbd>Ctrl</kbd>+<kbd>x</kbd> |
 |Quit                            |<kbd>q</kbd>                 |
 
 ## Planned features
-
  - [ ] OBEX file transfer.
- - [ ] Display the device type and icon.
- - [ ] Display range (RSSI) of the connected device.
+ - [x] Display the device type and icon.
+ - [x] Display range (RSSI) of the connected device.
 
 ## Additional notes
 - Ensure that the bluetooth service is up and running, and it is visible to DBus before launching the application. With systemd you can find out the status using the following command: `systemctl status bluetooth.service`.
