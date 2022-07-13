@@ -57,6 +57,7 @@ type Device struct {
 	Connected bool
 	Trusted   bool
 	Blocked   bool
+	RSSI      int16
 	Class     uint32
 }
 
@@ -248,10 +249,15 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 	devices := []Device{}
 	for k, v := range values {
 		var name string
+		var rssi int16
 		var class uint32
 
 		if n, ok := v["Name"].Value().(string); ok {
 			name = n
+		}
+
+		if i, ok := v["RSSI"].Value().(int16); ok {
+			rssi = i
 		}
 
 		if c, ok := v["Class"].Value().(uint32); ok {
@@ -265,6 +271,7 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 				Path:      path,
 				Name:      name,
 				Class:     class,
+				RSSI:      rssi,
 				Type:      GetDeviceType(class),
 				Alias:     v["Alias"].Value().(string),
 				Address:   v["Address"].Value().(string),
@@ -689,6 +696,9 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 
 				case "Trusted":
 					device.Trusted = value.Value().(bool)
+
+				case "RSSI":
+					device.RSSI = value.Value().(int16)
 				}
 			}
 

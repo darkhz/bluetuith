@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
@@ -137,8 +138,15 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 	propColor := "[grey::b]"
 
 	if device.Connected {
-		props += "Connected, "
 		propColor = "[green::b]"
+		props += "Connected"
+
+		if device.RSSI < 0 {
+			rssi := strconv.FormatInt(int64(device.RSSI), 10)
+			props += "(" + rssi + ")"
+		}
+
+		props += ", "
 	}
 	if device.Trusted {
 		props += "Trusted, "
