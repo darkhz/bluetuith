@@ -99,9 +99,6 @@ func NewBluez() (*Bluez, error) {
 	if err := b.RefreshStore(); err != nil {
 		return nil, errors.Wrapf(err, "unable to populate cache")
 	}
-	if err := b.SetCurrentAdapter(); err != nil {
-		return nil, err
-	}
 
 	return b, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/darkhz/bluetuith/agent"
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/ui"
 )
 
@@ -11,6 +12,8 @@ func main() {
 	if err != nil {
 		return
 	}
+
+	cmd.ParseCmdFlags(bluezConn)
 
 	if err := agent.SetupAgent(bluezConn.Conn()); err != nil {
 		return
