@@ -203,6 +203,7 @@ func (b *Bluez) RemoveDevice(devicePath string) error {
 	return b.CallAdapter(adapter, "RemoveDevice", 0, dbus.ObjectPath(devicePath)).Store()
 }
 
+// GetDevice returns a Device with the provided device path.
 func (b *Bluez) GetDevice(devicePath string) Device {
 	return b.getDeviceFromStore(devicePath)
 }
