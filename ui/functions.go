@@ -45,6 +45,7 @@ func onClickFunc(id string) func() bool {
 	}
 }
 
+// power checks and toggles the adapter's powered state.
 func power() {
 	var poweredText string
 
@@ -59,7 +60,7 @@ func power() {
 
 	powered, ok := props["Powered"].Value().(bool)
 	if !ok {
-		ErrorMessage(errors.New("Cannot get discovery state"))
+		ErrorMessage(errors.New("Cannot get powered state"))
 		return
 	}
 
