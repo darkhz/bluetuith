@@ -6,13 +6,21 @@ import (
 
 	"github.com/darkhz/bluetuith/ui"
 	"github.com/godbus/dbus/v5"
-	bluezAgent "github.com/muka/go-bluetooth/bluez/profile/agent"
+	"github.com/godbus/dbus/v5/introspect"
 )
 
 const (
-	AgentBasePath        = "/org/bluez/agent/bluetuith"
-	AgentPinCode         = "0000"
-	AgentPassKey  uint32 = 1024
+	AgentBluezName    = "org.bluez"
+	AgentIface        = "org.bluez.Agent1"
+	AgentManagerIface = "org.bluez.AgentManager1"
+
+	AgentManagerPath = dbus.ObjectPath("/org/bluez")
+	AgentPath        = dbus.ObjectPath("/org/bluez/agent/bluetuith")
+
+	AgentPinCode        = "0000"
+	AgentPassKey uint32 = 1024
+
+	dbusIntrospectable = "org.freedesktop.DBus.Introspectable"
 )
 
 var (
@@ -20,69 +28,106 @@ var (
 	alwaysAuthorize bool
 )
 
-// Agent implement interface Agent1Client
+// Agent describes a bluez agent. It holds the dbus connection,
+// the pincode and passkey to be provided during authentication attempts.
+// This is mainly used to describe various authentication methods and export
+// them to the bluez DBus inteface.
 type Agent struct {
-	path    dbus.ObjectPath
+	conn    *dbus.Conn
 	pinCode string
 	passKey uint32
 }
 
-// NewAgent return a Agent instance with default pincode and passcode
-func NewAgent() *Agent {
-	ag := &Agent{
-		passKey: AgentPassKey,
-		pinCode: AgentPinCode,
-		path:    dbus.ObjectPath(AgentBasePath),
+// NewAgent returns a new Agent.
+func NewAgent() (*Agent, error) {
+	var ag *Agent
+
+	conn, err := dbus.SystemBus()
+	if err != nil {
+		return nil, err
 	}
 
-	return ag
+	ag = &Agent{
+		conn:    conn,
+		passKey: AgentPassKey,
+		pinCode: AgentPinCode,
+	}
+
+	return ag, nil
 }
 
+// SetupAgent creates a new Agent, exports all its methods
+// to the bluez DBus interface, and registers the agent.
 func SetupAgent(conn *dbus.Conn) error {
-	agent = NewAgent()
-	if err := bluezAgent.ExposeAgent(conn, agent, bluezAgent.CapKeyboardDisplay, true); err != nil {
+	var err error
+
+	agent, err = NewAgent()
+	if err != nil {
 		return err
 	}
 
-	return nil
+	if err := ExportAgent(); err != nil {
+		return err
+	}
+
+	return RegisterAgent()
 }
 
+// RemoveAgent removes the agent.
 func RemoveAgent() error {
-	return bluezAgent.RemoveAgent(agent)
+	return UnregisterAgent()
 }
 
-func (a *Agent) SetPassKey(passkey uint32) {
-	a.passKey = passkey
+// RegisterAgent registers the agent.
+func RegisterAgent() error {
+	if err := CallAgentManager("RegisterAgent", AgentPath, "KeyboardDisplay").Store(); err != nil {
+		return err
+	}
+
+	return CallAgentManager("RequestDefaultAgent", AgentPath).Store()
 }
 
-func (a *Agent) SetPassCode(pinCode string) {
-	a.pinCode = pinCode
+// ExportAgent exports all Agent methods to the bluez DBus interface.
+func ExportAgent() error {
+	err := agent.conn.Export(agent, AgentPath, AgentIface)
+	if err != nil {
+		return err
+	}
+
+	node := &introspect.Node{
+		Interfaces: []introspect.Interface{
+			introspect.IntrospectData,
+			{
+				Name:    AgentIface,
+				Methods: introspect.Methods(agent),
+			},
+		},
+	}
+
+	return agent.conn.Export(introspect.NewIntrospectable(node), AgentPath, dbusIntrospectable)
 }
 
-func (a *Agent) PassKey() uint32 {
-	return a.passKey
+// UnregisterAgent unregisters the agent.
+func UnregisterAgent() error {
+	return CallAgentManager("UnregisterAgent", AgentPath).Store()
 }
 
-func (a *Agent) PassCode() string {
-	return a.pinCode
+// CallAgentManager calls the AgentManager1 interface with the provided arguments.
+func CallAgentManager(method string, args ...interface{}) *dbus.Call {
+	return agent.conn.Object(AgentBluezName, AgentManagerPath).Call(AgentManagerIface+"."+method, 0, args...)
 }
 
-func (a *Agent) Path() dbus.ObjectPath {
-	return a.path
-}
-
-func (a *Agent) Interface() string {
-	return "org.bluez.Agent1"
-}
-
+// RequestPinCode returns the default pincode.
 func (a *Agent) RequestPinCode(path dbus.ObjectPath) (string, *dbus.Error) {
 	return a.pinCode, nil
 }
 
+// RequestPasskey returns the default passkey.
 func (a *Agent) RequestPasskey(path dbus.ObjectPath) (uint32, *dbus.Error) {
 	return a.passKey, nil
 }
 
+// DisplayPinCode shows a notification with the pincode.
 func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error {
 	device, err := ui.GetDeviceFromPath(string(path))
 	if err != nil {
@@ -95,6 +140,7 @@ func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error
 	return nil
 }
 
+// DisplayPinCode shows a notification with the passkey.
 func (a *Agent) DisplayPasskey(path dbus.ObjectPath, passkey uint32, entered uint16) *dbus.Error {
 	device, err := ui.GetDeviceFromPath(string(path))
 	if err != nil {
@@ -107,6 +153,7 @@ func (a *Agent) DisplayPasskey(path dbus.ObjectPath, passkey uint32, entered uin
 	return nil
 }
 
+// RequestConfirmation shows the passkey and asks for confirmation.
 func (a *Agent) RequestConfirmation(path dbus.ObjectPath, passkey uint32) *dbus.Error {
 	msg := fmt.Sprintf("Confirm passkey %d (y/n)", passkey)
 
@@ -123,6 +170,7 @@ func (a *Agent) RequestConfirmation(path dbus.ObjectPath, passkey uint32) *dbus.
 	return nil
 }
 
+// RequestAuthorization asks for confirmation before pairing.
 func (a *Agent) RequestAuthorization(path dbus.ObjectPath) *dbus.Error {
 	msg := "Confirm pairing (y/n)"
 
@@ -135,9 +183,12 @@ func (a *Agent) RequestAuthorization(path dbus.ObjectPath) *dbus.Error {
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
+
 	return nil
 }
 
+// AuthorizeService asks for confirmation before authorizing a service UUID.
+// If alwaysAuthorize is set, all services are automatically authorized.
 func (a *Agent) AuthorizeService(device dbus.ObjectPath, uuid string) *dbus.Error {
 	if alwaysAuthorize {
 		return nil
@@ -158,10 +209,12 @@ func (a *Agent) AuthorizeService(device dbus.ObjectPath, uuid string) *dbus.Erro
 	return dbus.MakeFailedError(errors.New("Cancelled"))
 }
 
+// Cancel is called when the agent request was cancelled.
 func (a *Agent) Cancel() *dbus.Error {
 	return nil
 }
 
+// Release is called when the agent is unregistered.
 func (a *Agent) Release() *dbus.Error {
-	return dbus.MakeFailedError(bluezAgent.RemoveAgent(a))
+	return nil
 }
