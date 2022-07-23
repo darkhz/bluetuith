@@ -143,7 +143,7 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 
 		if device.RSSI < 0 {
 			rssi := strconv.FormatInt(int64(device.RSSI), 10)
-			props += "(" + rssi + ")"
+			props += "[" + rssi + "[]"
 		}
 
 		props += ", "
@@ -160,7 +160,7 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 
 	if props != "" {
 		props = strings.TrimRight(props, ", ")
-		props = propColor + "[" + props + "[]"
+		props = propColor + "(" + props + ")"
 	} else {
 		props = "[orange][+]"
 	}
