@@ -32,6 +32,12 @@ func deviceTable() *tview.Table {
 			return event
 		}
 
+		switch event.Rune() {
+		case '?':
+			showHelp()
+			return event
+		}
+
 		menuListInputHandler(event)
 
 		return event
