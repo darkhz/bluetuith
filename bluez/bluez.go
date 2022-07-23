@@ -127,7 +127,7 @@ func (b *Bluez) WatchSignal() chan *dbus.Signal {
 }
 
 //gocyclo: ignore
-// ParseSignalData parses signal data.
+// ParseSignalData parses bluez DBus signal data.
 func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 	switch signal.Name {
 	case "org.freedesktop.DBus.Properties.PropertiesChanged":

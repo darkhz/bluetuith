@@ -2,6 +2,9 @@ package ui
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/darkhz/bluetuith/bluez"
 )
@@ -9,6 +12,11 @@ import (
 // SetBluezConn sets up the bluez connection.
 func SetBluezConn(b *bluez.Bluez) {
 	BluezConn = b
+}
+
+// SetObexConn sets up the bluez obex connection.
+func SetObexConn(o *bluez.Obex) {
+	ObexConn = o
 }
 
 // SetTrusted sets the trusted state of a device.
@@ -26,4 +34,41 @@ func GetDeviceFromPath(devicePath string) (bluez.Device, error) {
 	}
 
 	return device, nil
+}
+
+// formatSize returns the human readable form of a size value in bytes.
+// Adapted from: https://yourbasic.org/golang/formatting-byte-size-to-human-readable-format/
+func formatSize(size int64) string {
+	const unit = 1000
+	if size < unit {
+		return fmt.Sprintf("%d B", size)
+	}
+	div, exp := int64(unit), 0
+	for n := size / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+
+	return fmt.Sprintf("%.1f %cB", float64(size)/float64(div), "kMGTPE"[exp])
+}
+
+// savefile moves a file from the obex cache to a user-accessible directory.
+func savefile(path string) error {
+	var userpath string
+
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	userpath = filepath.Join(homedir, "bluetuith")
+
+	if _, err := os.Stat(userpath); err != nil {
+		err = os.Mkdir(userpath, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	return os.Rename(path, filepath.Join(userpath, filepath.Base(path)))
 }

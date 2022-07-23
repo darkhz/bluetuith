@@ -88,6 +88,13 @@ func setupMenuOptions() {
 		},
 		{
 			index:      3,
+			title:      "Progress View",
+			menuid:     "progress",
+			keybinding: 'v',
+			onclick:    onClickFunc("progress"),
+		},
+		{
+			index:      4,
 			title:      "Quit",
 			menuid:     "quit",
 			keybinding: 'q',
@@ -123,6 +130,13 @@ func setupMenuOptions() {
 		},
 		{
 			index:      3,
+			title:      "Send Files",
+			menuid:     "send",
+			keybinding: 'f',
+			onclick:    onClickFunc("send"),
+		},
+		{
+			index:      4,
 			title:      "Remove",
 			menuid:     "remove",
 			keybinding: 'd',

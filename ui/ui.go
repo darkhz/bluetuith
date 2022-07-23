@@ -27,12 +27,16 @@ func StartUI() {
 		SetDirection(tview.FlexRow).
 		AddItem(menuBar(), 1, 0, false).
 		AddItem(nil, 1, 0, false).
-		AddItem(deviceTable(), 0, 10, true).
-		AddItem(statusBar(), 1, 0, false)
+		AddItem(deviceTable(), 0, 10, true)
 	flex.SetBackgroundColor(tcell.ColorDefault)
 
 	Pages.AddPage("main", flex, true, true)
 	Pages.SetBackgroundColor(tcell.ColorDefault)
+
+	mainflex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(Pages, 0, 10, true).
+		AddItem(statusBar(), 1, 0, false)
 
 	App.SetFocus(flex)
 	App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -58,7 +62,7 @@ func StartUI() {
 	setupDevices()
 	InfoMessage("bluetuith is ready.", false)
 
-	if err := App.SetRoot(Pages, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
+	if err := App.SetRoot(mainflex, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }

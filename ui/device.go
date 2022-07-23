@@ -17,6 +17,9 @@ var (
 
 	// BluezConn holds the current bluez DBus connection.
 	BluezConn *bluez.Bluez
+
+	// ObexConn holds the current bluez obex DBus connection.
+	ObexConn *bluez.Obex
 )
 
 // deviceTable sets up and returns the DeviceTable.

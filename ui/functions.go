@@ -21,6 +21,9 @@ func onClickFunc(id string) func() bool {
 	case "change":
 		clickFunc = change
 
+	case "progress":
+		clickFunc = progress
+
 	case "quit":
 		clickFunc = quit
 
@@ -32,6 +35,9 @@ func onClickFunc(id string) func() bool {
 
 	case "trust":
 		clickFunc = trust
+
+	case "send":
+		clickFunc = send
 
 	case "remove":
 		clickFunc = remove
@@ -117,6 +123,13 @@ func scan() {
 func change() {
 	App.QueueUpdateDraw(func() {
 		adapterChange()
+	})
+}
+
+// progress displays the progress view.
+func progress() {
+	App.QueueUpdateDraw(func() {
+		progressView(true)
 	})
 }
 
@@ -256,6 +269,46 @@ func trust() {
 	}
 
 	setMenuItemToggle("device", "trust", !device.Trusted)
+}
+
+// send gets a file list from the file picker and sends all selected files
+// to the target device.
+func send() {
+	adapter := BluezConn.GetCurrentAdapter()
+	if !adapter.Lock.TryAcquire(1) {
+		return
+	}
+	defer adapter.Lock.Release(1)
+
+	device := getDeviceFromSelection(true)
+	if !device.Paired || !device.Connected {
+		ErrorMessage(errors.New(device.Name + " is not paired and/or connected"))
+		return
+	}
+
+	InfoMessage("Initializing OBEX session..", true)
+
+	sessionPath, err := ObexConn.CreateSession(device.Address)
+	if err != nil {
+		ErrorMessage(err)
+		return
+	}
+
+	InfoMessage("Created OBEX session", false)
+
+	for _, file := range filePicker() {
+		transferPath, transferProps, err := ObexConn.SendFile(sessionPath, file)
+		if err != nil {
+			ErrorMessage(err)
+			continue
+		}
+
+		if !StartProgress(transferPath, transferProps) {
+			break
+		}
+	}
+
+	ObexConn.RemoveSession(sessionPath)
 }
 
 // remove retrieves the selected device, and removes it from the adapter.

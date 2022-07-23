@@ -5,6 +5,7 @@ import (
 
 	"github.com/godbus/dbus/v5"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/semaphore"
 )
 
 const dbusBluezAdapterIface = "org.bluez.Adapter1"
@@ -19,6 +20,8 @@ type Adapter struct {
 	Pairable     bool
 	Powered      bool
 	Discovering  bool
+
+	Lock *semaphore.Weighted
 }
 
 // CallAdapter is used to interact with the bluez Adapter dbus interface.
@@ -145,6 +148,7 @@ func (b *Bluez) ConvertToAdapters(path string, values map[string]map[string]dbus
 				Pairable:     v1["Pairable"].Value().(bool),
 				Powered:      v1["Powered"].Value().(bool),
 				Discovering:  v1["Discovering"].Value().(bool),
+				Lock:         semaphore.NewWeighted(1),
 			})
 		}
 	}

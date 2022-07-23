@@ -66,6 +66,13 @@ func SetInput(label string, multichar ...struct{}) string {
 	entered := make(chan bool)
 
 	go func(ch chan bool) {
+		exit := func() {
+			Status.SwitchToPage("messages")
+
+			_, item := Pages.GetFrontPage()
+			App.SetFocus(item)
+		}
+
 		App.QueueUpdateDraw(func() {
 			InputField.SetText("")
 			InputField.SetLabel("[::b]" + label + " ")
@@ -74,14 +81,12 @@ func SetInput(label string, multichar ...struct{}) string {
 				case tcell.KeyEnter:
 					ch <- true
 
-					Status.SwitchToPage("messages")
-					App.SetFocus(DeviceTable)
+					exit()
 
 				case tcell.KeyEscape:
 					ch <- false
 
-					Status.SwitchToPage("messages")
-					App.SetFocus(DeviceTable)
+					exit()
 				}
 
 				return event

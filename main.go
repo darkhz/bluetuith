@@ -21,6 +21,12 @@ func main() {
 		return
 	}
 
+	obexConn, err := bluez.NewObex()
+	if err != nil {
+		errMessage("Could not initialize bluez OBEX DBus connection")
+		return
+	}
+
 	cmd.ParseCmdFlags(bluezConn)
 
 	if err := agent.SetupAgent(bluezConn.Conn()); err != nil {
@@ -28,9 +34,16 @@ func main() {
 		return
 	}
 
+	if err := agent.SetupObexAgent(); err != nil {
+		errMessage("Could not setup bluez OBEX agent")
+		return
+	}
+
 	ui.SetBluezConn(bluezConn)
+	ui.SetObexConn(obexConn)
 
 	ui.StartUI()
 
+	agent.RemoveObexAgent()
 	agent.RemoveAgent()
 }

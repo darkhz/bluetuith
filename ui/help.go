@@ -19,12 +19,35 @@ func showHelp() {
 		"Toggle adapter power state":       "o",
 		"Toggle scan (discovery state)":    "s",
 		"Change adapter":                   "a",
+		"Send files":                       "f",
+		"Progress view":                    "v",
 		"Connect to selected device":       "c",
 		"Pair with selected device":        "p",
 		"Trust selected device":            "t",
 		"Remove device from adapter":       "r",
 		"Cancel operation":                 "Ctrl+x",
 		"Quit":                             "q",
+	}
+
+	filePickerKeyBindings := map[string]string{
+		"Navigate between directory entries": "Up/Down",
+		"Enter a directory":                  "Right",
+		"Go back one directory":              "Left",
+		"Select one file":                    "Space",
+		"Invert file selection":              "a",
+		"Select all files":                   "A",
+		"Refresh current directory":          "Ctrl + r",
+		"Toggle hidden files":                "Ctrl+h",
+		"Confirm file(s) selection":          "Ctrl+s",
+		"Exit":                               "Escape",
+	}
+
+	progressViewKeyBindings := map[string]string{
+		"Navigate between transfers": "Up/Down",
+		"Suspend transfer":           "z",
+		"Resume transfer":            "g",
+		"Cancel transfer":            "x",
+		"Exit":                       "Escape",
 	}
 
 	helpTable := tview.NewTable()
@@ -40,19 +63,40 @@ func showHelp() {
 
 		return event
 	})
+	helpTable.SetSelectionChangedFunc(func(row, col int) {
+		if row == 1 {
+			helpTable.ScrollToBeginning()
+		}
+	})
 
-	for op, key := range deviceKeyBindings {
-		helpTable.SetCell(row, 0, tview.NewTableCell(op).
-			SetExpansion(1).
-			SetAlign(tview.AlignLeft),
-		)
-
-		helpTable.SetCell(row, 1, tview.NewTableCell(key).
-			SetExpansion(0).
+	for title, helpMap := range map[string]map[string]string{
+		"Device Screen": deviceKeyBindings,
+		"File Picker":   filePickerKeyBindings,
+		"Progress View": progressViewKeyBindings,
+	} {
+		helpTable.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
+			SetSelectable(false).
 			SetAlign(tview.AlignLeft),
 		)
 
 		row++
+
+		for op, key := range helpMap {
+			helpTable.SetCell(row, 0, tview.NewTableCell(op).
+				SetExpansion(1).
+				SetAlign(tview.AlignLeft),
+			)
+
+			helpTable.SetCell(row, 1, tview.NewTableCell(key).
+				SetExpansion(0).
+				SetAlign(tview.AlignLeft),
+			)
+
+			row++
+		}
+
+		row++
+
 	}
 
 	helpWrap := tview.NewFlex().
