@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/jnovack/flag"
 )
 
 var (
@@ -16,13 +16,20 @@ var (
 )
 
 func ParseCmdFlags(bluezConn *bluez.Bluez) {
+	configFile, err := ConfigPath("config")
+	if err != nil {
+		fmt.Println("Cannot get config directory")
+		return
+	}
+
 	flag.BoolVar(&optionListAdapters, "list-adapters", false, "List available adapters.")
 	flag.StringVar(&optionAdapter, "adapter", "", "Specify an adapter to use. (For example, hci0)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(
 			flag.CommandLine.Output(),
-			"bluetuith [<flags>]\n\nFlags:\n",
+			"bluetuith [<flags>]\n\nConfig file is %s\n\nFlags:\n",
+			configFile,
 		)
 
 		flag.CommandLine.VisitAll(func(f *flag.Flag) {
@@ -44,6 +51,7 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 		})
 	}
 
+	flag.CommandLine.ParseFile(configFile)
 	flag.Parse()
 
 	cmdOptionAdapter(bluezConn)

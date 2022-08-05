@@ -15,6 +15,11 @@ func errMessage(err string) {
 }
 
 func main() {
+	if err := cmd.SetupConfig(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	bluezConn, err := bluez.NewBluez()
 	if err != nil {
 		errMessage("Could not initialize bluez DBus connection")

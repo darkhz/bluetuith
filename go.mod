@@ -6,6 +6,7 @@ require (
 	github.com/darkhz/tview v0.0.0-20220715195132-12c4596a11a8
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210905002822-f057f0a857a1
 	github.com/godbus/dbus/v5 v5.1.0
+	github.com/jnovack/flag v1.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/schollz/progressbar/v3 v3.8.6
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
