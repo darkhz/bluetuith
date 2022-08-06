@@ -33,6 +33,22 @@ Or you can navigate to the releases section and download a binary that matches y
     Flags:
       --adapter <adapter>         Specify an adapter to use. (For example, hci0)
       --list-adapters             List available adapters.
+      --receive-dir               Specify a directory to store received files.
+
+- If the **receive-dir** option is not specified, received files will be stored in ``$HOME/bluetuith``.
+
+## Configuration
+bluetuith should generally work out-of-the-box, with no required configurations.
+
+If persistent configuration for certain settings is required, a config file can be used.<br />
+The config file is automatically created on startup, and its location can be viewed on invoking ``bluetuith --help``.
+
+Configuration properties can be in the form of a simple ``name=value``or ``name value`` pair.
+
+For example:
+
+    adapter=hci0
+    receive-dir=/home/darkhz/bluetuith
 
 ## Keybindings
 
@@ -85,7 +101,6 @@ Or you can navigate to the releases section and download a binary that matches y
 ## Additional notes
 - Ensure that the bluetooth service is up and running, and it is visible to DBus before launching the application. With systemd you can find out the status using the following command: `systemctl status bluetooth.service`.
 - Only one transfer (either of send or receive) can happen on an adapter. Attempts to start another transfer while a transfer is already running (for example, trying to send files to a device when a transfer is already in progress) will be silently ignored.
-- Received files will currently be stored in `$HOME/bluetuith`. This will be configurable in later versions.
 
 ## Credits
 Special thanks to:
