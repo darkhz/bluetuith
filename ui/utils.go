@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 )
 
 // SetBluezConn sets up the bluez connection.
@@ -52,21 +53,24 @@ func formatSize(size int64) string {
 	return fmt.Sprintf("%.1f %cB", float64(size)/float64(div), "kMGTPE"[exp])
 }
 
-// savefile moves a file from the obex cache to a user-accessible directory.
+// savefile moves a file from the obex cache to a specified user-accessible directory.
+// If the directory is not specified, it automatically creates a directory in the
+// user's home path and moves the file there.
 func savefile(path string) error {
-	var userpath string
-
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	userpath = filepath.Join(homedir, "bluetuith")
-
-	if _, err := os.Stat(userpath); err != nil {
-		err = os.Mkdir(userpath, 0700)
+	userpath := cmd.GetConfigProperty("receive-dir")
+	if userpath == "" {
+		homedir, err := os.UserHomeDir()
 		if err != nil {
 			return err
+		}
+
+		userpath = filepath.Join(homedir, "bluetuith")
+
+		if _, err := os.Stat(userpath); err != nil {
+			err = os.Mkdir(userpath, 0700)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

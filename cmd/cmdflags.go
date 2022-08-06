@@ -13,6 +13,8 @@ import (
 var (
 	optionAdapter      string
 	optionListAdapters bool
+
+	optionReceiveDir string
 )
 
 func ParseCmdFlags(bluezConn *bluez.Bluez) {
@@ -24,6 +26,7 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 
 	flag.BoolVar(&optionListAdapters, "list-adapters", false, "List available adapters.")
 	flag.StringVar(&optionAdapter, "adapter", "", "Specify an adapter to use. (For example, hci0)")
+	flag.StringVar(&optionReceiveDir, "receive-dir", "", "Specify a directory to store received files.")
 
 	flag.Usage = func() {
 		fmt.Fprintf(
@@ -54,6 +57,7 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 	flag.CommandLine.ParseFile(configFile)
 	flag.Parse()
 
+	cmdOptionReceiveDir()
 	cmdOptionAdapter(bluezConn)
 	cmdOptionListAdapters(bluezConn)
 }
@@ -85,6 +89,21 @@ func cmdOptionListAdapters(b *bluez.Bluez) {
 	for _, adapter := range b.GetAdapters() {
 		fmt.Println("- " + filepath.Base(adapter.Path))
 	}
+
+	os.Exit(0)
+}
+
+func cmdOptionReceiveDir() {
+	if optionReceiveDir == "" {
+		return
+	}
+
+	if statpath, err := os.Stat(optionReceiveDir); err == nil && statpath.IsDir() {
+		AddConfigProperty("receive-dir", optionReceiveDir)
+		return
+	}
+
+	fmt.Println(optionReceiveDir + ": Directory is not accessible.")
 
 	os.Exit(0)
 }
