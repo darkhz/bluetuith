@@ -24,7 +24,7 @@ func showHelp() {
 		"Connect to selected device":       "c",
 		"Pair with selected device":        "p",
 		"Trust selected device":            "t",
-		"Remove device from adapter":       "r",
+		"Remove device from adapter":       "d",
 		"Cancel operation":                 "Ctrl+x",
 		"Quit":                             "q",
 	}

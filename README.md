@@ -50,7 +50,7 @@ Or you can navigate to the releases section and download a binary that matches y
 |Connect to selected device      |<kbd>c</kbd>                 |
 |Pair with selected device       |<kbd>p</kbd>                 |
 |Trust selected device           |<kbd>t</kbd>                 |
-|Remove device from adapter      |<kbd>r</kbd>                 |
+|Remove device from adapter      |<kbd>d</kbd>                 |
 |Cancel operation                |<kbd>Ctrl</kbd>+<kbd>x</kbd> |
 |Quit                            |<kbd>q</kbd>                 |
 
