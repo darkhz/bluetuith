@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 )
@@ -52,9 +53,10 @@ func showHelp() {
 
 	helpTable := tview.NewTable()
 	helpTable.SetBorder(true)
-	helpTable.SetTitle("[ HELP ]")
 	helpTable.SetSelectable(true, false)
-	helpTable.SetBackgroundColor(tcell.ColorDefault)
+	helpTable.SetBorderColor(theme.GetColor("Border"))
+	helpTable.SetTitle(theme.ColorWrap("Text", "[ HELP ]"))
+	helpTable.SetBackgroundColor(theme.GetColor("Background"))
 	helpTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
@@ -76,20 +78,31 @@ func showHelp() {
 	} {
 		helpTable.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
 			SetSelectable(false).
-			SetAlign(tview.AlignLeft),
+			SetAlign(tview.AlignLeft).
+			SetTextColor(theme.GetColor("Text")),
 		)
 
 		row++
 
 		for op, key := range helpMap {
-			helpTable.SetCell(row, 0, tview.NewTableCell(op).
+			helpTable.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap("Text", op)).
 				SetExpansion(1).
-				SetAlign(tview.AlignLeft),
+				SetAlign(tview.AlignLeft).
+				SetTextColor(theme.GetColor("Text")).
+				SetSelectedStyle(tcell.Style{}.
+					Foreground(theme.GetColor("Text")).
+					Background(theme.BackgroundColor("Text")),
+				),
 			)
 
-			helpTable.SetCell(row, 1, tview.NewTableCell(key).
+			helpTable.SetCell(row, 1, tview.NewTableCell(theme.ColorWrap("Text", key)).
 				SetExpansion(0).
-				SetAlign(tview.AlignLeft),
+				SetAlign(tview.AlignLeft).
+				SetTextColor(theme.GetColor("Text")).
+				SetSelectedStyle(tcell.Style{}.
+					Foreground(theme.GetColor("Text")).
+					Background(theme.BackgroundColor("Text")),
+				),
 			)
 
 			row++

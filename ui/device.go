@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 	"github.com/godbus/dbus/v5"
@@ -27,7 +28,7 @@ func deviceTable() *tview.Table {
 	DeviceTable = tview.NewTable()
 	DeviceTable.SetSelectorWrap(true)
 	DeviceTable.SetSelectable(true, false)
-	DeviceTable.SetBackgroundColor(tcell.ColorDefault)
+	DeviceTable.SetBackgroundColor(theme.GetColor("Background"))
 	DeviceTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyCtrlM:
@@ -69,11 +70,11 @@ func listDevices() {
 		return
 	}
 
-	headerText := fmt.Sprintf("[::bu]%s (%s)",
+	headerText := fmt.Sprintf("%s (%s)",
 		BluezConn.GetCurrentAdapter().Name,
 		BluezConn.GetCurrentAdapterID(),
 	)
-	setMenuBarHeader(headerText)
+	setMenuBarHeader(theme.ColorWrap("Adapter", headerText, "bu"))
 
 	DeviceTable.Clear()
 	for i, device := range BluezConn.GetDevices() {
@@ -143,12 +144,17 @@ func getDeviceFromSelection(lock bool) bluez.Device {
 func setDeviceTableInfo(row int, device bluez.Device) {
 	var props string
 
-	name := device.Name + " (" + device.Type + ")"
-	propColor := "[grey::b]"
+	name := device.Name
+	name += theme.ColorWrap("DeviceType", " ("+device.Type+")")
+
+	nameColor := "Device"
+	propColor := "DeviceProperty"
 
 	if device.Connected {
-		propColor = "[green::b]"
 		props += "Connected"
+
+		nameColor = "DeviceConnected"
+		propColor = "DevicePropertyConnected"
 
 		if device.RSSI < 0 {
 			rssi := strconv.FormatInt(int64(device.RSSI), 10)
@@ -168,24 +174,32 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 	}
 
 	if props != "" {
-		props = strings.TrimRight(props, ", ")
-		props = propColor + "(" + props + ")"
+		props = "(" + strings.TrimRight(props, ", ") + ")"
 	} else {
-		props = "[orange][+]"
+		props = "[New Device[]"
+		nameColor = "DeviceDiscovered"
+		propColor = "DevicePropertyDiscovered"
 	}
 
 	DeviceTable.SetCell(
 		row, 0, tview.NewTableCell(name).
 			SetExpansion(1).
 			SetReference(device).
-			SetAlign(tview.AlignLeft),
+			SetAlign(tview.AlignLeft).
+			SetAttributes(tcell.AttrBold).
+			SetTextColor(theme.GetColor(nameColor)).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor(nameColor)).
+				Background(theme.BackgroundColor(nameColor)),
+			),
 	)
 	DeviceTable.SetCell(
 		row, 1, tview.NewTableCell(props).
 			SetExpansion(1).
 			SetAlign(tview.AlignRight).
+			SetTextColor(theme.GetColor(propColor)).
 			SetSelectedStyle(tcell.Style{}.
-				Attributes(tcell.AttrBold),
+				Bold(true),
 			),
 	)
 }

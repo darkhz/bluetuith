@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 	"github.com/godbus/dbus/v5"
@@ -57,13 +58,15 @@ func NewProgress(transferPath dbus.ObjectPath, props bluez.ObexTransferPropertie
 	progress.desc = tview.NewTableCell(title).
 		SetExpansion(1).
 		SetSelectable(false).
-		SetAlign(tview.AlignLeft)
+		SetAlign(tview.AlignLeft).
+		SetTextColor(theme.GetColor("ProgressText"))
 
 	progress.progress = tview.NewTableCell("").
 		SetExpansion(1).
 		SetSelectable(false).
 		SetReference(&progress).
-		SetAlign(tview.AlignRight)
+		SetAlign(tview.AlignRight).
+		SetTextColor(theme.GetColor("ProgressBar"))
 
 	progress.progressBar = progressbar.NewOptions64(
 		int64(props.Size),
@@ -251,12 +254,12 @@ func progressView(switchToView bool) {
 		title := tview.NewTextView()
 		title.SetDynamicColors(true)
 		title.SetTextAlign(tview.AlignLeft)
-		title.SetText("[::bu]Progress View")
-		title.SetBackgroundColor(tcell.ColorDefault)
+		title.SetBackgroundColor(theme.GetColor("Background"))
+		title.SetText(theme.ColorWrap("Text", "Progress View", "bu"))
 
 		ProgressView = tview.NewTable()
 		ProgressView.SetSelectable(true, false)
-		ProgressView.SetBackgroundColor(tcell.ColorDefault)
+		ProgressView.SetBackgroundColor(theme.GetColor("Background"))
 		ProgressView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			switch event.Key() {
 			case tcell.KeyEscape:
@@ -289,7 +292,7 @@ func progressView(switchToView bool) {
 		progressViewButtons.SetDynamicColors(true)
 		progressViewButtons.SetTextAlign(tview.AlignLeft)
 		progressViewButtons.SetText(progressViewButtonRegion)
-		progressViewButtons.SetBackgroundColor(tcell.ColorDefault)
+		progressViewButtons.SetBackgroundColor(theme.GetColor("Background"))
 		progressViewButtons.SetHighlightedFunc(func(added, removed, remaining []string) {
 			if added == nil {
 				return
@@ -341,7 +344,7 @@ func statusProgressView(switchToView bool) {
 	if StatusProgressView == nil {
 		StatusProgressView = tview.NewTable()
 		StatusProgressView.SetSelectable(true, true)
-		StatusProgressView.SetBackgroundColor(tcell.ColorDefault)
+		StatusProgressView.SetBackgroundColor(theme.GetColor("Background"))
 	}
 
 	Status.AddPage("progressview", StatusProgressView, true, false)

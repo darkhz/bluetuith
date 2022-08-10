@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 )
@@ -33,15 +34,17 @@ var (
 // statusBar sets up the statusbar.
 func statusBar() *tview.Pages {
 	Status = tview.NewPages()
+	Status.SetBackgroundColor(theme.GetColor("Background"))
 
 	InputField = tview.NewInputField()
-	InputField.SetLabelColor(tcell.ColorWhite)
-	InputField.SetBackgroundColor(tcell.ColorDefault)
-	InputField.SetFieldBackgroundColor(tcell.ColorDefault)
+	InputField.SetLabelColor(theme.GetColor("Text"))
+	InputField.SetFieldTextColor(theme.GetColor("Text"))
+	InputField.SetBackgroundColor(theme.GetColor("Background"))
+	InputField.SetFieldBackgroundColor(theme.GetColor("Background"))
 
 	MessageBox = tview.NewTextView()
 	MessageBox.SetDynamicColors(true)
-	MessageBox.SetBackgroundColor(tcell.ColorDefault)
+	MessageBox.SetBackgroundColor(theme.GetColor("Background"))
 
 	Status.AddPage("input", InputField, true, true)
 	Status.AddPage("messages", MessageBox, true, true)
@@ -117,7 +120,7 @@ func InfoMessage(text string, persist bool) {
 	}
 
 	select {
-	case msgchan <- message{"[white::b]" + text, persist}:
+	case msgchan <- message{theme.ColorWrap("StatusInfo", text), persist}:
 		return
 
 	default:
@@ -135,7 +138,7 @@ func ErrorMessage(err error) {
 	}
 
 	select {
-	case msgchan <- message{"[red::b]Error: " + err.Error(), false}:
+	case msgchan <- message{theme.ColorWrap("StatusError", "Error: "+err.Error()), false}:
 		return
 
 	default:

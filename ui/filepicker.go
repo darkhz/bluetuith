@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 )
@@ -52,8 +53,8 @@ func setupFilePicker() {
 	infoTitle := tview.NewTextView()
 	infoTitle.SetDynamicColors(true)
 	infoTitle.SetTextAlign(tview.AlignCenter)
-	infoTitle.SetText("[::bu]Select files to send")
-	infoTitle.SetBackgroundColor(tcell.ColorDefault)
+	infoTitle.SetBackgroundColor(theme.GetColor("Background"))
+	infoTitle.SetText(theme.ColorWrap("Text", "Select files to send", "bu"))
 
 	pickerflex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -64,7 +65,7 @@ func setupFilePicker() {
 		AddItem(filePickerTable(), 0, 10, true).
 		AddItem(nil, 1, 0, false).
 		AddItem(filePickerButtons(), 2, 0, false)
-	pickerflex.SetBackgroundColor(tcell.ColorDefault)
+	pickerflex.SetBackgroundColor(theme.GetColor("Background"))
 
 	Pages.AddAndSwitchToPage("filepicker", pickerflex, true)
 
@@ -80,7 +81,7 @@ func filePickerTable() *tview.Table {
 	filePickTable = tview.NewTable()
 	filePickTable.SetSelectorWrap(true)
 	filePickTable.SetSelectable(true, false)
-	filePickTable.SetBackgroundColor(tcell.ColorDefault)
+	filePickTable.SetBackgroundColor(theme.GetColor("Background"))
 	filePickTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyLeft:
@@ -127,7 +128,7 @@ func filePickerTable() *tview.Table {
 func filePickerTitle() *tview.TextView {
 	filePickTitle = tview.NewTextView()
 	filePickTitle.SetDynamicColors(true)
-	filePickTitle.SetBackgroundColor(tcell.ColorDefault)
+	filePickTitle.SetBackgroundColor(theme.GetColor("Background"))
 	filePickTitle.SetTextAlign(tview.AlignLeft)
 
 	return filePickTitle
@@ -138,7 +139,7 @@ func filePickerButtons() *tview.TextView {
 	filePickButtons = tview.NewTextView()
 	filePickButtons.SetRegions(true)
 	filePickButtons.SetDynamicColors(true)
-	filePickButtons.SetBackgroundColor(tcell.ColorDefault)
+	filePickButtons.SetBackgroundColor(theme.GetColor("Background"))
 	filePickButtons.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if added == nil {
 			return
@@ -152,8 +153,8 @@ func filePickerButtons() *tview.TextView {
 		}
 	})
 
-	filePickButtons.SetText(filePickButtonRegion)
 	filePickButtons.SetTextAlign(tview.AlignLeft)
+	filePickButtons.SetText(theme.ColorWrap("Text", filePickButtonRegion))
 
 	return filePickButtons
 }
@@ -267,8 +268,8 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 		filePickTable.Clear()
 
 		for row, entry := range dlist {
-			var color tcell.Color
 			var attr tcell.AttrMask
+			var entryColor tcell.Color
 
 			name := entry.Name()
 			fileTotalSize := formatSize(entry.Size())
@@ -303,10 +304,10 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 				}
 
 				attr = tcell.AttrBold
-				color = tcell.ColorBlue
+				entryColor = tcell.ColorBlue
 				name += string(os.PathSeparator)
 			} else {
-				color = tcell.ColorWhite
+				entryColor = theme.GetColor("Text")
 			}
 
 			filePickTable.SetCell(row+rowpadding, 0, tview.NewTableCell(" ").
@@ -316,14 +317,14 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 			filePickTable.SetCell(row+rowpadding, 1, tview.NewTableCell(tview.Escape(name)).
 				SetExpansion(1).
 				SetReference(entry).
-				SetTextColor(color).
 				SetAttributes(attr).
+				SetTextColor(entryColor).
 				SetAlign(tview.AlignLeft).
 				SetOnClickedFunc(cellHandler).
 				SetSelectedStyle(tcell.Style{}.
-					Foreground(color).
-					Background(tcell.Color16).
-					Attributes(tcell.AttrBold),
+					Bold(true).
+					Foreground(entryColor).
+					Background(theme.BackgroundColor("Text")),
 				),
 			)
 
@@ -336,9 +337,7 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 					SetAlign(tview.AlignRight).
 					SetTextColor(tcell.ColorGrey).
 					SetSelectedStyle(tcell.Style{}.
-						Attributes(tcell.AttrBold).
-						Background(tcell.ColorWhite).
-						Foreground(tcell.ColorDefault),
+						Bold(true),
 					),
 				)
 			}
@@ -351,7 +350,7 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 			markFileSelection(row, entry, checkFileSelected(filepath.Join(currentPath, name)))
 		}
 
-		filePickTitle.SetText("[::b]Directory: " + currentPath)
+		filePickTitle.SetText(theme.ColorWrap("Text", "Directory: "+currentPath))
 
 		filePickTable.ScrollToBeginning()
 		filePickTable.SetSelectable(true, false)
@@ -529,6 +528,8 @@ func markFileSelection(row int, info fs.FileInfo, selected bool, userSelected ..
 	} else {
 		cell.Text = " "
 	}
+
+	cell.Text = theme.ColorWrap("Text", cell.Text)
 }
 
 // trimPath trims a given path and appends a path separator where appropriate.

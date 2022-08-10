@@ -3,6 +3,7 @@ package ui
 import (
 	"syscall"
 
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 )
@@ -28,15 +29,16 @@ func StartUI() {
 		AddItem(menuBar(), 1, 0, false).
 		AddItem(nil, 1, 0, false).
 		AddItem(deviceTable(), 0, 10, true)
-	flex.SetBackgroundColor(tcell.ColorDefault)
+	flex.SetBackgroundColor(theme.GetColor("Background"))
 
 	Pages.AddPage("main", flex, true, true)
-	Pages.SetBackgroundColor(tcell.ColorDefault)
+	Pages.SetBackgroundColor(theme.GetColor("Background"))
 
 	mainflex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(Pages, 0, 10, true).
 		AddItem(statusBar(), 1, 0, false)
+	mainflex.SetBackgroundColor(theme.GetColor("Background"))
 
 	App.SetFocus(flex)
 	App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {

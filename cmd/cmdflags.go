@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/jnovack/flag"
 )
 
@@ -15,6 +16,9 @@ var (
 	optionListAdapters bool
 
 	optionReceiveDir string
+
+	optionTheme       string
+	optionColorConfig string
 )
 
 func ParseCmdFlags(bluezConn *bluez.Bluez) {
@@ -24,9 +28,34 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 		return
 	}
 
-	flag.BoolVar(&optionListAdapters, "list-adapters", false, "List available adapters.")
-	flag.StringVar(&optionAdapter, "adapter", "", "Specify an adapter to use. (For example, hci0)")
-	flag.StringVar(&optionReceiveDir, "receive-dir", "", "Specify a directory to store received files.")
+	flag.BoolVar(
+		&optionListAdapters,
+		"list-adapters", false,
+		"List available adapters.",
+	)
+	flag.StringVar(
+		&optionAdapter,
+		"adapter", "",
+		"Specify an adapter to use. (For example, hci0)",
+	)
+	flag.StringVar(
+		&optionReceiveDir,
+		"receive-dir", "",
+		"Specify a directory to store received files.",
+	)
+	flag.StringVar(
+		&optionTheme,
+		"set-theme", "",
+		"Specify a theme."+theme.GetThemes(),
+	)
+	flag.StringVar(
+		&optionColorConfig,
+		"set-theme-config", "",
+		"Specify a comma-separated list of custom colors for modifier elements."+
+			"\n\nAvailable modifiers:\n"+theme.GetElementModifiers()+
+			"\n\nAvailable colors:\n"+theme.GetElementColors()+
+			"\n\nFor example: --set-theme-config='Adapter=red,Device=purple,MenuBar=blue'",
+	)
 
 	flag.Usage = func() {
 		fmt.Fprintf(
@@ -38,8 +67,18 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 		flag.CommandLine.VisitAll(func(f *flag.Flag) {
 			s := fmt.Sprintf("  --%s", f.Name)
 
-			if f.Name == "adapter" {
+			switch f.Name {
+			case "adapter":
 				s += " <adapter>"
+
+			case "receive-dir":
+				s += " <dir>"
+
+			case "set-theme":
+				s += " <theme>"
+
+			case "set-theme-config":
+				s += " [modifier1=color1,modifier2=color2,...]"
 			}
 
 			if len(s) <= 4 {
@@ -50,7 +89,7 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 
 			s += strings.ReplaceAll(f.Usage, "\n", "\n    \t")
 
-			fmt.Fprint(flag.CommandLine.Output(), s, "\n")
+			fmt.Fprint(flag.CommandLine.Output(), s, "\n\n")
 		})
 	}
 
@@ -58,6 +97,10 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 	flag.Parse()
 
 	cmdOptionReceiveDir()
+
+	cmdOptionTheme()
+	cmdOptionThemeConfig()
+
 	cmdOptionAdapter(bluezConn)
 	cmdOptionListAdapters(bluezConn)
 }
@@ -106,4 +149,26 @@ func cmdOptionReceiveDir() {
 	fmt.Println(optionReceiveDir + ": Directory is not accessible.")
 
 	os.Exit(0)
+}
+
+func cmdOptionTheme() {
+	if optionTheme == "" {
+		return
+	}
+
+	if err := theme.ParseThemeFile(optionTheme); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(0)
+	}
+}
+
+func cmdOptionThemeConfig() {
+	if optionColorConfig == "" {
+		return
+	}
+
+	if err := theme.ParseThemeConfig(optionColorConfig); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(0)
+	}
 }

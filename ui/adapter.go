@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 	"github.com/godbus/dbus/v5"
@@ -27,7 +28,8 @@ func adapterChange() {
 	adapterMenu = tview.NewTable()
 	adapterMenu.SetBorder(true)
 	adapterMenu.SetSelectable(true, false)
-	adapterMenu.SetBackgroundColor(tcell.ColorDefault)
+	adapterMenu.SetBorderColor(theme.GetColor("Border"))
+	adapterMenu.SetBackgroundColor(theme.GetColor("Background"))
 	adapterMenu.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter, tcell.KeyEscape:
@@ -78,10 +80,20 @@ func adapterChange() {
 		adapterMenu.SetCell(row, 0, tview.NewTableCell(adapter.Name).
 			SetExpansion(1).
 			SetReference(adapter).
-			SetAlign(tview.AlignLeft),
+			SetAlign(tview.AlignLeft).
+			SetTextColor(theme.GetColor("Adapter")).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor("Adapter")).
+				Background(theme.BackgroundColor("Adapter")),
+			),
 		)
 		adapterMenu.SetCell(row, 1, tview.NewTableCell("("+bluez.GetAdapterID(adapter.Path)+")").
-			SetAlign(tview.AlignRight),
+			SetAlign(tview.AlignRight).
+			SetTextColor(theme.GetColor("Adapter")).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor("Adapter")).
+				Background(theme.BackgroundColor("Adapter")),
+			),
 		)
 	}
 

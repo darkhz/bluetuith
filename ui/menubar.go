@@ -3,6 +3,7 @@ package ui
 import (
 	"sync"
 
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 )
@@ -38,7 +39,7 @@ func menuBar() *tview.TextView {
 	MenuBar = tview.NewTextView()
 	MenuBar.SetRegions(true)
 	MenuBar.SetDynamicColors(true)
-	MenuBar.SetBackgroundColor(tcell.ColorDefault)
+	MenuBar.SetBackgroundColor(theme.GetColor("MenuBar"))
 	MenuBar.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if added == nil {
 			return
@@ -51,8 +52,6 @@ func menuBar() *tview.TextView {
 			}
 		}
 	})
-
-	MenuBar.SetText(menuBarRegions)
 
 	return MenuBar
 }
@@ -208,7 +207,8 @@ func setMenuList(x, y int, menu string, options map[string]*MenuOption) {
 	menuList = tview.NewTable()
 	menuList.SetBorder(true)
 	menuList.SetSelectable(true, false)
-	menuList.SetBackgroundColor(tcell.ColorDefault)
+	menuList.SetBorderColor(theme.GetColor("Border"))
+	menuList.SetBackgroundColor(theme.GetColor("Background"))
 	menuList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
@@ -250,12 +250,22 @@ AddOptions:
 			SetExpansion(1).
 			SetReference(opt).
 			SetAlign(tview.AlignLeft).
-			SetClickedFunc(opt.onclick),
+			SetClickedFunc(opt.onclick).
+			SetTextColor(theme.GetColor("MenuItem")).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor("MenuItem")).
+				Background(theme.BackgroundColor("MenuItem")),
+			),
 		)
 		menuList.SetCell(opt.index, 1, tview.NewTableCell(string(opt.keybinding)).
 			SetExpansion(1).
 			SetAlign(tview.AlignRight).
-			SetClickedFunc(opt.onclick),
+			SetClickedFunc(opt.onclick).
+			SetTextColor(theme.GetColor("MenuItem")).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor("MenuItem")).
+				Background(theme.BackgroundColor("MenuItem")),
+			),
 		)
 	}
 	menuList.Select(0, 0)
@@ -286,7 +296,7 @@ func drawMenuBox(list tview.Primitive, height, width, x, y int) *tview.Flex {
 // setMenuBarHeader appends the header text with
 // the menu bar's regions.
 func setMenuBarHeader(header string) {
-	MenuBar.SetText(header + "[-:-:-] " + menuBarRegions)
+	MenuBar.SetText(header + "[-:-:-] " + theme.ColorWrap("Menu", menuBarRegions))
 }
 
 // switchMenuList switches between menus.

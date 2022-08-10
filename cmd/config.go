@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/darkhz/bluetuith/theme"
 )
 
 var (
@@ -30,7 +32,7 @@ func SetupConfig() error {
 
 		if _, err := os.Stat(fullpath); err == nil {
 			configPath = fullpath
-			return nil
+			return theme.CreateThemesDir(configPath)
 		}
 
 		if i == 0 {
@@ -48,15 +50,19 @@ func SetupConfig() error {
 			if err != nil {
 				return fmt.Errorf("Cannot create %s", configDirs[0])
 			}
+
+			configPath = configDirs[0]
 		} else {
 			err := os.Mkdir(configDirs[1], 0700)
 			if err != nil {
 				return fmt.Errorf("Cannot create %s", configDirs[1])
 			}
+
+			configPath = configDirs[1]
 		}
 	}
 
-	return nil
+	return theme.CreateThemesDir(configPath)
 }
 
 // ConfigPath returns the absolute path for the given configType.
