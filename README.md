@@ -27,15 +27,22 @@ If the `go` compiler is present in your system, you can install it via the follo
 
 Or you can navigate to the releases section and download a binary that matches your architecture.
 
+It is also available in the AUR as bluetuith-bin.
+
 ## Usage
     bluetuith [<flags>]
 
     Flags:
-      --adapter <adapter>         Specify an adapter to use. (For example, hci0)
-      --list-adapters             List available adapters.
-      --receive-dir               Specify a directory to store received files.
+      --adapter <adapter>          Specify an adapter to use. (For example, hci0)
+      --list-adapters              List available adapters.
+      --receive-dir <dir>          Specify a directory to store received files.
+      --set-theme <theme>          Specify a theme
+      --set-theme-config <config>  Specify a comma-separated list of modifier-color pairs.
 
 - If the **receive-dir** option is not specified, received files will be stored in ``$HOME/bluetuith``.
+
+- For more information on how to use the **set-theme** and **set-theme-config** options,
+navigate to the [Themes](https://github.com/darkhz/bluetuith/wiki/Themes) wiki page.
 
 ## Configuration
 bluetuith should generally work out-of-the-box, with no required configurations.
