@@ -137,8 +137,6 @@ func getDeviceInfo() {
 	}
 	props = append(props, []string{"UUIDs", ""})
 
-	prevPage, _ = Pages.GetFrontPage()
-
 	deviceInfoTable := tview.NewTable()
 	deviceInfoTable.SetBorder(true)
 	deviceInfoTable.SetSelectorWrap(true)
@@ -217,21 +215,7 @@ func getDeviceInfo() {
 		)
 	}
 
-	infoWrap := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 20, false).
-		AddItem(deviceInfoTable, 0, 60, true).
-		AddItem(nil, 0, 20, false)
-
-	infoFlex := tview.NewFlex().
-		SetDirection(tview.FlexColumn).
-		AddItem(nil, 0, 1, false).
-		AddItem(infoWrap, 0, 60, true).
-		AddItem(nil, 0, 1, false)
-
-	Pages.AddAndSwitchToPage("infomodal", infoFlex, true).ShowPage(prevPage)
-
-	App.SetFocus(deviceInfoTable)
+	showModal("infomodal", deviceInfoTable, 60, 1)
 }
 
 // getDeviceFromSelection retrieves device information from

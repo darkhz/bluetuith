@@ -6,12 +6,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-var prevPage string
-
 func showHelp() {
 	var row int
-
-	prevPage, _ = Pages.GetFrontPage()
 
 	deviceKeyBindings := map[string]string{
 		"Open the menu":                    "Ctrl+m",
@@ -113,17 +109,5 @@ func showHelp() {
 
 	}
 
-	helpWrap := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 20, false).
-		AddItem(helpTable, 0, 20, true).
-		AddItem(nil, 0, 20, false)
-
-	helpFlex := tview.NewFlex().
-		SetDirection(tview.FlexColumn).
-		AddItem(nil, 0, 60, false).
-		AddItem(helpWrap, 0, 60, true).
-		AddItem(nil, 0, 60, false)
-
-	Pages.AddAndSwitchToPage("helpmodal", helpFlex, true).ShowPage(prevPage)
+	showModal("helpmodal", helpTable, 20, 60)
 }
