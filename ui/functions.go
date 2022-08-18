@@ -39,6 +39,9 @@ func onClickFunc(id string) func() bool {
 	case "send":
 		clickFunc = send
 
+	case "info":
+		clickFunc = info
+
 	case "remove":
 		clickFunc = remove
 	}
@@ -169,7 +172,7 @@ func createPower() bool {
 // createConnect sets the oncreate handler for the connect submenu option.
 func createConnect() bool {
 	device := getDeviceFromSelection(false)
-	if device == (bluez.Device{}) {
+	if device.Path == "" {
 		return false
 	}
 
@@ -179,7 +182,7 @@ func createConnect() bool {
 // createTrust sets the oncreate handler for the trust submenu option.
 func createTrust() bool {
 	device := getDeviceFromSelection(false)
-	if device == (bluez.Device{}) {
+	if device.Path == "" {
 		return false
 	}
 
@@ -189,7 +192,7 @@ func createTrust() bool {
 // connect retrieves the selected device, and toggles its connection state.
 func connect() {
 	device := getDeviceFromSelection(true)
-	if device == (bluez.Device{}) {
+	if device.Path == "" {
 		return
 	}
 
@@ -229,7 +232,7 @@ func connect() {
 // pair retrieves the selected device, and attempts to pair with it.
 func pair() {
 	device := getDeviceFromSelection(true)
-	if device == (bluez.Device{}) {
+	if device.Path == "" {
 		return
 	}
 	if device.Paired {
@@ -259,7 +262,7 @@ func pair() {
 // trust retrieves the selected device, and toggles its trust property.
 func trust() {
 	device := getDeviceFromSelection(true)
-	if device == (bluez.Device{}) {
+	if device.Path == "" {
 		return
 	}
 
@@ -311,10 +314,17 @@ func send() {
 	ObexConn.RemoveSession(sessionPath)
 }
 
+// info retreives the selected device, and shows the device information.
+func info() {
+	App.QueueUpdateDraw(func() {
+		getDeviceInfo()
+	})
+}
+
 // remove retrieves the selected device, and removes it from the adapter.
 func remove() {
 	device := getDeviceFromSelection(true)
-	if device == (bluez.Device{}) {
+	if device.Path == "" {
 		return
 	}
 

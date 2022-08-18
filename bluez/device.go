@@ -25,18 +25,22 @@ const dbusBluezDeviceIface = "org.bluez.Device1"
 
 // Device holds bluetooth device information.
 type Device struct {
-	Path      string
-	Name      string
-	Type      string
-	Alias     string
-	Address   string
-	Adapter   string
-	Paired    bool
-	Connected bool
-	Trusted   bool
-	Blocked   bool
-	RSSI      int16
-	Class     uint32
+	Path          string
+	Name          string
+	Type          string
+	Alias         string
+	Address       string
+	AddressType   string
+	Adapter       string
+	Modalias      string
+	UUIDs         []string
+	Paired        bool
+	Connected     bool
+	Trusted       bool
+	Blocked       bool
+	LegacyPairing bool
+	RSSI          int16
+	Class         uint32
 }
 
 // HaveService checks if the device has the specified service.
@@ -126,7 +130,8 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 	*/
 	devices := []Device{}
 	for k, v := range values {
-		var name string
+		var name, modalias string
+		var uuids []string
 		var rssi int16
 		var class uint32
 
@@ -142,22 +147,34 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 			class = c
 		}
 
+		if u, ok := v["UUIDs"].Value().([]string); ok {
+			uuids = u
+		}
+
+		if m, ok := v["Modalias"].Value().(string); ok {
+			modalias = m
+		}
+
 		switch k {
 		case dbusBluezDeviceIface:
 			adapter, _ := v["Adapter"].Value().(dbus.ObjectPath)
 			devices = append(devices, Device{
-				Path:      path,
-				Name:      name,
-				Class:     class,
-				RSSI:      rssi,
-				Type:      GetDeviceType(class),
-				Alias:     v["Alias"].Value().(string),
-				Address:   v["Address"].Value().(string),
-				Adapter:   string(adapter),
-				Paired:    v["Paired"].Value().(bool),
-				Connected: v["Connected"].Value().(bool),
-				Trusted:   v["Trusted"].Value().(bool),
-				Blocked:   v["Blocked"].Value().(bool),
+				Path:          path,
+				Name:          name,
+				Class:         class,
+				RSSI:          rssi,
+				UUIDs:         uuids,
+				Modalias:      modalias,
+				Type:          GetDeviceType(class),
+				Alias:         v["Alias"].Value().(string),
+				Address:       v["Address"].Value().(string),
+				AddressType:   v["AddressType"].Value().(string),
+				Adapter:       string(adapter),
+				Paired:        v["Paired"].Value().(bool),
+				Connected:     v["Connected"].Value().(bool),
+				Trusted:       v["Trusted"].Value().(bool),
+				Blocked:       v["Blocked"].Value().(bool),
+				LegacyPairing: v["LegacyPairing"].Value().(bool),
 			})
 		}
 	}

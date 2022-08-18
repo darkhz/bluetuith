@@ -136,6 +136,13 @@ func setupMenuOptions() {
 		},
 		{
 			index:      4,
+			title:      "Info",
+			menuid:     "info",
+			keybinding: 'i',
+			onclick:    onClickFunc("info"),
+		},
+		{
+			index:      5,
 			title:      "Remove",
 			menuid:     "remove",
 			keybinding: 'd',

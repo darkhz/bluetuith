@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -103,6 +104,134 @@ func checkDeviceTable(path string) (int, bool) {
 	}
 
 	return -1, false
+}
+
+// getDeviceInfo shows information about a device.
+func getDeviceInfo() {
+	device := getDeviceFromSelection(false)
+	if device.Path == "" {
+		return
+	}
+
+	yesno := func(val bool) string {
+		if !val {
+			return "no"
+		}
+
+		return "yes"
+	}
+
+	props := [][]string{
+		{"Name", device.Name},
+		{"Address", device.Address},
+		{"Class", strconv.FormatUint(uint64(device.Class), 10)},
+		{"Adapter", filepath.Base(device.Adapter)},
+		{"Connected", yesno(device.Connected)},
+		{"Paired", yesno(device.Paired)},
+		{"Trusted", yesno(device.Trusted)},
+		{"Blocked", yesno(device.Blocked)},
+		{"LegacyPairing", yesno(device.LegacyPairing)},
+	}
+	if device.Modalias != "" {
+		props = append(props, []string{"Modalias", device.Modalias})
+	}
+	props = append(props, []string{"UUIDs", ""})
+
+	prevPage, _ = Pages.GetFrontPage()
+
+	deviceInfoTable := tview.NewTable()
+	deviceInfoTable.SetBorder(true)
+	deviceInfoTable.SetSelectorWrap(true)
+	deviceInfoTable.SetSelectable(true, false)
+	deviceInfoTable.SetBorderColor(theme.GetColor("Border"))
+	deviceInfoTable.SetBackgroundColor(theme.GetColor("Background"))
+	deviceInfoTable.SetTitle(theme.ColorWrap("Text", "[ DEVICE INFO ]"))
+	deviceInfoTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			Pages.RemovePage("infomodal")
+		}
+
+		return event
+	})
+	deviceInfoTable.SetSelectionChangedFunc(func(row, col int) {
+		_, _, _, height := deviceInfoTable.GetRect()
+		deviceInfoTable.SetOffset(row-((height-1)/2), 0)
+	})
+
+	for i, prop := range props {
+		propName := prop[0]
+		propValue := prop[1]
+
+		switch propName {
+		case "Address":
+			propValue += " (" + device.AddressType + ")"
+
+		case "Class":
+			propValue += " (" + device.Type + ")"
+		}
+
+		deviceInfoTable.SetCell(i, 0, tview.NewTableCell("[::b]"+propName+":").
+			SetExpansion(1).
+			SetAlign(tview.AlignLeft).
+			SetTextColor(theme.GetColor("Text")).
+			SetSelectedStyle(tcell.Style{}.
+				Bold(true).
+				Underline(true),
+			),
+		)
+
+		deviceInfoTable.SetCell(i, 1, tview.NewTableCell(propValue).
+			SetExpansion(1).
+			SetAlign(tview.AlignLeft).
+			SetTextColor(theme.GetColor("Text")).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor("Text")).
+				Background(theme.BackgroundColor("Text")),
+			),
+		)
+	}
+
+	rows := deviceInfoTable.GetRowCount() - 1
+	for i, serviceUUID := range device.UUIDs {
+		serviceType := bluez.ServiceType(serviceUUID)
+		serviceUUID = "(" + serviceUUID + ")"
+
+		deviceInfoTable.SetCell(rows+i, 1, tview.NewTableCell(serviceType).
+			SetExpansion(1).
+			SetAlign(tview.AlignLeft).
+			SetTextColor(theme.GetColor("Text")).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor("Text")).
+				Background(theme.BackgroundColor("Text")),
+			),
+		)
+
+		deviceInfoTable.SetCell(rows+i, 2, tview.NewTableCell(serviceUUID).
+			SetExpansion(0).
+			SetTextColor(theme.GetColor("Text")).
+			SetSelectedStyle(tcell.Style{}.
+				Foreground(theme.GetColor("Text")).
+				Background(theme.BackgroundColor("Text")),
+			),
+		)
+	}
+
+	infoWrap := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 20, false).
+		AddItem(deviceInfoTable, 0, 60, true).
+		AddItem(nil, 0, 20, false)
+
+	infoFlex := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(nil, 0, 1, false).
+		AddItem(infoWrap, 0, 60, true).
+		AddItem(nil, 0, 1, false)
+
+	Pages.AddAndSwitchToPage("infomodal", infoFlex, true).ShowPage(prevPage)
+
+	App.SetFocus(deviceInfoTable)
 }
 
 // getDeviceFromSelection retrieves device information from

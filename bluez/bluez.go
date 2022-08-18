@@ -164,7 +164,7 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 
 		case dbusBluezDeviceIface:
 			device := b.getDeviceFromStore(string(signal.Path))
-			if device == (Device{}) {
+			if device.Path == "" {
 				return nil
 			}
 

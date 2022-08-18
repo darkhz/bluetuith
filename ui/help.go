@@ -22,6 +22,7 @@ func showHelp() {
 		"Change adapter":                   "a",
 		"Send files":                       "f",
 		"Progress view":                    "v",
+		"Show device information":          "i",
 		"Connect to selected device":       "c",
 		"Pair with selected device":        "p",
 		"Trust selected device":            "t",

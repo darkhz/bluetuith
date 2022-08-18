@@ -30,7 +30,7 @@ func SetTrusted(devicePath string, enable bool) error {
 // GetDeviceFromPath gets a device from the device path.
 func GetDeviceFromPath(devicePath string) (bluez.Device, error) {
 	device := BluezConn.GetDevice(devicePath)
-	if device == (bluez.Device{}) {
+	if device.Path == "" {
 		return bluez.Device{}, errors.New("Device not found")
 	}
 
