@@ -39,6 +39,11 @@ type Device struct {
 	Class     uint32
 }
 
+// HaveService checks if the device has the specified service.
+func (d Device) HaveService(service uint32) bool {
+	return ServiceExists(d.UUIDs, service)
+}
+
 // CallDevice is used to interact with the bluez Device dbus interface.
 // https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/doc/device-api.txt
 func (b *Bluez) CallDevice(devicePath, method string, flags dbus.Flags, args ...interface{}) *dbus.Call {
