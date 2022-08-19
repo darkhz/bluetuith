@@ -285,6 +285,84 @@ AddOptions:
 	App.SetFocus(menuList)
 }
 
+// setSelectorMenu sets up a selector menu.
+func setSelectorMenu(
+	menuID string,
+	selected func(table *tview.Table),
+	selectchg func(table *tview.Table, row, col int),
+	listContents func(table *tview.Table) (int, int),
+) *tview.Table {
+	var x, y int
+	var selchgEnable bool
+	var selectorMenu *tview.Table
+
+	for _, region := range MenuBar.GetRegionInfos() {
+		if region.ID == menuID {
+			x, y = region.FromX, region.FromY+2
+			break
+		}
+	}
+
+	exitMenuList()
+
+	selectorMenu = tview.NewTable()
+	selectorMenu.SetBorder(true)
+	selectorMenu.SetSelectable(true, false)
+	selectorMenu.SetBorderColor(theme.GetColor("Border"))
+	selectorMenu.SetBackgroundColor(theme.GetColor("Background"))
+	selectorMenu.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEnter:
+			if selected != nil {
+				selected(selectorMenu)
+			}
+
+			fallthrough
+
+		case tcell.KeyEscape:
+			Pages.RemovePage("selectormenu")
+			App.SetFocus(DeviceTable)
+		}
+
+		return event
+	})
+	selectorMenu.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if action == tview.MouseLeftClick {
+			if selected != nil {
+				selected(selectorMenu)
+			}
+		}
+
+		return action, event
+	})
+	selectorMenu.SetSelectionChangedFunc(func(row, col int) {
+		if selectchg == nil {
+			return
+		}
+
+		if !selchgEnable {
+			selchgEnable = true
+			return
+		}
+
+		selectchg(selectorMenu, row, col)
+	})
+
+	width, index := listContents(selectorMenu)
+
+	selectorMenu.Select(index, 0)
+
+	Pages.AddAndSwitchToPage(
+		"selectormenu",
+		drawMenuBox(selectorMenu, selectorMenu.GetRowCount()+2, width+20, x, y),
+		true,
+	).ShowPage("main")
+
+	App.SetFocus(selectorMenu)
+
+	return selectorMenu
+}
+
 // drawMenuBox draws the submenu.
 func drawMenuBox(list tview.Primitive, height, width, x, y int) *tview.Flex {
 	wrapList := tview.NewFlex().
@@ -351,16 +429,16 @@ func menuListInputHandler(event *tcell.EventKey) {
 //gocyclo: ignore
 // menuListMouseHandler handles mouse events for a submenu.
 func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tcell.EventMouse {
-	if !Pages.HasPage("menulist") && !Pages.HasPage("adaptermenu") {
+	if !Pages.HasPage("menulist") && !Pages.HasPage("selectormenu") {
 		return event
 	}
 
 	x, y := event.Position()
 
 	switch {
-	case Pages.HasPage("adaptermenu"):
+	case Pages.HasPage("selectormenu"):
 		pg, item := Pages.GetFrontPage()
-		if pg != "adaptermenu" {
+		if pg != "selectormenu" {
 			return event
 		}
 
@@ -381,8 +459,8 @@ func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tc
 					continue
 				}
 
-				if !table.InRect(x, y) {
-					Pages.RemovePage("adaptermenu")
+				if !table.InRect(x, y) && action == tview.MouseLeftClick {
+					Pages.RemovePage("selectormenu")
 					App.SetFocus(DeviceTable)
 
 					break

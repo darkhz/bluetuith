@@ -13,98 +13,65 @@ import (
 // adapterChange launches a popup with a list of adapters.
 // Changing the selection will change the currently selected adapter.
 func adapterChange() {
-	var adapterMenu *tview.Table
-	var x, y, maxWidth, currentIndex, selCount int
+	setSelectorMenu(
+		"adapter", nil,
+		func(adapterMenu *tview.Table, row, col int) {
+			cell := adapterMenu.GetCell(row, 0)
+			if cell == nil {
+				return
+			}
 
-	for _, region := range MenuBar.GetRegionInfos() {
-		if region.ID == "adapter" {
-			x, y = region.FromX, region.FromY+2
-			break
-		}
-	}
+			adapter, ok := cell.GetReference().(bluez.Adapter)
+			if !ok {
+				return
+			}
 
-	exitMenuList()
+			if err := BluezConn.StopDiscovery(BluezConn.GetCurrentAdapter().Path); err == nil {
+				setMenuItemToggle("adapter", "scan", false, struct{}{})
+			}
 
-	adapterMenu = tview.NewTable()
-	adapterMenu.SetBorder(true)
-	adapterMenu.SetSelectable(true, false)
-	adapterMenu.SetBorderColor(theme.GetColor("Border"))
-	adapterMenu.SetBackgroundColor(theme.GetColor("Background"))
-	adapterMenu.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEnter, tcell.KeyEscape:
-			Pages.RemovePage("adaptermenu")
-			App.SetFocus(DeviceTable)
-		}
+			if strings.Contains(MessageBox.GetText(true), "Scanning for devices") {
+				InfoMessage("Scanning stopped on "+BluezConn.GetCurrentAdapterID(), false)
+			}
 
-		return event
-	})
-	adapterMenu.SetSelectionChangedFunc(func(row, col int) {
-		if selCount == 0 {
-			selCount++
-			return
-		}
+			BluezConn.SetCurrentAdapter(adapter)
 
-		cell := adapterMenu.GetCell(row, 0)
-		if cell == nil {
-			return
-		}
+			listDevices()
+		},
+		func(adapterMenu *tview.Table) (int, int) {
+			var width, index int
 
-		adapter, ok := cell.GetReference().(bluez.Adapter)
-		if !ok {
-			return
-		}
+			for row, adapter := range BluezConn.GetAdapters() {
+				if len(adapter.Name) > width {
+					width = len(adapter.Name)
+				}
 
-		if err := BluezConn.StopDiscovery(BluezConn.GetCurrentAdapter().Path); err == nil {
-			setMenuItemToggle("adapter", "scan", false, struct{}{})
-		}
+				if adapter.Path == BluezConn.GetCurrentAdapter().Path {
+					index = row
+				}
 
-		if strings.Contains(MessageBox.GetText(true), "Scanning for devices") {
-			InfoMessage("Scanning stopped on "+BluezConn.GetCurrentAdapterID(), false)
-		}
+				adapterMenu.SetCell(row, 0, tview.NewTableCell(adapter.Name).
+					SetExpansion(1).
+					SetReference(adapter).
+					SetAlign(tview.AlignLeft).
+					SetTextColor(theme.GetColor("Adapter")).
+					SetSelectedStyle(tcell.Style{}.
+						Foreground(theme.GetColor("Adapter")).
+						Background(theme.BackgroundColor("Adapter")),
+					),
+				)
+				adapterMenu.SetCell(row, 1, tview.NewTableCell("("+bluez.GetAdapterID(adapter.Path)+")").
+					SetAlign(tview.AlignRight).
+					SetTextColor(theme.GetColor("Adapter")).
+					SetSelectedStyle(tcell.Style{}.
+						Foreground(theme.GetColor("Adapter")).
+						Background(theme.BackgroundColor("Adapter")),
+					),
+				)
+			}
 
-		BluezConn.SetCurrentAdapter(adapter)
-
-		listDevices()
-	})
-
-	for row, adapter := range BluezConn.GetAdapters() {
-		if len(adapter.Name) > maxWidth {
-			maxWidth = len(adapter.Name)
-		}
-
-		if adapter.Path == BluezConn.GetCurrentAdapter().Path {
-			currentIndex = row
-		}
-
-		adapterMenu.SetCell(row, 0, tview.NewTableCell(adapter.Name).
-			SetExpansion(1).
-			SetReference(adapter).
-			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor("Adapter")).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("Adapter")).
-				Background(theme.BackgroundColor("Adapter")),
-			),
-		)
-		adapterMenu.SetCell(row, 1, tview.NewTableCell("("+bluez.GetAdapterID(adapter.Path)+")").
-			SetAlign(tview.AlignRight).
-			SetTextColor(theme.GetColor("Adapter")).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("Adapter")).
-				Background(theme.BackgroundColor("Adapter")),
-			),
-		)
-	}
-
-	adapterMenu.Select(currentIndex, 0)
-
-	Pages.AddAndSwitchToPage(
-		"adaptermenu",
-		drawMenuBox(adapterMenu, adapterMenu.GetRowCount()+2, maxWidth+20, x, y),
-		true,
-	).ShowPage("main")
-	App.SetFocus(adapterMenu)
+			return width, index
+		})
 }
 
 // adapterEvent handles adapter-specific events.
