@@ -17,6 +17,9 @@ var (
 
 	optionReceiveDir string
 
+	optionGsmApn    string
+	optionGsmNumber string
+
 	optionTheme       string
 	optionColorConfig string
 )
@@ -42,6 +45,16 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 		&optionReceiveDir,
 		"receive-dir", "",
 		"Specify a directory to store received files.",
+	)
+	flag.StringVar(
+		&optionGsmApn,
+		"gsm-apn", "",
+		"Specify GSM APN to connect to. (Required for DUN)",
+	)
+	flag.StringVar(
+		&optionGsmNumber,
+		"gsm-number", "",
+		"Specify GSM number to dial. (Required for DUN)",
 	)
 	flag.StringVar(
 		&optionTheme,
@@ -74,6 +87,12 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 			case "receive-dir":
 				s += " <dir>"
 
+			case "gsm-apn":
+				s += " <apn>"
+
+			case "gsm-number":
+				s += " <number>"
+
 			case "set-theme":
 				s += " <theme>"
 
@@ -97,6 +116,8 @@ func ParseCmdFlags(bluezConn *bluez.Bluez) {
 	flag.Parse()
 
 	cmdOptionReceiveDir()
+
+	cmdOptionGsm()
 
 	cmdOptionTheme()
 	cmdOptionThemeConfig()
@@ -149,6 +170,21 @@ func cmdOptionReceiveDir() {
 	fmt.Println(optionReceiveDir + ": Directory is not accessible.")
 
 	os.Exit(0)
+}
+
+func cmdOptionGsm() {
+	if optionGsmNumber == "" && optionGsmApn != "" {
+		fmt.Println("Specify GSM Number.")
+		os.Exit(0)
+	}
+
+	number := "*99#"
+	if optionGsmNumber != "" {
+		number = optionGsmNumber
+	}
+
+	AddConfigProperty("gsm-apn", optionGsmApn)
+	AddConfigProperty("gsm-number", number)
 }
 
 func cmdOptionTheme() {

@@ -138,13 +138,20 @@ func setupMenuOptions() {
 		},
 		{
 			index:      4,
+			title:      "Network",
+			menuid:     "network",
+			keybinding: 'n',
+			onclick:    onClickFunc("network"),
+		},
+		{
+			index:      5,
 			title:      "Info",
 			menuid:     "info",
 			keybinding: 'i',
 			onclick:    onClickFunc("info"),
 		},
 		{
-			index:      5,
+			index:      6,
 			title:      "Remove",
 			menuid:     "remove",
 			keybinding: 'd',

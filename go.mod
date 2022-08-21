@@ -3,6 +3,7 @@ module github.com/darkhz/bluetuith
 go 1.18
 
 require (
+	github.com/Wifx/gonetworkmanager v0.4.0
 	github.com/darkhz/tview v0.0.0-20220715195132-12c4596a11a8
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210905002822-f057f0a857a1
 	github.com/godbus/dbus/v5 v5.1.0

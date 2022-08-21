@@ -39,6 +39,9 @@ func onClickFunc(id string) func() bool {
 	case "send":
 		clickFunc = send
 
+	case "network":
+		clickFunc = networkAP
+
 	case "info":
 		clickFunc = info
 
@@ -312,6 +315,13 @@ func send() {
 	}
 
 	ObexConn.RemoveSession(sessionPath)
+}
+
+// networkAP launches a popup with the available networks.
+func networkAP() {
+	App.QueueUpdateDraw(func() {
+		networkSelect()
+	})
 }
 
 // info retreives the selected device, and shows the device information.

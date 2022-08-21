@@ -17,6 +17,7 @@ func showHelp() {
 		"Toggle scan (discovery state)":    "s",
 		"Change adapter":                   "a",
 		"Send files":                       "f",
+		"Connect to network":               "n",
 		"Progress view":                    "v",
 		"Show device information":          "i",
 		"Connect to selected device":       "c",

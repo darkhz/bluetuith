@@ -8,6 +8,7 @@ import (
 
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
+	"github.com/darkhz/bluetuith/network"
 )
 
 // SetBluezConn sets up the bluez connection.
@@ -18,6 +19,11 @@ func SetBluezConn(b *bluez.Bluez) {
 // SetObexConn sets up the bluez obex connection.
 func SetObexConn(o *bluez.Obex) {
 	ObexConn = o
+}
+
+// SetNetworkConn sets up the network connection.
+func SetNetworkConn(n *network.Network) {
+	NetworkConn = n
 }
 
 // SetTrusted sets the trusted state of a device.

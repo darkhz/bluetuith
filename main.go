@@ -7,6 +7,7 @@ import (
 	"github.com/darkhz/bluetuith/agent"
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
+	"github.com/darkhz/bluetuith/network"
 	"github.com/darkhz/bluetuith/ui"
 )
 
@@ -32,6 +33,12 @@ func main() {
 		return
 	}
 
+	networkConn, err := network.NewNetwork()
+	if err != nil {
+		errMessage("Could not initialize NetworkManager DBus connection")
+		return
+	}
+
 	cmd.ParseCmdFlags(bluezConn)
 
 	if err := agent.SetupAgent(bluezConn.Conn()); err != nil {
@@ -46,6 +53,7 @@ func main() {
 
 	ui.SetBluezConn(bluezConn)
 	ui.SetObexConn(obexConn)
+	ui.SetNetworkConn(networkConn)
 
 	ui.StartUI()
 

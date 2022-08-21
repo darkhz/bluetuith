@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/network"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -22,6 +23,9 @@ var (
 
 	// ObexConn holds the current bluez obex DBus connection.
 	ObexConn *bluez.Obex
+
+	// NetworkConn holds the current network connection.
+	NetworkConn *network.Network
 )
 
 // deviceTable sets up and returns the DeviceTable.
