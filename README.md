@@ -15,11 +15,14 @@ This project is currently in the alpha stage.
 - Perform pairing with authentication.
 - Connect to/disconnect from different devices.
 - Interact with bluetooth adapters, toggle power and discovery states
+- Connect to or manage Bluetooth based networking/tethering (PANU/DUN)
 - Mouse support
 
 ## Requirements
 - Bluez
 - DBus
+- NetworkManager (optional, required for PANU)
+- ModemManager (optional, required for DUN)
 
 ## Installation
 If the `go` compiler is present in your system, you can install it via the following command:
@@ -34,10 +37,14 @@ It is also available in the AUR as bluetuith-bin.
 
     Flags:
       --adapter <adapter>          Specify an adapter to use. (For example, hci0)
+      --gsm-apn <apn>              Specify GSM APN to connect to. (Required for DUN)
+      --gsm-number <number>        Specify GSM number to dial. (Required for DUN)
       --list-adapters              List available adapters.
       --receive-dir <dir>          Specify a directory to store received files.
       --set-theme <theme>          Specify a theme
       --set-theme-config <config>  Specify a comma-separated list of modifier-color pairs.
+
+- To use DUN-based networking, it is required to specify the **gsm-number** option. The **gsm-apn** field is optional.
 
 - If the **receive-dir** option is not specified, received files will be stored in ``$HOME/bluetuith``.
 
@@ -69,10 +76,12 @@ For example:
 |Toggle scan (discovery state)   |<kbd>s</kbd>                 |
 |Change adapter                  |<kbd>a</kbd>                 |
 |Send files                      |<kbd>f</kbd>                 |
+|Connect to network              |<kbd>n</kbd>                 |
 |Progress view                   |<kbd>v</kbd>                 |
 |Connect to selected device      |<kbd>c</kbd>                 |
 |Pair with selected device       |<kbd>p</kbd>                 |
 |Trust selected device           |<kbd>t</kbd>                 |
+|Show device information         |<kbd>i</kbd>                 |
 |Remove device from adapter      |<kbd>d</kbd>                 |
 |Cancel operation                |<kbd>Ctrl</kbd>+<kbd>x</kbd> |
 |Quit                            |<kbd>q</kbd>                 |
