@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"sort"
 	"sync"
 
 	"github.com/darkhz/bluetuith/theme"
@@ -19,6 +20,7 @@ type MenuOption struct {
 	toggled    bool
 	oncreate   func() bool
 	onclick    func() bool
+	visible    func() bool
 }
 
 var (
@@ -246,28 +248,40 @@ func setMenuList(x, y int, menu string, options map[string]*MenuOption) {
 	})
 
 AddOptions:
+	var menuoptions []*MenuOption
 
-	menuList.Clear()
 	for _, opt := range options {
-		if opt.oncreate != nil {
-			setMenuItemToggle(menu, opt.menuid, opt.oncreate(), struct{}{})
+		if opt.visible != nil && !opt.visible() {
+			continue
 		}
 
-		menuList.SetCell(opt.index, 0, tview.NewTableCell(opt.displaystr).
+		menuoptions = append(menuoptions, opt)
+	}
+	sort.Slice(menuoptions, func(i, j int) bool {
+		return menuoptions[i].index < menuoptions[j].index
+	})
+
+	menuList.Clear()
+	for index, menuopt := range menuoptions {
+		if menuopt.oncreate != nil {
+			setMenuItemToggle(menu, menuopt.menuid, menuopt.oncreate(), struct{}{})
+		}
+
+		menuList.SetCell(index, 0, tview.NewTableCell(menuopt.displaystr).
 			SetExpansion(1).
-			SetReference(opt).
+			SetReference(menuopt).
 			SetAlign(tview.AlignLeft).
-			SetClickedFunc(opt.onclick).
+			SetClickedFunc(menuopt.onclick).
 			SetTextColor(theme.GetColor("MenuItem")).
 			SetSelectedStyle(tcell.Style{}.
 				Foreground(theme.GetColor("MenuItem")).
 				Background(theme.BackgroundColor("MenuItem")),
 			),
 		)
-		menuList.SetCell(opt.index, 1, tview.NewTableCell(string(opt.keybinding)).
+		menuList.SetCell(index, 1, tview.NewTableCell(string(menuopt.keybinding)).
 			SetExpansion(1).
 			SetAlign(tview.AlignRight).
-			SetClickedFunc(opt.onclick).
+			SetClickedFunc(menuopt.onclick).
 			SetTextColor(theme.GetColor("MenuItem")).
 			SetSelectedStyle(tcell.Style{}.
 				Foreground(theme.GetColor("MenuItem")).
@@ -282,6 +296,7 @@ AddOptions:
 		drawMenuBox(menuList, menuList.GetRowCount()+2, 20, x, y),
 		true,
 	).ShowPage("main")
+
 	App.SetFocus(menuList)
 }
 
@@ -419,7 +434,12 @@ func menuListInputHandler(event *tcell.EventKey) {
 	for _, option := range menuOptions {
 		for _, opt := range option {
 			if event.Rune() == opt.keybinding {
+				if opt.visible != nil && !opt.visible() {
+					return
+				}
+
 				opt.onclick()
+
 				return
 			}
 		}
