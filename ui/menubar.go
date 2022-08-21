@@ -135,6 +135,7 @@ func setupMenuOptions() {
 			menuid:     "send",
 			keybinding: 'f',
 			onclick:    onClickFunc("send"),
+			visible:    visibleSend,
 		},
 		{
 			index:      4,
@@ -142,6 +143,7 @@ func setupMenuOptions() {
 			menuid:     "network",
 			keybinding: 'n',
 			onclick:    onClickFunc("network"),
+			visible:    visibleNetwork,
 		},
 		{
 			index:      5,

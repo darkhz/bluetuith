@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 )
 
 // onClickFunc is a handler for the submenu options in a menu.
@@ -190,6 +191,30 @@ func createTrust() bool {
 	}
 
 	return device.Trusted
+}
+
+// visibleSend sets the visible handler for the send submenu option.
+func visibleSend() bool {
+	device := getDeviceFromSelection(false)
+	if device.Path == "" {
+		return false
+	}
+
+	return cmd.GetConfigProperty("obex") == "true" &&
+		device.HaveService(bluez.OBEX_OBJPUSH_SVCLASS_ID)
+}
+
+// visibleNetwork sets the visible handler for the network submenu option.
+func visibleNetwork() bool {
+	device := getDeviceFromSelection(false)
+	if device.Path == "" {
+		return false
+	}
+
+	return cmd.GetConfigProperty("network") == "true" &&
+		device.HaveService(bluez.NAP_SVCLASS_ID) &&
+		(device.HaveService(bluez.PANU_SVCLASS_ID) ||
+			device.HaveService(bluez.DIALUP_NET_SVCLASS_ID))
 }
 
 // connect retrieves the selected device, and toggles its connection state.

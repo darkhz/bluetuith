@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/darkhz/bluetuith/agent"
 	"github.com/darkhz/bluetuith/bluez"
@@ -12,7 +13,11 @@ import (
 )
 
 func errMessage(err string) {
-	fmt.Fprintf(os.Stderr, "\rError: %s\n", err)
+	fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+}
+
+func warnMessage(warn string) {
+	fmt.Fprintf(os.Stderr, "Warning: %s\n", warn)
 }
 
 func main() {
@@ -27,29 +32,31 @@ func main() {
 		return
 	}
 
-	obexConn, err := bluez.NewObex()
-	if err != nil {
-		errMessage("Could not initialize bluez OBEX DBus connection")
-		return
-	}
-
-	networkConn, err := network.NewNetwork()
-	if err != nil {
-		errMessage("Could not initialize NetworkManager DBus connection")
-		return
-	}
-
-	cmd.ParseCmdFlags(bluezConn)
-
 	if err := agent.SetupAgent(bluezConn.Conn()); err != nil {
 		errMessage("Could not setup bluez agent")
 		return
 	}
 
-	if err := agent.SetupObexAgent(); err != nil {
-		errMessage("Could not setup bluez OBEX agent")
-		return
+	cmd.ParseCmdFlags(bluezConn)
+
+	networkConn, err := network.NewNetwork()
+	if err != nil {
+		warnMessage("Could not initialize NetworkManager DBus connection")
+		warnMessage("Network connection is disabled")
 	}
+	cmd.AddConfigProperty("network", strconv.FormatBool(err == nil))
+
+	obexConn, err := bluez.NewObex()
+	if err != nil {
+		warnMessage("Could not initialize bluez OBEX DBus connection")
+	} else {
+		err = agent.SetupObexAgent()
+		if err != nil {
+			warnMessage("Could not setup bluez OBEX agent")
+			warnMessage("Send/receive files is disabled")
+		}
+	}
+	cmd.AddConfigProperty("obex", strconv.FormatBool(err == nil))
 
 	ui.SetBluezConn(bluezConn)
 	ui.SetObexConn(obexConn)
