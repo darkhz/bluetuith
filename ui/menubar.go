@@ -147,13 +147,21 @@ func setupMenuOptions() {
 		},
 		{
 			index:      5,
+			title:      "Audio Profiles",
+			menuid:     "profiles",
+			keybinding: 'A',
+			onclick:    onClickFunc("profiles"),
+			visible:    visibleProfile,
+		},
+		{
+			index:      6,
 			title:      "Info",
 			menuid:     "info",
 			keybinding: 'i',
 			onclick:    onClickFunc("info"),
 		},
 		{
-			index:      6,
+			index:      7,
 			title:      "Remove",
 			menuid:     "remove",
 			keybinding: 'd',

@@ -43,6 +43,9 @@ func onClickFunc(id string) func() bool {
 	case "network":
 		clickFunc = networkAP
 
+	case "profiles":
+		clickFunc = profiles
+
 	case "info":
 		clickFunc = info
 
@@ -217,6 +220,17 @@ func visibleNetwork() bool {
 			device.HaveService(bluez.DIALUP_NET_SVCLASS_ID))
 }
 
+// visibleProfile sets the visible handler for the audio profiles submenu option.
+func visibleProfile() bool {
+	device := getDeviceFromSelection(false)
+	if device.Path == "" {
+		return false
+	}
+
+	return device.HaveService(bluez.AUDIO_SOURCE_SVCLASS_ID) ||
+		device.HaveService(bluez.AUDIO_SINK_SVCLASS_ID)
+}
+
 // connect retrieves the selected device, and toggles its connection state.
 func connect() {
 	device := getDeviceFromSelection(true)
@@ -346,6 +360,13 @@ func send() {
 func networkAP() {
 	App.QueueUpdateDraw(func() {
 		networkSelect()
+	})
+}
+
+// profiles launches a popup with the available audio profiles.
+func profiles() {
+	App.QueueUpdateDraw(func() {
+		audioProfiles()
 	})
 }
 
