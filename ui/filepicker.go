@@ -392,7 +392,7 @@ func dirList(testPath string) ([]fs.FileInfo, bool) {
 }
 
 // cellHandler handles on-click events for a table cell.
-func cellHandler(row, col int) {
+func cellHandler(table *tview.Table, row, col int) {
 	selectFileHandler(false, false, row)
 }
 
