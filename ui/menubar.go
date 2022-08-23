@@ -49,7 +49,7 @@ func menuBar() *tview.TextView {
 
 		for _, region := range MenuBar.GetRegionInfos() {
 			if region.ID == added[0] {
-				setMenuList(region.FromX, region.ToY+2, added[0], menuOptions[added[0]])
+				setMenuList(region.FromX, 1, added[0], menuOptions[added[0]])
 				break
 			}
 		}
@@ -225,20 +225,21 @@ func setMenuItemToggle(menuName, menuID string, toggle bool, nodraw ...struct{})
 }
 
 // setMenuList sets up a submenu for the specified menu.
-func setMenuList(x, y int, menu string, options map[string]*MenuOption) {
+func setMenuList(x, y int, menu string, options map[string]*MenuOption, selection ...struct{}) {
 	if menuList != nil {
 		goto AddOptions
 	}
 
 	menuList = tview.NewTable()
 	menuList.SetBorder(true)
+	menuList.SetEnableFocus(false)
 	menuList.SetSelectable(true, false)
 	menuList.SetBorderColor(theme.GetColor("Border"))
 	menuList.SetBackgroundColor(theme.GetColor("Background"))
 	menuList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			exitMenuList()
+			exitMenu("menulist")
 			return event
 
 		case tcell.KeyTab:
@@ -310,7 +311,7 @@ AddOptions:
 
 	Pages.AddAndSwitchToPage(
 		"menulist",
-		drawMenuBox(menuList, menuList.GetRowCount()+2, 20, x, y),
+		drawMenuBox(menuList, menuList.GetRowCount()+2, 20, x, y, selection...),
 		true,
 	).ShowPage("main")
 
@@ -326,19 +327,25 @@ func setSelectorMenu(
 ) *tview.Table {
 	var x, y int
 	var selchgEnable bool
+	var selection []struct{}
 	var selectorMenu *tview.Table
 
-	for _, region := range MenuBar.GetRegionInfos() {
-		if region.ID == menuID {
-			x, y = region.FromX, region.FromY+2
-			break
-		}
+	if menuID == "adapter" {
 	}
 
-	exitMenuList()
+	switch menuID {
+	case "adapter":
+		x, y = 0, 1
+
+	case "device":
+		selection = append(selection, struct{}{})
+	}
+
+	exitMenu("menulist")
 
 	selectorMenu = tview.NewTable()
 	selectorMenu.SetBorder(true)
+	selectorMenu.SetEnableFocus(false)
 	selectorMenu.SetSelectable(true, false)
 	selectorMenu.SetBorderColor(theme.GetColor("Border"))
 	selectorMenu.SetBackgroundColor(theme.GetColor("Background"))
@@ -352,16 +359,17 @@ func setSelectorMenu(
 			fallthrough
 
 		case tcell.KeyEscape:
-			Pages.RemovePage("selectormenu")
-			App.SetFocus(DeviceTable)
+			exitMenu("selectormenu")
 		}
 
 		return event
 	})
 	selectorMenu.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
-		if action == tview.MouseLeftClick {
+		x, y := event.Position()
+
+		if action == tview.MouseLeftClick && selectorMenu.InRect(x, y) {
 			if selected != nil {
-				selected(selectorMenu)
+				selectorMenu.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, ' ', tcell.ModNone), nil)
 			}
 		}
 
@@ -386,7 +394,7 @@ func setSelectorMenu(
 
 	Pages.AddAndSwitchToPage(
 		"selectormenu",
-		drawMenuBox(selectorMenu, selectorMenu.GetRowCount()+2, width+20, x, y),
+		drawMenuBox(selectorMenu, selectorMenu.GetRowCount()+2, width+20, x, y, selection...),
 		true,
 	).ShowPage("main")
 
@@ -396,9 +404,21 @@ func setSelectorMenu(
 }
 
 // drawMenuBox draws the submenu.
-func drawMenuBox(list tview.Primitive, height, width, x, y int) *tview.Flex {
+func drawMenuBox(list *tview.Table, height, width, x, y int, selection ...struct{}) *tview.Flex {
+	if selection != nil {
+		_, _, _, tableHeight := DeviceTable.GetInnerRect()
+		deviceX, deviceY := getSelectionXY(DeviceTable)
+
+		x = deviceX + 10
+		if deviceY >= tableHeight-6 {
+			y = deviceY - list.GetRowCount()
+		} else {
+			y = deviceY + 1
+		}
+	}
+
 	wrapList := tview.NewFlex().
-		AddItem(nil, 1, 0, false).
+		AddItem(nil, y, 0, false).
 		AddItem(list, height, 0, true).
 		AddItem(nil, 1, 0, false).
 		SetDirection(tview.FlexRow)
@@ -406,7 +426,7 @@ func drawMenuBox(list tview.Primitive, height, width, x, y int) *tview.Flex {
 	return tview.NewFlex().
 		AddItem(nil, x, 0, false).
 		AddItem(wrapList, width, 0, true).
-		AddItem(nil, y, 0, false).
+		AddItem(nil, 1, 0, false).
 		SetDirection(tview.FlexColumn)
 }
 
@@ -425,16 +445,16 @@ func switchMenuList() {
 
 	for _, region := range MenuBar.GetRegionInfos() {
 		if highlighted[0] != region.ID {
-			exitMenuList()
+			exitMenu("menulist")
 			MenuBar.Highlight(region.ID)
 		}
 	}
 }
 
 // exitMenuList closes the submenu and exits the menubar.
-func exitMenuList() {
+func exitMenu(menu string) {
 	MenuBar.Highlight("")
-	Pages.RemovePage("menulist")
+	Pages.RemovePage(menu)
 
 	App.SetFocus(DeviceTable)
 }
@@ -470,6 +490,10 @@ func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tc
 		return event
 	}
 
+	if action != tview.MouseLeftClick {
+		return event
+	}
+
 	x, y := event.Position()
 
 	switch {
@@ -496,11 +520,11 @@ func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tc
 					continue
 				}
 
-				if !table.InRect(x, y) && action == tview.MouseLeftClick {
-					Pages.RemovePage("selectormenu")
-					App.SetFocus(DeviceTable)
-
+				if !table.InRect(x, y) {
+					exitMenu("selectormenu")
 					break
+				} else {
+					panic(nil)
 				}
 			}
 		}
@@ -510,7 +534,7 @@ func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tc
 		return nil
 
 	case !MenuBar.InRect(x, y) && menuList != nil && !menuList.InRect(x, y):
-		exitMenuList()
+		exitMenu("menulist")
 	}
 
 	return event

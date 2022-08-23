@@ -56,6 +56,17 @@ func deviceTable() *tview.Table {
 			return action, nil
 		}
 
+		if action == tview.MouseRightClick {
+			device := getDeviceFromSelection(false)
+			if device.Path == "" {
+				return action, event
+			}
+
+			setMenuList(0, 0, "device", menuOptions["device"], struct{}{})
+
+			go App.Draw()
+		}
+
 		return action, event
 	})
 

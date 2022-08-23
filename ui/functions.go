@@ -55,7 +55,7 @@ func onClickFunc(id string) func() bool {
 
 	return func() bool {
 		go clickFunc()
-		exitMenuList()
+		exitMenu("menulist")
 
 		return false
 	}

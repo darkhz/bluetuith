@@ -9,6 +9,7 @@ import (
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/network"
+	"github.com/darkhz/tview"
 )
 
 // SetBluezConn sets up the bluez connection.
@@ -81,4 +82,14 @@ func savefile(path string) error {
 	}
 
 	return os.Rename(path, filepath.Join(userpath, filepath.Base(path)))
+}
+
+// getSelectionXY gets the coordinates of the current table selection.
+func getSelectionXY(table *tview.Table) (int, int) {
+	row, _ := table.GetSelection()
+
+	cell := table.GetCell(row, 0)
+	x, y, _ := cell.GetLastPosition()
+
+	return x, y
 }

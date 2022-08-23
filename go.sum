@@ -1,7 +1,7 @@
 github.com/Wifx/gonetworkmanager v0.4.0 h1:iZ7o3z3YIqEEAa+bBOCwQkLLUQuxG02CdiE7NCe5y6A=
 github.com/Wifx/gonetworkmanager v0.4.0/go.mod h1:EdhHf2O00IZXfMv9LC6CS6SgTwcMTg/ZSDhGvch0cs8=
-github.com/darkhz/tview v0.0.0-20220715195132-12c4596a11a8 h1:bpUGC21nTu8cIA9NG+sk8n0U1Zl23dG/aRyoO00si8M=
-github.com/darkhz/tview v0.0.0-20220715195132-12c4596a11a8/go.mod h1:DEWp7u1h+s4JU/+LXJaRG37zuOyo+LGC1NjRat3GY3U=
+github.com/darkhz/tview v0.0.0-20220827032134-0d81c08811fd h1:/H9aVONF/iuDqVxcVYYxW2urZVE9WXtHbTSDQI28/f4=
+github.com/darkhz/tview v0.0.0-20220827032134-0d81c08811fd/go.mod h1:DEWp7u1h+s4JU/+LXJaRG37zuOyo+LGC1NjRat3GY3U=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
