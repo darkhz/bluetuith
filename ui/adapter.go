@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
@@ -41,7 +42,12 @@ func adapterChange() {
 		func(adapterMenu *tview.Table) (int, int) {
 			var width, index int
 
-			for row, adapter := range BluezConn.GetAdapters() {
+			adapters := BluezConn.GetAdapters()
+			sort.Slice(adapters, func(i, j int) bool {
+				return adapters[i].Path < adapters[j].Path
+			})
+
+			for row, adapter := range adapters {
 				if len(adapter.Name) > width {
 					width = len(adapter.Name)
 				}
