@@ -47,6 +47,8 @@ func deviceTable() *tview.Table {
 			return event
 		}
 
+		playerEvents(event, false)
+
 		menuListInputHandler(event)
 
 		return event

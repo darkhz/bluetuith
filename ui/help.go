@@ -19,6 +19,8 @@ func showHelp() {
 		"Send files":                       "f",
 		"Connect to network":               "n",
 		"Progress view":                    "v",
+		"Show player":                      "m",
+		"Hide player":                      "M",
 		"Show device information":          "i",
 		"Connect to selected device":       "c",
 		"Pair with selected device":        "p",
@@ -49,6 +51,15 @@ func showHelp() {
 		"Exit":                       "Escape",
 	}
 
+	mediaPlayerKeyBindings := map[string]string{
+		"Toggle play/pause": "Space",
+		"Next":              ">",
+		"Previous":          "<",
+		"Rewind":            "Left",
+		"Fast forward":      "Right",
+		"Stop":              "]",
+	}
+
 	helpTable := tview.NewTable()
 	helpTable.SetBorder(true)
 	helpTable.SetSelectable(true, false)
@@ -73,6 +84,7 @@ func showHelp() {
 		"Device Screen": deviceKeyBindings,
 		"File Picker":   filePickerKeyBindings,
 		"Progress View": progressViewKeyBindings,
+		"Media Player":  mediaPlayerKeyBindings,
 	} {
 		helpTable.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
 			SetSelectable(false).

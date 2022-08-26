@@ -64,6 +64,8 @@ func main() {
 
 	ui.StartUI()
 
+	ui.StopMediaPlayer()
+
 	agent.RemoveObexAgent()
 	agent.RemoveAgent()
 }

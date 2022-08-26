@@ -96,6 +96,13 @@ func setupMenuOptions() {
 		},
 		{
 			index:      4,
+			title:      "Hide player",
+			menuid:     "playerhide",
+			keybinding: 'M',
+			onclick:    onClickFunc("hideplayer"),
+		},
+		{
+			index:      5,
 			title:      "Quit",
 			menuid:     "quit",
 			keybinding: 'q',
@@ -155,13 +162,21 @@ func setupMenuOptions() {
 		},
 		{
 			index:      6,
+			title:      "Media player",
+			menuid:     "player",
+			keybinding: 'm',
+			onclick:    onClickFunc("showplayer"),
+			visible:    visiblePlayer,
+		},
+		{
+			index:      7,
 			title:      "Info",
 			menuid:     "info",
 			keybinding: 'i',
 			onclick:    onClickFunc("info"),
 		},
 		{
-			index:      7,
+			index:      8,
 			title:      "Remove",
 			menuid:     "remove",
 			keybinding: 'd',

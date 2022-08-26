@@ -3,8 +3,12 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
@@ -92,4 +96,108 @@ func getSelectionXY(table *tview.Table) (int, int) {
 	x, y, _ := cell.GetLastPosition()
 
 	return x, y
+}
+
+// getProgress returns the title and progress of the currently playing media.
+func getProgress(media bluez.MediaProperties, buttons string, width int, skip bool) (string, string, string, string) {
+	var length int
+
+	title := media.Track.Title
+	position := media.Position
+	duration := media.Track.Duration
+	number := strconv.FormatUint(uint64(media.Track.TrackNumber), 10)
+	total := strconv.FormatUint(uint64(media.Track.TotalTracks), 10)
+
+	button := "|>"
+	oldButton := button
+
+	if !skip {
+		switch media.Status {
+		case "playing":
+			button = "||"
+
+		case "paused":
+			button = "|>"
+
+		case "stopped":
+			button = "[]"
+		}
+	}
+
+	buttons = strings.Replace(buttons, oldButton, button, 1)
+
+	width /= 2
+	if position >= math.MaxUint32 {
+		position = 0
+	}
+	if position >= duration {
+		position = duration
+	}
+
+	if duration <= 0 {
+		length = 0
+	} else {
+		length = width * int(position) / int(duration)
+	}
+
+	endlength := width - length
+	if endlength < 0 {
+		endlength = width
+	}
+
+	track := "Track " + number + "/" + total
+	progress := " " + formatDuration(position) +
+		" |" + strings.Repeat("█", length) + strings.Repeat(" ", endlength) + "| " +
+		formatDuration(duration)
+
+	return title, buttons, track, progress
+}
+
+// formatDuration converts a duration into a human-readable format.
+func formatDuration(duration uint32) string {
+	var durationtext string
+
+	input, err := time.ParseDuration(strconv.FormatUint(uint64(duration), 10) + "ms")
+	if err != nil {
+		return "00:00"
+	}
+
+	d := input.Round(time.Second)
+
+	h := d / time.Hour
+	d -= h * time.Hour
+
+	m := d / time.Minute
+	d -= m * time.Minute
+
+	s := d / time.Second
+
+	if h > 0 {
+		if h < 10 {
+			durationtext += "0"
+		}
+
+		durationtext += strconv.Itoa(int(h))
+		durationtext += ":"
+	}
+
+	if m > 0 {
+		if m < 10 {
+			durationtext += "0"
+		}
+
+		durationtext += strconv.Itoa(int(m))
+	} else {
+		durationtext += "00"
+	}
+
+	durationtext += ":"
+
+	if s < 10 {
+		durationtext += "0"
+	}
+
+	durationtext += strconv.Itoa(int(s))
+
+	return durationtext
 }

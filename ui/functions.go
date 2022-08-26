@@ -7,6 +7,7 @@ import (
 	"github.com/darkhz/bluetuith/cmd"
 )
 
+//gocyclo:ignore
 // onClickFunc is a handler for the submenu options in a menu.
 // Clicking an option in the submenu will trigger the specified function.
 func onClickFunc(id string) func() bool {
@@ -45,6 +46,12 @@ func onClickFunc(id string) func() bool {
 
 	case "profiles":
 		clickFunc = profiles
+
+	case "showplayer":
+		clickFunc = showplayer
+
+	case "hideplayer":
+		clickFunc = hideplayer
 
 	case "info":
 		clickFunc = info
@@ -231,6 +238,18 @@ func visibleProfile() bool {
 		device.HaveService(bluez.AUDIO_SINK_SVCLASS_ID)
 }
 
+// visiblePlayer sets the visible handler for the media player submenu option.
+func visiblePlayer() bool {
+	device := getDeviceFromSelection(false)
+	if device.Path == "" {
+		return false
+	}
+
+	return device.HaveService(bluez.AUDIO_SOURCE_SVCLASS_ID) &&
+		device.HaveService(bluez.AV_REMOTE_SVCLASS_ID) &&
+		device.HaveService(bluez.AV_REMOTE_TARGET_SVCLASS_ID)
+}
+
 // connect retrieves the selected device, and toggles its connection state.
 func connect() {
 	device := getDeviceFromSelection(true)
@@ -368,6 +387,16 @@ func profiles() {
 	App.QueueUpdateDraw(func() {
 		audioProfiles()
 	})
+}
+
+// showplayer starts the media player.
+func showplayer() {
+	StartMediaPlayer()
+}
+
+// hideplayer hides the media player.
+func hideplayer() {
+	StopMediaPlayer()
 }
 
 // info retreives the selected device, and shows the device information.

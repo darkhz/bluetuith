@@ -16,6 +16,8 @@ var (
 	// any menu popups that will be added.
 	Pages *tview.Pages
 
+	UILayout *tview.Flex
+
 	appSuspend bool
 )
 
@@ -34,11 +36,11 @@ func StartUI() {
 	Pages.AddPage("main", flex, true, true)
 	Pages.SetBackgroundColor(theme.GetColor("Background"))
 
-	mainflex := tview.NewFlex().
+	UILayout = tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(Pages, 0, 10, true).
 		AddItem(statusBar(), 1, 0, false)
-	mainflex.SetBackgroundColor(theme.GetColor("Background"))
+	UILayout.SetBackgroundColor(theme.GetColor("Background"))
 
 	App.SetFocus(flex)
 	App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -64,7 +66,7 @@ func StartUI() {
 	setupDevices()
 	InfoMessage("bluetuith is ready.", false)
 
-	if err := App.SetRoot(mainflex, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
+	if err := App.SetRoot(UILayout, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }

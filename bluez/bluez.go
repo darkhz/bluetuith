@@ -9,6 +9,7 @@ import (
 
 const (
 	dbusBluezName            = "org.bluez"
+	dbusPropertiesGetPath    = "org.freedesktop.DBus.Properties.Get"
 	dbusPropertiesGetAllPath = "org.freedesktop.DBus.Properties.GetAll"
 	dbusObjectManagerPath    = "org.freedesktop.DBus.ObjectManager.GetManagedObjects"
 )
@@ -33,6 +34,9 @@ type Bluez struct {
 
 	Store     map[string]StoreObject
 	StoreLock sync.Mutex
+
+	CurrentPlayer dbus.ObjectPath
+	PlayerLock    sync.Mutex
 }
 
 // NewBluez returns a new Bluez.
@@ -187,6 +191,24 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 			b.addDeviceToStore(device)
 
 			return device
+
+		case dbusBluezMediaPlayerIface:
+			var media MediaProperties
+
+			for prop, value := range objMap {
+				switch prop {
+				case "Status":
+					media.Status = value.Value().(string)
+
+				case "Position":
+					media.Position = value.Value().(uint32)
+
+				case "Track":
+					media.Track = getTrackProperties(value.Value().(map[string]dbus.Variant))
+				}
+			}
+
+			return media
 		}
 
 	case "org.freedesktop.DBus.ObjectManager.InterfacesAdded":
