@@ -61,7 +61,6 @@ func statusBar() *tview.Pages {
 // stopStatus stops the message event loop.
 func stopStatus() {
 	scancel()
-	close(msgchan)
 }
 
 // SetInput sets the inputfield label and returns the input text.
