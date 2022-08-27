@@ -16,6 +16,7 @@ This project is currently in the alpha stage.
 - Connect to/disconnect from different devices.
 - Interact with bluetooth adapters, toggle power and discovery states
 - Connect to or manage Bluetooth based networking/tethering (PANU/DUN)
+- Remotely control media playback on the connected device
 - Mouse support
 
 ## Requirements
@@ -81,6 +82,8 @@ For example:
 |Connect to selected device      |<kbd>c</kbd>                 |
 |Pair with selected device       |<kbd>p</kbd>                 |
 |Trust selected device           |<kbd>t</kbd>                 |
+|Show media player               |<kbd>m</kbd>                 |
+|Hide media player               |<kbd>M</kbd>                 |
 |Show device information         |<kbd>i</kbd>                 |
 |Remove device from adapter      |<kbd>d</kbd>                 |
 |Cancel operation                |<kbd>Ctrl</kbd>+<kbd>x</kbd> |
@@ -108,6 +111,16 @@ For example:
 |Resume transfer           |<kbd>g</kbd>                 |
 |Cancel transfer           |<kbd>x</kbd>                 |
 |Exit                      |<kbd>Escape</kbd>            |
+
+### Media Player
+|Operation        |Keybinding      |
+|-----------------|----------------|
+|Toggle play/pause|<kbd>Space</kbd>|
+|Next             |<kbd>></kbd>    |
+|Previous         |<kbd><</kbd>    |
+|Rewind           |<kbd>Left</kbd> |
+|Fast forward     |<kbd>Right</kbd>|
+|Stop             |<kbd>]</kbd>    |
 
 ## Planned features
  - [x] OBEX file transfer.
