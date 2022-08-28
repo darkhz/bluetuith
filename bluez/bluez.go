@@ -209,6 +209,17 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 			}
 
 			return media
+
+		case dbusBluezBatteryIface:
+			device := b.getDeviceFromStore(string(signal.Path))
+			if device.Path == "" {
+				return nil
+			}
+
+			device.Percentage = int(objMap["Percentage"].Value().(byte))
+			b.addDeviceToStore(device)
+
+			return device
 		}
 
 	case "org.freedesktop.DBus.ObjectManager.InterfacesAdded":
@@ -249,6 +260,19 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 				devResultMap[devicePath] = devices
 
 				return devResultMap
+
+			case dbusBluezBatteryIface:
+				devicePath := string(objPath)
+
+				device := b.getDeviceFromStore(devicePath)
+				if device.Path == "" {
+					return nil
+				}
+
+				device.Percentage = int(objMap[iftype]["Percentage"].Value().(byte))
+				b.addDeviceToStore(device)
+
+				return map[string][]Device{devicePath: {device}}
 			}
 		}
 
@@ -276,6 +300,19 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 				b.removeDeviceFromStore(devicePath)
 
 				return devicePath
+
+			case dbusBluezBatteryIface:
+				devicePath := string(objPath)
+
+				device := b.getDeviceFromStore(devicePath)
+				if device.Path == "" {
+					return nil
+				}
+
+				device.Percentage = 0
+				b.addDeviceToStore(device)
+
+				return nil
 			}
 		}
 	}

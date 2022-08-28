@@ -21,7 +21,10 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
-const dbusBluezDeviceIface = "org.bluez.Device1"
+const (
+	dbusBluezDeviceIface  = "org.bluez.Device1"
+	dbusBluezBatteryIface = "org.bluez.Battery1"
+)
 
 // Device holds bluetooth device information.
 type Device struct {
@@ -41,6 +44,7 @@ type Device struct {
 	LegacyPairing bool
 	RSSI          int16
 	Class         uint32
+	Percentage    int
 }
 
 // HaveService checks if the device has the specified service.
@@ -134,6 +138,7 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 		var uuids []string
 		var rssi int16
 		var class uint32
+		var percentage int
 
 		if n, ok := v["Name"].Value().(string); ok {
 			name = n
@@ -155,6 +160,10 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 			modalias = m
 		}
 
+		if p, err := b.GetBatteryPercentage(path); err == nil {
+			percentage = int(p)
+		}
+
 		switch k {
 		case dbusBluezDeviceIface:
 			adapter, _ := v["Adapter"].Value().(dbus.ObjectPath)
@@ -165,6 +174,7 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 				RSSI:          rssi,
 				UUIDs:         uuids,
 				Modalias:      modalias,
+				Percentage:    percentage,
 				Type:          GetDeviceType(class),
 				Alias:         v["Alias"].Value().(string),
 				Address:       v["Address"].Value().(string),
@@ -276,6 +286,18 @@ func (b *Bluez) GetDeviceProperties(devicePath string) (map[string]dbus.Variant,
 	result := make(map[string]dbus.Variant)
 	path := dbus.ObjectPath(devicePath)
 	if err := b.conn.Object(dbusBluezName, path).Call(dbusPropertiesGetAllPath, 0, dbusBluezDeviceIface).Store(&result); err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+// GetBatteryPercentage gets the battery percentage of a device.
+func (b *Bluez) GetBatteryPercentage(devicePath string) (byte, error) {
+	var result byte
+	path := dbus.ObjectPath(devicePath)
+	if err := b.conn.Object(dbusBluezName, path).
+		Call("org.freedesktop.DBus.Properties.Get", 0, dbusBluezBatteryIface, "Percentage").Store(&result); err != nil {
 		return result, err
 	}
 

@@ -291,8 +291,13 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 			props += "[" + rssi + "[]"
 		}
 
+		if device.Percentage > 0 {
+			props += ", Battery " + strconv.Itoa(device.Percentage) + "%"
+		}
+
 		props += ", "
 	}
+
 	if device.Trusted {
 		props += "Trusted, "
 	}
@@ -363,10 +368,14 @@ func deviceEvent(signal *dbus.Signal, signalData interface{}) {
 				}
 
 				App.QueueUpdateDraw(func() {
-					_, ok := checkDeviceTable(devicePath)
-					if !ok {
-						setDeviceTableInfo(DeviceTable.GetRowCount(), device)
+					deviceRow := DeviceTable.GetRowCount()
+
+					row, ok := checkDeviceTable(devicePath)
+					if ok {
+						deviceRow = row
 					}
+
+					setDeviceTableInfo(deviceRow, device)
 				})
 			}
 		}
