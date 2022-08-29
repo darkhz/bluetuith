@@ -554,8 +554,6 @@ func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tc
 				if !table.InRect(x, y) {
 					exitMenu("selectormenu")
 					break
-				} else {
-					panic(nil)
 				}
 			}
 		}
