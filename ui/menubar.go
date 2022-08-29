@@ -345,9 +345,6 @@ func setSelectorMenu(
 	var selection []struct{}
 	var selectorMenu *tview.Table
 
-	if menuID == "adapter" {
-	}
-
 	switch menuID {
 	case "adapter":
 		x, y = 0, 1
