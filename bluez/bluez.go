@@ -157,6 +157,12 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 				case "Powered":
 					adapter.Powered = value.Value().(bool)
 
+				case "Discoverable":
+					adapter.Discoverable = value.Value().(bool)
+
+				case "Pairable":
+					adapter.Pairable = value.Value().(bool)
+
 				case "Discovering":
 					adapter.Discovering = value.Value().(bool)
 				}

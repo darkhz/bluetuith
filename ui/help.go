@@ -14,6 +14,8 @@ func showHelp() {
 		"Navigate between menus":           "Tab",
 		"Navigate between devices/options": "Up/Down",
 		"Toggle adapter power state":       "o",
+		"Toggle discoverable state":        "S",
+		"Toggle pairable state":            "P",
 		"Toggle scan (discovery state)":    "s",
 		"Change adapter":                   "a",
 		"Send files":                       "f",

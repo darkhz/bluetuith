@@ -17,6 +17,12 @@ func onClickFunc(id string) func() bool {
 	case "power":
 		clickFunc = power
 
+	case "discoverable":
+		clickFunc = discoverable
+
+	case "pairable":
+		clickFunc = pairable
+
 	case "scan":
 		clickFunc = scan
 
@@ -103,6 +109,76 @@ func power() {
 	setMenuItemToggle("adapter", "power", !powered)
 }
 
+// discoverable checks and toggles the adapter's discoverable state.
+func discoverable() {
+	var discoverableText string
+
+	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterID := bluez.GetAdapterID(adapterPath)
+
+	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	if err != nil {
+		ErrorMessage(err)
+		return
+	}
+
+	discoverable, ok := props["Discoverable"].Value().(bool)
+	if !ok {
+		ErrorMessage(errors.New("Cannot get discoverable state"))
+		return
+	}
+
+	if err := BluezConn.SetAdapterProperty(adapterPath, "Discoverable", !discoverable); err != nil {
+		ErrorMessage(err)
+		return
+	}
+
+	if !discoverable {
+		discoverableText = "discoverable"
+	} else {
+		discoverableText = "not discoverable"
+	}
+
+	InfoMessage(adapterID+" is "+discoverableText, false)
+
+	setMenuItemToggle("adapter", "discoverable", !discoverable)
+}
+
+// pairable checks and toggles the adapter's pairable state.
+func pairable() {
+	var pairableText string
+
+	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterID := bluez.GetAdapterID(adapterPath)
+
+	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	if err != nil {
+		ErrorMessage(err)
+		return
+	}
+
+	pairable, ok := props["Pairable"].Value().(bool)
+	if !ok {
+		ErrorMessage(errors.New("Cannot get pairable state"))
+		return
+	}
+
+	if err := BluezConn.SetAdapterProperty(adapterPath, "Pairable", !pairable); err != nil {
+		ErrorMessage(err)
+		return
+	}
+
+	if !pairable {
+		pairableText = "pairable"
+	} else {
+		pairableText = "not pairable"
+	}
+
+	InfoMessage(adapterID+" is "+pairableText, false)
+
+	setMenuItemToggle("adapter", "pairable", !pairable)
+}
+
 // scan checks the current adapter's state and starts/stops discovery.
 func scan() {
 	adapterPath := BluezConn.GetCurrentAdapter().Path
@@ -181,6 +257,40 @@ func createPower() bool {
 	}
 
 	return powered
+}
+
+// createDiscoverable sets the oncreate handler for the discoverable submenu option
+func createDiscoverable() bool {
+	adapterPath := BluezConn.GetCurrentAdapter().Path
+
+	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	if err != nil {
+		return false
+	}
+
+	discoverable, ok := props["Discoverable"].Value().(bool)
+	if !ok {
+		return false
+	}
+
+	return discoverable
+}
+
+// createPairable sets the oncreate handler for the pairable submenu option.
+func createPairable() bool {
+	adapterPath := BluezConn.GetCurrentAdapter().Path
+
+	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	if err != nil {
+		return false
+	}
+
+	pairable, ok := props["Pairable"].Value().(bool)
+	if !ok {
+		return false
+	}
+
+	return pairable
 }
 
 // createConnect sets the oncreate handler for the connect submenu option.
