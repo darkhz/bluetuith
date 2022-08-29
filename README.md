@@ -24,6 +24,7 @@ This project is currently in the alpha stage.
 - DBus
 - NetworkManager (optional, required for PANU)
 - ModemManager (optional, required for DUN)
+- PulseAudio (optional, required to manage device audio profiles)
 
 ## Installation
 If the `go` compiler is present in your system, you can install it via the following command:
@@ -74,6 +75,8 @@ For example:
 |Navigate between menus          |<kbd>Tab</kbd>               |
 |Navigate between devices/options|<kbd>Up</kbd>/<kbd>Down</kbd>|
 |Toggle adapter power state      |<kbd>o</kbd>                 |
+|Toggle discoverable state       |<kbd>S</kbd                  |
+|Toggle pairable state           |<kbd>P</kbd>                 |
 |Toggle scan (discovery state)   |<kbd>s</kbd>                 |
 |Change adapter                  |<kbd>a</kbd>                 |
 |Send files                      |<kbd>f</kbd>                 |
