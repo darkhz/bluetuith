@@ -2,7 +2,9 @@ project_name: bluetuith
 
 builds:
   - env:
-      - CGO_ENABLED=0 GOPROXY=https://proxy.golang.org GO111MODULE=on
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+      - GOPROXY=https://proxy.golang.org
 
     goos:
       - linux
