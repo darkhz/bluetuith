@@ -488,6 +488,8 @@ func exitMenu(menu string) {
 	Pages.RemovePage(menu)
 
 	App.SetFocus(DeviceTable)
+
+	App.Sync()
 }
 
 // menuListInputHandler handles key events for a submenu.
