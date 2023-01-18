@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/darkhz/bluetuith)](https://goreportcard.com/report/github.com/darkhz/bluetuith)
+[![Go Report Card](https://goreportcard.com/badge/github.com/darkhz/bluetuith)](https://goreportcard.com/report/github.com/darkhz/bluetuith) [![Packaging status](https://repology.org/badge/tiny-repos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
 
 ![demo](demo/demo.gif)
 
