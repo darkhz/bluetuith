@@ -78,25 +78,41 @@ func SetInput(label string, multichar ...struct{}) string {
 		App.QueueUpdateDraw(func() {
 			InputField.SetText("")
 			InputField.SetLabel("[::b]" + label + " ")
-			InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-				switch event.Key() {
-				case tcell.KeyEnter:
-					ch <- true
 
-					exit()
-
-				case tcell.KeyEscape:
-					ch <- false
-
-					exit()
-				}
-
-				return event
-			})
 			if multichar != nil {
 				InputField.SetAcceptanceFunc(nil)
+				InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+					switch event.Key() {
+					case tcell.KeyEnter:
+						ch <- true
+
+						exit()
+
+					case tcell.KeyEscape:
+						ch <- false
+
+						exit()
+					}
+
+					return event
+				})
 			} else {
 				InputField.SetAcceptanceFunc(tview.InputFieldMaxLength(1))
+				InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+					switch event.Rune() {
+					case 'y':
+						ch <- true
+
+						exit()
+
+					default:
+						ch <- false
+
+						exit()
+					}
+
+					return event
+				})
 			}
 
 			Status.SwitchToPage("input")
