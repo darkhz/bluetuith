@@ -124,7 +124,7 @@ func setupMenuOptions() {
 			index:      7,
 			title:      "Quit",
 			menuid:     "quit",
-			keybinding: 'q',
+			keybinding: 'Q',
 			onclick:    onClickFunc("quit"),
 		},
 	}
