@@ -275,6 +275,9 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 	var props string
 
 	name := device.Name
+	if name == "" {
+		name = device.Address
+	}
 	name += theme.ColorWrap("DeviceType", " ("+device.Type+")")
 
 	nameColor := "Device"
