@@ -232,7 +232,7 @@ func getDeviceInfo() {
 		)
 	}
 
-	showModal("infomodal", deviceInfoTable, 60, 1)
+	ShowModal("infomodal", deviceInfoTable, 60, 1)
 }
 
 // getDeviceFromSelection retrieves device information from

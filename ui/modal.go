@@ -2,7 +2,7 @@ package ui
 
 import "github.com/darkhz/tview"
 
-func showModal(page string, table *tview.Table, proportions ...int) {
+func ShowModal(page string, table *tview.Table, proportions ...int) {
 	prevPage, _ := Pages.GetFrontPage()
 
 	height := proportions[0]

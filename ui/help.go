@@ -124,5 +124,5 @@ func showHelp() {
 
 	}
 
-	showModal("helpmodal", helpTable, 20, 60)
+	ShowModal("helpmodal", helpTable, 20, 60)
 }

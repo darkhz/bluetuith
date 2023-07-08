@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/bluetuith/ui"
+	"github.com/darkhz/tview"
+	"github.com/gdamore/tcell/v2"
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
 )
@@ -134,8 +137,37 @@ func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error
 		return dbus.MakeFailedError(err)
 	}
 
-	msg := fmt.Sprintf("Pincode for %s is %s", device.Name, pincode)
-	ui.InfoMessage(msg, false)
+	pincodeTable := tview.NewTable()
+	pincodeTable.SetBorder(true)
+	pincodeTable.SetTitle("Pin Code")
+	pincodeTable.SetSelectable(true, false)
+	pincodeTable.SetBorderColor(theme.GetColor("Border"))
+	pincodeTable.SetBackgroundColor(theme.GetColor("Background"))
+	pincodeTable.SetTitle(theme.ColorWrap("Text", "[ PIN CODE ]"))
+	pincodeTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			ui.Pages.RemovePage("pincode")
+		}
+
+		return event
+	})
+
+	pincodeTable.SetCell(0, 0, tview.NewTableCell("[::b]"+device.Name+":").
+		SetExpansion(1).
+		SetAlign(tview.AlignRight).
+		SetTextColor(theme.GetColor("Text")),
+	)
+	pincodeTable.SetCell(0, 1, tview.NewTableCell("[::u]"+pincode).
+		SetExpansion(1).
+		SetTextColor(theme.GetColor("Text")),
+	)
+
+	pincodeTable.Select(0, 0)
+
+	go ui.App.QueueUpdateDraw(func() {
+		ui.ShowModal("pincode", pincodeTable, 10, 100)
+	})
 
 	return nil
 }
