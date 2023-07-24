@@ -13,6 +13,7 @@ var (
 	configProperties map[string]string
 )
 
+
 // SetupConfig checks for the config directory,
 // and creates one if it doesn't exist.
 func SetupConfig() error {
@@ -24,20 +25,17 @@ func SetupConfig() error {
 	}
 
 	configProperties = make(map[string]string)
-	configDirs := []string{".config/bluetuith", ".bluetuith"}
+	configDirs := []string{filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "bluetuith"), filepath.Join(homedir, ".bluetuith")}
 
-	for i, dir := range configDirs {
-		fullpath := filepath.Join(homedir, dir)
-		configDirs[i] = fullpath
-
-		if _, err := os.Stat(fullpath); err == nil {
-			configPath = fullpath
+	for i := range configDirs {
+		if _, err := os.Stat(configDirs[i]); err == nil {
+			configPath = configDirs[i]
 			return theme.CreateThemesDir(configPath)
 		}
 
 		if i == 0 {
 			if _, err := os.Stat(
-				filepath.Clean(filepath.Dir(fullpath)),
+				filepath.Clean(filepath.Dir(configDirs[i])),
 			); err == nil {
 				dotConfigExists = true
 			}
