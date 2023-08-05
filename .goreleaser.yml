@@ -24,10 +24,14 @@ builds:
       - 7
 
 archives:
-  - replacements:
-      linux: Linux
-      386: i386
-      amd64: x86_64
+  - id: foo
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else if eq .Arch "arm" }}{{ .Arch }}v{{ .Arm }}
+      {{- else }}{{ .Arch }}{{ end }}
 
     files:
       - LICENSE
