@@ -100,7 +100,7 @@ func networkConnect(device bluez.Device, connType string) {
 	startOperation(
 		func() {
 			InfoMessage("Connecting to "+info, true)
-			err := NetworkConn.Connect(device.Name, connType, device.Address)
+			err := UI.Network.Connect(device.Name, connType, device.Address)
 			if err != nil {
 				ErrorMessage(err)
 				return
@@ -108,7 +108,7 @@ func networkConnect(device bluez.Device, connType string) {
 			InfoMessage("Connected to "+info, false)
 		},
 		func() {
-			err := NetworkConn.DeactivateConnection(device.Address)
+			err := UI.Network.DeactivateConnection(device.Address)
 			if err != nil {
 				ErrorMessage(err)
 				return

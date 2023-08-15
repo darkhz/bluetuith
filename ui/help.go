@@ -10,7 +10,7 @@ func showHelp() {
 	var row int
 
 	deviceKeyBindings := map[string]string{
-		"Open the menu":                    "Ctrl+m",
+		"Open the menu":                    "Alt+m",
 		"Navigate between menus":           "Tab",
 		"Navigate between devices/options": "Up/Down",
 		"Toggle adapter power state":       "o",
@@ -71,7 +71,7 @@ func showHelp() {
 	helpTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			Pages.RemovePage("helpmodal")
+			UI.Pages.RemovePage("helpmodal")
 		}
 
 		return event
@@ -80,6 +80,13 @@ func showHelp() {
 		if row == 1 {
 			helpTable.ScrollToBeginning()
 		}
+	})
+	helpModal.Table.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if action == tview.MouseScrollUp {
+			helpModal.Table.InputHandler()(tcell.NewEventKey(tcell.KeyUp, ' ', tcell.ModNone), nil)
+		}
+
+		return action, event
 	})
 
 	for title, helpMap := range map[string]map[string]string{

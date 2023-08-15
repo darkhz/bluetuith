@@ -7,26 +7,13 @@ import (
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
-	"github.com/darkhz/bluetuith/network"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 	"github.com/godbus/dbus/v5"
 )
 
-var (
-	// DeviceTable holds the device list.
-	DeviceTable *tview.Table
-
-	// BluezConn holds the current bluez DBus connection.
-	BluezConn *bluez.Bluez
-
-	// ObexConn holds the current bluez obex DBus connection.
-	ObexConn *bluez.Obex
-
-	// NetworkConn holds the current network connection.
-	NetworkConn *network.Network
-)
+var DeviceTable *tview.Table
 
 // deviceTable sets up and returns the DeviceTable.
 func deviceTable() *tview.Table {
@@ -66,7 +53,7 @@ func deviceTable() *tview.Table {
 
 			setMenuList(0, 0, "device", menuOptions["device"], struct{}{})
 
-			go App.Draw()
+			go UI.Draw()
 		}
 
 		return action, event
@@ -84,18 +71,18 @@ func setupDevices() {
 
 // listDevices lists the devices belonging to the selected adapter.
 func listDevices() {
-	if BluezConn == nil {
+	if UI.Bluez == nil {
 		return
 	}
 
 	headerText := fmt.Sprintf("%s (%s)",
-		BluezConn.GetCurrentAdapter().Name,
-		BluezConn.GetCurrentAdapterID(),
+		UI.Bluez.GetCurrentAdapter().Name,
+		UI.Bluez.GetCurrentAdapterID(),
 	)
 	setMenuBarHeader(theme.ColorWrap("Adapter", headerText, "bu"))
 
 	DeviceTable.Clear()
-	for i, device := range BluezConn.GetDevices() {
+	for i, device := range UI.Bluez.GetDevices() {
 		setDeviceTableInfo(i, device)
 	}
 	DeviceTable.Select(0, 0)
@@ -164,7 +151,7 @@ func getDeviceInfo() {
 	deviceInfoTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			Pages.RemovePage("infomodal")
+			UI.Pages.RemovePage("infomodal")
 		}
 
 		return event
@@ -257,7 +244,7 @@ func getDeviceFromSelection(lock bool) bluez.Device {
 	}
 
 	if lock {
-		App.QueueUpdateDraw(func() {
+		UI.QueueUpdateDraw(func() {
 			getdevice()
 		})
 
@@ -351,7 +338,7 @@ func deviceEvent(signal *dbus.Signal, signalData interface{}) {
 			return
 		}
 
-		App.QueueUpdateDraw(func() {
+		UI.QueueUpdateDraw(func() {
 			row, ok := checkDeviceTable(device.Path)
 			if ok {
 				setDeviceTableInfo(row, device)
@@ -366,11 +353,11 @@ func deviceEvent(signal *dbus.Signal, signalData interface{}) {
 
 		for devicePath, devices := range deviceMap {
 			for _, device := range devices {
-				if device.Adapter != BluezConn.GetCurrentAdapter().Path {
+				if device.Adapter != UI.Bluez.GetCurrentAdapter().Path {
 					continue
 				}
 
-				App.QueueUpdateDraw(func() {
+				UI.QueueUpdateDraw(func() {
 					deviceRow := DeviceTable.GetRowCount()
 
 					row, ok := checkDeviceTable(devicePath)
@@ -389,7 +376,7 @@ func deviceEvent(signal *dbus.Signal, signalData interface{}) {
 			return
 		}
 
-		App.QueueUpdateDraw(func() {
+		UI.QueueUpdateDraw(func() {
 			row, ok := checkDeviceTable(devicePath)
 			if ok {
 				DeviceTable.RemoveRow(row)

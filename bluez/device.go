@@ -192,8 +192,9 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 	return devices
 }
 
-//gocyclo: ignore
 // GetDeviceType parses the device class and returns its type.
+//
+//gocyclo:ignore
 func GetDeviceType(class uint32) string {
 	/*
 		Adapted from:

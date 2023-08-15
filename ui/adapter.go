@@ -27,22 +27,22 @@ func adapterChange() {
 				return
 			}
 
-			if err := BluezConn.StopDiscovery(BluezConn.GetCurrentAdapter().Path); err == nil {
+			if err := UI.Bluez.StopDiscovery(UI.Bluez.GetCurrentAdapter().Path); err == nil {
 				setMenuItemToggle("adapter", "scan", false, struct{}{})
 			}
 
-			if strings.Contains(MessageBox.GetText(true), "Scanning for devices") {
-				InfoMessage("Scanning stopped on "+BluezConn.GetCurrentAdapterID(), false)
+			if strings.Contains(UI.Status.MessageBox.GetText(true), "Scanning for devices") {
+				InfoMessage("Scanning stopped on "+UI.Bluez.GetCurrentAdapterID(), false)
 			}
 
-			BluezConn.SetCurrentAdapter(adapter)
+			UI.Bluez.SetCurrentAdapter(adapter)
 
 			listDevices()
 		},
 		func(adapterMenu *tview.Table) (int, int) {
 			var width, index int
 
-			adapters := BluezConn.GetAdapters()
+			adapters := UI.Bluez.GetAdapters()
 			sort.Slice(adapters, func(i, j int) bool {
 				return adapters[i].Path < adapters[j].Path
 			})
@@ -52,7 +52,7 @@ func adapterChange() {
 					width = len(adapter.Name)
 				}
 
-				if adapter.Path == BluezConn.GetCurrentAdapter().Path {
+				if adapter.Path == UI.Bluez.GetCurrentAdapter().Path {
 					index = row
 				}
 
@@ -89,17 +89,17 @@ func adapterEvent(signal *dbus.Signal, signalData interface{}) {
 			return
 		}
 
-		if adapterPath == BluezConn.GetCurrentAdapter().Path {
-			BluezConn.SetCurrentAdapter()
+		if adapterPath == UI.Bluez.GetCurrentAdapter().Path {
+			UI.Bluez.SetCurrentAdapter()
 			listDevices()
 		}
 
 		fallthrough
 
 	case "org.freedesktop.DBus.ObjectManager.InterfacesAdded":
-		App.QueueUpdateDraw(func() {
-			if Pages.HasPage("adaptermenu") {
-				Pages.RemovePage("adaptermenu")
+		UI.QueueUpdateDraw(func() {
+			if UI.Pages.HasPage("adaptermenu") {
+				UI.Pages.RemovePage("adaptermenu")
 				adapterChange()
 			}
 		})

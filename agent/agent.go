@@ -147,7 +147,7 @@ func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error
 	pincodeTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			ui.Pages.RemovePage("pincode")
+			ui.UI.Pages.RemovePage("pincode")
 		}
 
 		return event
@@ -165,7 +165,7 @@ func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error
 
 	pincodeTable.Select(0, 0)
 
-	go ui.App.QueueUpdateDraw(func() {
+	go ui.UI.QueueUpdateDraw(func() {
 		ui.ShowModal("pincode", pincodeTable, 10, 100)
 	})
 

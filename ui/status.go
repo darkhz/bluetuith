@@ -10,16 +10,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-type message struct {
-	text    string
-	persist bool
-}
-
-var (
-	// Status enables switching between
-	// MessageBox and InputBox.
-	Status *tview.Pages
-
+type Status struct {
 	// MessageBox is an area to display messages.
 	MessageBox *tview.TextView
 
@@ -29,38 +20,45 @@ var (
 	sctx    context.Context
 	scancel context.CancelFunc
 	msgchan chan message
-)
+
+	*tview.Pages
+}
+
+type message struct {
+	text    string
+	persist bool
+}
 
 // statusBar sets up the statusbar.
 func statusBar() *tview.Pages {
-	Status = tview.NewPages()
-	Status.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Status.Pages = tview.NewPages()
+	UI.Status.SetBackgroundColor(theme.GetColor("Background"))
 
-	InputField = tview.NewInputField()
-	InputField.SetLabelColor(theme.GetColor("Text"))
-	InputField.SetFieldTextColor(theme.GetColor("Text"))
-	InputField.SetBackgroundColor(theme.GetColor("Background"))
-	InputField.SetFieldBackgroundColor(theme.GetColor("Background"))
+	UI.Status.InputField = tview.NewInputField()
+	UI.Status.InputField.SetLabelColor(theme.GetColor("Text"))
+	UI.Status.InputField.SetFieldTextColor(theme.GetColor("Text"))
+	UI.Status.InputField.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Status.InputField.SetFieldBackgroundColor(theme.GetColor("Background"))
 
-	MessageBox = tview.NewTextView()
-	MessageBox.SetDynamicColors(true)
-	MessageBox.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Status.MessageBox = tview.NewTextView()
+	UI.Status.MessageBox.SetDynamicColors(true)
+	UI.Status.MessageBox.SetBackgroundColor(theme.GetColor("Background"))
 
-	Status.AddPage("input", InputField, true, true)
-	Status.AddPage("messages", MessageBox, true, true)
-	Status.SwitchToPage("messages")
+	UI.Status.AddPage("input", UI.Status.InputField, true, true)
+	UI.Status.AddPage("messages", UI.Status.MessageBox, true, true)
+	UI.Status.SwitchToPage("messages")
 
-	msgchan = make(chan message, 10)
-	sctx, scancel = context.WithCancel(context.Background())
+	UI.Status.msgchan = make(chan message, 10)
+	UI.Status.sctx, UI.Status.scancel = context.WithCancel(context.Background())
 
 	go startStatus()
 
-	return Status
+	return UI.Status.Pages
 }
 
 // stopStatus stops the message event loop.
 func stopStatus() {
-	scancel()
+	UI.Status.scancel()
 }
 
 // SetInput sets the inputfield label and returns the input text.
@@ -69,19 +67,19 @@ func SetInput(label string, multichar ...struct{}) string {
 
 	go func(ch chan bool) {
 		exit := func() {
-			Status.SwitchToPage("messages")
+			UI.Status.SwitchToPage("messages")
 
-			_, item := Pages.GetFrontPage()
-			App.SetFocus(item)
+			_, item := UI.Pages.GetFrontPage()
+			UI.SetFocus(item)
 		}
 
-		App.QueueUpdateDraw(func() {
-			InputField.SetText("")
-			InputField.SetLabel("[::b]" + label + " ")
+		UI.QueueUpdateDraw(func() {
+			UI.Status.InputField.SetText("")
+			UI.Status.InputField.SetLabel("[::b]" + label + " ")
 
 			if multichar != nil {
-				InputField.SetAcceptanceFunc(nil)
-				InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+				UI.Status.InputField.SetAcceptanceFunc(nil)
+				UI.Status.InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 					switch event.Key() {
 					case tcell.KeyEnter:
 						ch <- true
@@ -97,8 +95,8 @@ func SetInput(label string, multichar ...struct{}) string {
 					return event
 				})
 			} else {
-				InputField.SetAcceptanceFunc(tview.InputFieldMaxLength(1))
-				InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+				UI.Status.InputField.SetAcceptanceFunc(tview.InputFieldMaxLength(1))
+				UI.Status.InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 					switch event.Rune() {
 					case 'y':
 						ch <- true
@@ -115,8 +113,8 @@ func SetInput(label string, multichar ...struct{}) string {
 				})
 			}
 
-			Status.SwitchToPage("input")
-			App.SetFocus(InputField)
+			UI.Status.SwitchToPage("input")
+			UI.SetFocus(UI.Status.InputField)
 		})
 	}(entered)
 
@@ -125,17 +123,17 @@ func SetInput(label string, multichar ...struct{}) string {
 		return ""
 	}
 
-	return InputField.GetText()
+	return UI.Status.InputField.GetText()
 }
 
 // InfoMessage sends an info message to the status bar.
 func InfoMessage(text string, persist bool) {
-	if msgchan == nil {
+	if UI.Status.msgchan == nil {
 		return
 	}
 
 	select {
-	case msgchan <- message{theme.ColorWrap("StatusInfo", text), persist}:
+	case UI.Status.msgchan <- message{theme.ColorWrap("StatusInfo", text), persist}:
 		return
 
 	default:
@@ -144,7 +142,7 @@ func InfoMessage(text string, persist bool) {
 
 // ErrorMessage sends an error message to the status bar.
 func ErrorMessage(err error) {
-	if msgchan == nil {
+	if UI.Status.msgchan == nil {
 		return
 	}
 
@@ -153,7 +151,7 @@ func ErrorMessage(err error) {
 	}
 
 	select {
-	case msgchan <- message{theme.ColorWrap("StatusError", "Error: "+err.Error()), false}:
+	case UI.Status.msgchan <- message{theme.ColorWrap("StatusError", "Error: "+err.Error()), false}:
 		return
 
 	default:
@@ -170,10 +168,10 @@ func startStatus() {
 
 	for {
 		select {
-		case <-sctx.Done():
+		case <-UI.Status.sctx.Done():
 			return
 
-		case msg, ok := <-msgchan:
+		case msg, ok := <-UI.Status.msgchan:
 			if !ok {
 				return
 			}
@@ -190,8 +188,8 @@ func startStatus() {
 				text = ""
 			}
 
-			App.QueueUpdateDraw(func() {
-				MessageBox.SetText(msg.text)
+			UI.QueueUpdateDraw(func() {
+				UI.Status.MessageBox.SetText(msg.text)
 			})
 
 		case <-t.C:
@@ -201,8 +199,8 @@ func startStatus() {
 
 			cleared = true
 
-			App.QueueUpdateDraw(func() {
-				MessageBox.SetText(text)
+			UI.QueueUpdateDraw(func() {
+				UI.Status.MessageBox.SetText(text)
 			})
 		}
 	}

@@ -15,9 +15,19 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-// Progress describes a progress indicator, which will display
+// ProgressUI describes a file transfer progress display.
+type ProgressUI struct {
+	view, status *tview.Table
+	flex         *tview.Flex
+
+	total int
+
+	lock sync.Mutex
+}
+
+// ProgressIndicator describes a progress indicator, which will display
 // a description and a progress bar.
-type Progress struct {
+type ProgressIndicator struct {
 	desc        *tview.TableCell
 	progress    *tview.TableCell
 	progressBar *progressbar.ProgressBar
@@ -28,20 +38,13 @@ type Progress struct {
 	signal chan *dbus.Signal
 }
 
-var (
-	ProgressView       *tview.Table
-	StatusProgressView *tview.Table
-	progressFlex       *tview.Flex
-
-	progressCount     int
-	progressCountLock sync.Mutex
-)
-
 const progressViewButtonRegion = `["resume"][::b][Resume[][""] ["suspend"][::b][Pause[][""] ["cancel"][::b][Cancel[][""]`
 
+var progressUI ProgressUI
+
 // NewProgress returns a new Progress.
-func NewProgress(transferPath dbus.ObjectPath, props bluez.ObexTransferProperties, recv bool) *Progress {
-	var progress Progress
+func NewProgress(transferPath dbus.ObjectPath, props bluez.ObexTransferProperties, recv bool) *ProgressIndicator {
+	var progress ProgressIndicator
 	var progressText string
 
 	if recv {
@@ -78,23 +81,23 @@ func NewProgress(transferPath dbus.ObjectPath, props bluez.ObexTransferPropertie
 	)
 
 	progress.recv = recv
-	progress.signal = ObexConn.WatchSignal()
+	progress.signal = UI.Obex.WatchSignal()
 
-	App.QueueUpdateDraw(func() {
+	UI.QueueUpdateDraw(func() {
 		progressView(false)
 		statusProgressView(true)
 
-		rows := ProgressView.GetRowCount()
+		rows := progressUI.view.GetRowCount()
 
-		StatusProgressView.SetCell(0, 0, progress.desc)
-		StatusProgressView.SetCell(0, 1, progress.progress)
+		progressUI.status.SetCell(0, 0, progress.desc)
+		progressUI.status.SetCell(0, 1, progress.progress)
 
-		ProgressView.SetCell(rows+1, 0, tview.NewTableCell("#"+strconv.Itoa(count)).
+		progressUI.view.SetCell(rows+1, 0, tview.NewTableCell("#"+strconv.Itoa(count)).
 			SetReference(transferPath).
 			SetAlign(tview.AlignCenter),
 		)
-		ProgressView.SetCell(rows+1, 1, progress.desc)
-		ProgressView.SetCell(rows+1, 2, progress.progress)
+		progressUI.view.SetCell(rows+1, 1, progress.desc)
+		progressUI.view.SetCell(rows+1, 2, progress.progress)
 	})
 
 	return &progress
@@ -116,7 +119,7 @@ func StartProgress(transferPath dbus.ObjectPath, props bluez.ObexTransferPropert
 				return false
 			}
 
-			props, ok := ObexConn.ParseSignalData(signal).(bluez.ObexProperties)
+			props, ok := UI.Obex.ParseSignalData(signal).(bluez.ObexProperties)
 			if !ok {
 				continue
 			}
@@ -154,7 +157,7 @@ func SuspendProgress() {
 		return
 	}
 
-	ObexConn.SuspendTransfer(transferPath)
+	UI.Obex.SuspendTransfer(transferPath)
 }
 
 // ResumeProgress resumes the transfer.
@@ -170,7 +173,7 @@ func ResumeProgress() {
 		return
 	}
 
-	ObexConn.ResumeTransfer(transferPath)
+	UI.Obex.ResumeTransfer(transferPath)
 }
 
 // CancelProgress cancels the transfer.
@@ -186,21 +189,21 @@ func CancelProgress() {
 		return
 	}
 
-	ObexConn.CancelTransfer(transferPath)
-	ObexConn.Conn().RemoveSignal(progress.signal)
+	UI.Obex.CancelTransfer(transferPath)
+	UI.Obex.Conn().RemoveSignal(progress.signal)
 
 	close(progress.signal)
 }
 
 // FinishProgress removes the progress indicator from view. If a file was received, as indicated by the path parameter,
 // the file is moved from the "root" (usually the ~/.cache/obexd folder) to the user's home directory.
-func (p *Progress) FinishProgress(transferPath dbus.ObjectPath, path ...string) {
+func (p *ProgressIndicator) FinishProgress(transferPath dbus.ObjectPath, path ...string) {
 	decProgressCount()
-	ObexConn.Conn().RemoveSignal(p.signal)
+	UI.Obex.Conn().RemoveSignal(p.signal)
 
-	App.QueueUpdateDraw(func() {
-		for row := 0; row < ProgressView.GetRowCount(); row++ {
-			cell := ProgressView.GetCell(row, 0)
+	UI.QueueUpdateDraw(func() {
+		for row := 0; row < progressUI.view.GetRowCount(); row++ {
+			cell := progressUI.view.GetCell(row, 0)
 			if cell == nil {
 				continue
 			}
@@ -211,23 +214,23 @@ func (p *Progress) FinishProgress(transferPath dbus.ObjectPath, path ...string) 
 			}
 
 			if path == transferPath {
-				ProgressView.RemoveRow(row)
-				ProgressView.RemoveRow(row - 1)
+				progressUI.view.RemoveRow(row)
+				progressUI.view.RemoveRow(row - 1)
 
 				break
 			}
 		}
 
 		if getProgressCount() == 0 {
-			if pg, _ := Status.GetFrontPage(); pg == "progressview" {
-				Status.RemovePage("progressview")
+			if pg, _ := UI.Status.GetFrontPage(); pg == "progressview" {
+				UI.Status.RemovePage("progressview")
 			}
 
-			if pg, _ := Pages.GetFrontPage(); pg == "progressview" {
-				Pages.RemovePage("progressview")
+			if pg, _ := UI.Pages.GetFrontPage(); pg == "progressview" {
+				UI.Pages.RemovePage("progressview")
 			}
 
-			Status.SwitchToPage("messages")
+			UI.Status.SwitchToPage("messages")
 		}
 	})
 
@@ -239,35 +242,36 @@ func (p *Progress) FinishProgress(transferPath dbus.ObjectPath, path ...string) 
 }
 
 // Write is used by the progressbar to display the progress on the screen.
-func (p *Progress) Write(b []byte) (int, error) {
-	App.QueueUpdateDraw(func() {
+func (p *ProgressIndicator) Write(b []byte) (int, error) {
+	UI.QueueUpdateDraw(func() {
 		p.progress.SetText(string(b))
 	})
 
 	return 0, nil
 }
 
-//gocyclo: ignore
 // progressView initializes and, if switchToView is set, displays the progress view.
+//
+//gocyclo:ignore
 func progressView(switchToView bool) {
-	if progressFlex == nil {
+	if progressUI.flex == nil {
 		title := tview.NewTextView()
 		title.SetDynamicColors(true)
 		title.SetTextAlign(tview.AlignLeft)
 		title.SetBackgroundColor(theme.GetColor("Background"))
 		title.SetText(theme.ColorWrap("Text", "Progress View", "bu"))
 
-		ProgressView = tview.NewTable()
-		ProgressView.SetSelectable(true, false)
-		ProgressView.SetBackgroundColor(theme.GetColor("Background"))
-		ProgressView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		progressUI.view = tview.NewTable()
+		progressUI.view.SetSelectable(true, false)
+		progressUI.view.SetBackgroundColor(theme.GetColor("Background"))
+		progressUI.view.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			switch event.Key() {
 			case tcell.KeyEscape:
-				if Status.HasPage("progressview") && getProgressCount() > 0 {
-					Status.SwitchToPage("progressview")
+				if UI.Status.HasPage("progressview") && getProgressCount() > 0 {
+					UI.Status.SwitchToPage("progressview")
 				}
 
-				Pages.SwitchToPage("main")
+				UI.Pages.SwitchToPage("main")
 			}
 
 			switch event.Rune() {
@@ -318,16 +322,16 @@ func progressView(switchToView bool) {
 			}
 		})
 
-		progressFlex = tview.NewFlex().
+		progressUI.flex = tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(title, 1, 0, false).
-			AddItem(ProgressView, 0, 10, true).
+			AddItem(progressUI.view, 0, 10, true).
 			AddItem(progressViewButtons, 2, 0, false)
 	}
 
 	if switchToView {
-		if pg, _ := Status.GetFrontPage(); pg == "progressview" {
-			Status.SwitchToPage("messages")
+		if pg, _ := UI.Status.GetFrontPage(); pg == "progressview" {
+			UI.Status.SwitchToPage("messages")
 		}
 
 		if getProgressCount() == 0 {
@@ -335,36 +339,36 @@ func progressView(switchToView bool) {
 			return
 		}
 
-		Pages.AddAndSwitchToPage("progressview", progressFlex, true)
+		UI.Pages.AddAndSwitchToPage("progressview", progressUI.flex, true)
 	}
 }
 
 // statusProgressView initializes and, if switchToView is set, displays the progress view in the status bar.
 func statusProgressView(switchToView bool) {
-	if StatusProgressView == nil {
-		StatusProgressView = tview.NewTable()
-		StatusProgressView.SetSelectable(true, true)
-		StatusProgressView.SetBackgroundColor(theme.GetColor("Background"))
+	if progressUI.status == nil {
+		progressUI.status = tview.NewTable()
+		progressUI.status.SetSelectable(true, true)
+		progressUI.status.SetBackgroundColor(theme.GetColor("Background"))
 	}
 
-	Status.AddPage("progressview", StatusProgressView, true, false)
+	UI.Status.AddPage("progressview", progressUI.status, true, false)
 
-	if pg, _ := Pages.GetFrontPage(); pg != "progressview" && switchToView {
-		Status.SwitchToPage("progressview")
+	if pg, _ := UI.Pages.GetFrontPage(); pg != "progressview" && switchToView {
+		UI.Status.SwitchToPage("progressview")
 	}
 }
 
 // getProgressData gets the transfer DBus object path and the progress data
-// from the current selection in the ProgressView.
-func getProgressData() (dbus.ObjectPath, *Progress) {
-	row, _ := ProgressView.GetSelection()
+// from the current selection in the progressUI.view.
+func getProgressData() (dbus.ObjectPath, *ProgressIndicator) {
+	row, _ := progressUI.view.GetSelection()
 
-	pathCell := ProgressView.GetCell(row, 0)
+	pathCell := progressUI.view.GetCell(row, 0)
 	if pathCell == nil {
 		return "", nil
 	}
 
-	progCell := ProgressView.GetCell(row, 2)
+	progCell := progressUI.view.GetCell(row, 2)
 	if progCell == nil {
 		return "", nil
 	}
@@ -374,7 +378,7 @@ func getProgressData() (dbus.ObjectPath, *Progress) {
 		return "", nil
 	}
 
-	progress, ok := progCell.GetReference().(*Progress)
+	progress, ok := progCell.GetReference().(*ProgressIndicator)
 	if !ok {
 		return "", nil
 	}
@@ -384,24 +388,24 @@ func getProgressData() (dbus.ObjectPath, *Progress) {
 
 // getProgressCount returns the progress count.
 func getProgressCount() int {
-	progressCountLock.Lock()
-	defer progressCountLock.Unlock()
+	progressUI.lock.Lock()
+	defer progressUI.lock.Unlock()
 
-	return progressCount
+	return progressUI.total
 }
 
 // incProgressCount increments the progress count.
 func incProgressCount() {
-	progressCountLock.Lock()
-	defer progressCountLock.Unlock()
+	progressUI.lock.Lock()
+	defer progressUI.lock.Unlock()
 
-	progressCount++
+	progressUI.total++
 }
 
 // decProgressCount decrements the progress count.
 func decProgressCount() {
-	progressCountLock.Lock()
-	defer progressCountLock.Unlock()
+	progressUI.lock.Lock()
+	defer progressUI.lock.Unlock()
 
-	progressCount--
+	progressUI.total--
 }

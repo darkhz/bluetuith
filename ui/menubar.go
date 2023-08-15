@@ -243,10 +243,10 @@ func setMenuItemToggle(menuName, menuID string, toggle bool, nodraw ...struct{})
 	menuItem.toggled = toggle
 
 	if nodraw == nil {
-		App.QueueUpdateDraw(func() {
+		UI.QueueUpdateDraw(func() {
 			highlighted := MenuBar.GetHighlights()
 
-			if Pages.HasPage("menulist") && highlighted != nil && highlighted[0] == menuName {
+			if UI.Pages.HasPage("menulist") && highlighted != nil && highlighted[0] == menuName {
 				cell := menuList.GetCell(menuItem.index, 0)
 				if cell == nil {
 					return
@@ -343,13 +343,13 @@ AddOptions:
 	}
 	menuList.Select(0, 0)
 
-	Pages.AddAndSwitchToPage(
+	UI.Pages.AddAndSwitchToPage(
 		"menulist",
 		drawMenuBox(menuList, menuList.GetRowCount()+2, 20, x, y, selection...),
 		true,
 	).ShowPage("main")
 
-	App.SetFocus(menuList)
+	UI.SetFocus(menuList)
 }
 
 // setSelectorMenu sets up a selector menu.
@@ -423,13 +423,13 @@ func setSelectorMenu(
 
 	selectorMenu.Select(index, 0)
 
-	Pages.AddAndSwitchToPage(
+	UI.Pages.AddAndSwitchToPage(
 		"selectormenu",
 		drawMenuBox(selectorMenu, selectorMenu.GetRowCount()+2, width+20, x, y, selection...),
 		true,
 	).ShowPage("main")
 
-	App.SetFocus(selectorMenu)
+	UI.SetFocus(selectorMenu)
 
 	return selectorMenu
 }
@@ -485,11 +485,11 @@ func switchMenuList() {
 // exitMenuList closes the submenu and exits the menubar.
 func exitMenu(menu string) {
 	MenuBar.Highlight("")
-	Pages.RemovePage(menu)
+	UI.Pages.RemovePage(menu)
 
-	App.SetFocus(DeviceTable)
+	UI.SetFocus(DeviceTable)
 
-	App.Sync()
+	UI.Sync()
 }
 
 // menuListInputHandler handles key events for a submenu.
@@ -519,7 +519,7 @@ func menuListInputHandler(event *tcell.EventKey) {
 //gocyclo: ignore
 // menuListMouseHandler handles mouse events for a submenu.
 func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tcell.EventMouse {
-	if !Pages.HasPage("menulist") && !Pages.HasPage("selectormenu") {
+	if !UI.Pages.HasPage("menulist") && !UI.Pages.HasPage("selectormenu") {
 		return event
 	}
 
@@ -530,8 +530,8 @@ func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tc
 	x, y := event.Position()
 
 	switch {
-	case Pages.HasPage("selectormenu"):
-		pg, item := Pages.GetFrontPage()
+	case UI.Pages.HasPage("selectormenu"):
+		pg, item := UI.Pages.GetFrontPage()
 		if pg != "selectormenu" {
 			return event
 		}
@@ -561,7 +561,7 @@ func menuListMouseHandler(action tview.MouseAction, event *tcell.EventMouse) *tc
 		}
 
 	case menuList != nil && menuList.InRect(x, y):
-		App.SetFocus(menuList)
+		UI.SetFocus(menuList)
 		return nil
 
 	case !MenuBar.InRect(x, y) && menuList != nil && !menuList.InRect(x, y):

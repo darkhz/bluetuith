@@ -107,14 +107,14 @@ func CallObexAgentManager(method string, args ...interface{}) *dbus.Call {
 func (o *ObexAgent) AuthorizePush(transferPath dbus.ObjectPath) (string, *dbus.Error) {
 	var msg, reply string
 
-	adapter := ui.BluezConn.GetCurrentAdapter()
+	adapter := ui.UI.Bluez.GetCurrentAdapter()
 	if !adapter.Lock.TryAcquire(1) {
 		return "", dbus.MakeFailedError(errors.New("Operation in progress"))
 	}
 
 	sessionPath := dbus.ObjectPath(filepath.Dir(string(transferPath)))
 
-	path, device, transferProps, err := ui.ObexConn.ReceiveFile(sessionPath, transferPath)
+	path, device, transferProps, err := ui.UI.Obex.ReceiveFile(sessionPath, transferPath)
 	if err != nil {
 		return "", dbus.MakeFailedError(err)
 	}
@@ -143,7 +143,7 @@ SkipAuthentication:
 		defer adapter.Lock.Release(1)
 
 		ui.StartProgress(transferPath, transferProps, path)
-		ui.ObexConn.RemoveSession(sessionPath)
+		ui.UI.Obex.RemoveSession(sessionPath)
 	}()
 
 	return path, nil

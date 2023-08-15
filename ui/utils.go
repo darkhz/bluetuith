@@ -18,29 +18,29 @@ import (
 
 // SetBluezConn sets up the bluez connection.
 func SetBluezConn(b *bluez.Bluez) {
-	BluezConn = b
+	UI.Bluez = b
 }
 
 // SetObexConn sets up the bluez obex connection.
 func SetObexConn(o *bluez.Obex) {
-	ObexConn = o
+	UI.Obex = o
 }
 
 // SetNetworkConn sets up the network connection.
 func SetNetworkConn(n *network.Network) {
-	NetworkConn = n
+	UI.Network = n
 }
 
 // SetTrusted sets the trusted state of a device.
 func SetTrusted(devicePath string, enable bool) error {
-	BluezConn.SetDeviceProperty(devicePath, "Trusted", true)
+	UI.Bluez.SetDeviceProperty(devicePath, "Trusted", true)
 
 	return nil
 }
 
 // GetDeviceFromPath gets a device from the device path.
 func GetDeviceFromPath(devicePath string) (bluez.Device, error) {
-	device := BluezConn.GetDevice(devicePath)
+	device := UI.Bluez.GetDevice(devicePath)
 	if device.Path == "" {
 		return bluez.Device{}, errors.New("Device not found")
 	}

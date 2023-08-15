@@ -78,10 +78,10 @@ func onClickFunc(id string) func() bool {
 func power() {
 	var poweredText string
 
-	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 	adapterID := bluez.GetAdapterID(adapterPath)
 
-	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
 	if err != nil {
 		ErrorMessage(err)
 		return
@@ -93,7 +93,7 @@ func power() {
 		return
 	}
 
-	if err := BluezConn.Power(adapterPath, !powered); err != nil {
+	if err := UI.Bluez.Power(adapterPath, !powered); err != nil {
 		ErrorMessage(errors.New("Cannot set adapter power state"))
 		return
 	}
@@ -113,10 +113,10 @@ func power() {
 func discoverable() {
 	var discoverableText string
 
-	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 	adapterID := bluez.GetAdapterID(adapterPath)
 
-	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
 	if err != nil {
 		ErrorMessage(err)
 		return
@@ -128,7 +128,7 @@ func discoverable() {
 		return
 	}
 
-	if err := BluezConn.SetAdapterProperty(adapterPath, "Discoverable", !discoverable); err != nil {
+	if err := UI.Bluez.SetAdapterProperty(adapterPath, "Discoverable", !discoverable); err != nil {
 		ErrorMessage(err)
 		return
 	}
@@ -148,10 +148,10 @@ func discoverable() {
 func pairable() {
 	var pairableText string
 
-	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 	adapterID := bluez.GetAdapterID(adapterPath)
 
-	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
 	if err != nil {
 		ErrorMessage(err)
 		return
@@ -163,7 +163,7 @@ func pairable() {
 		return
 	}
 
-	if err := BluezConn.SetAdapterProperty(adapterPath, "Pairable", !pairable); err != nil {
+	if err := UI.Bluez.SetAdapterProperty(adapterPath, "Pairable", !pairable); err != nil {
 		ErrorMessage(err)
 		return
 	}
@@ -181,9 +181,9 @@ func pairable() {
 
 // scan checks the current adapter's state and starts/stops discovery.
 func scan() {
-	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
-	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
 	if err != nil {
 		ErrorMessage(err)
 		return
@@ -196,13 +196,13 @@ func scan() {
 	}
 
 	if !discover {
-		if err := BluezConn.StartDiscovery(adapterPath); err != nil {
+		if err := UI.Bluez.StartDiscovery(adapterPath); err != nil {
 			ErrorMessage(err)
 			return
 		}
 		InfoMessage("Scanning for devices...", true)
 	} else {
-		if err := BluezConn.StopDiscovery(adapterPath); err != nil {
+		if err := UI.Bluez.StopDiscovery(adapterPath); err != nil {
 			ErrorMessage(err)
 			return
 		}
@@ -214,14 +214,14 @@ func scan() {
 
 // change launches a popup with the adapters list.
 func change() {
-	App.QueueUpdateDraw(func() {
+	UI.QueueUpdateDraw(func() {
 		adapterChange()
 	})
 }
 
 // progress displays the progress view.
 func progress() {
-	App.QueueUpdateDraw(func() {
+	UI.QueueUpdateDraw(func() {
 		progressView(true)
 	})
 }
@@ -229,20 +229,20 @@ func progress() {
 // quit stops discovery mode for all existing adapters, closes the bluez connection
 // and exits the application.
 func quit() {
-	for _, adapter := range BluezConn.GetAdapters() {
-		BluezConn.StopDiscovery(adapter.Path)
+	for _, adapter := range UI.Bluez.GetAdapters() {
+		UI.Bluez.StopDiscovery(adapter.Path)
 	}
 
-	BluezConn.Close()
+	UI.Bluez.Close()
 
 	StopUI()
 }
 
 // createPower sets the oncreate handler for the power submenu option.
 func createPower() bool {
-	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
-	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
 	if err != nil {
 		return false
 	}
@@ -257,9 +257,9 @@ func createPower() bool {
 
 // createDiscoverable sets the oncreate handler for the discoverable submenu option
 func createDiscoverable() bool {
-	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
-	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
 	if err != nil {
 		return false
 	}
@@ -274,9 +274,9 @@ func createDiscoverable() bool {
 
 // createPairable sets the oncreate handler for the pairable submenu option.
 func createPairable() bool {
-	adapterPath := BluezConn.GetCurrentAdapter().Path
+	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
-	props, err := BluezConn.GetAdapterProperties(adapterPath)
+	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
 	if err != nil {
 		return false
 	}
@@ -364,7 +364,7 @@ func connect() {
 	}
 
 	disconnectFunc := func() {
-		if err := BluezConn.Disconnect(device.Path); err != nil {
+		if err := UI.Bluez.Disconnect(device.Path); err != nil {
 			ErrorMessage(err)
 			return
 		}
@@ -372,7 +372,7 @@ func connect() {
 
 	connectFunc := func() {
 		InfoMessage("Connecting to "+device.Name, true)
-		if err := BluezConn.Connect(device.Path); err != nil {
+		if err := UI.Bluez.Connect(device.Path); err != nil {
 			ErrorMessage(err)
 			return
 		}
@@ -410,14 +410,14 @@ func pair() {
 	startOperation(
 		func() {
 			InfoMessage("Pairing with "+device.Name, true)
-			if err := BluezConn.Pair(device.Path); err != nil {
+			if err := UI.Bluez.Pair(device.Path); err != nil {
 				ErrorMessage(err)
 				return
 			}
 			InfoMessage("Paired with "+device.Name, false)
 		},
 		func() {
-			if err := BluezConn.CancelPairing(device.Path); err != nil {
+			if err := UI.Bluez.CancelPairing(device.Path); err != nil {
 				ErrorMessage(err)
 				return
 			}
@@ -433,7 +433,7 @@ func trust() {
 		return
 	}
 
-	if err := BluezConn.SetDeviceProperty(device.Path, "Trusted", !device.Trusted); err != nil {
+	if err := UI.Bluez.SetDeviceProperty(device.Path, "Trusted", !device.Trusted); err != nil {
 		ErrorMessage(errors.New("Cannot set trusted property for " + device.Name))
 		return
 	}
@@ -444,7 +444,7 @@ func trust() {
 // send gets a file list from the file picker and sends all selected files
 // to the target device.
 func send() {
-	adapter := BluezConn.GetCurrentAdapter()
+	adapter := UI.Bluez.GetCurrentAdapter()
 	if !adapter.Lock.TryAcquire(1) {
 		return
 	}
@@ -458,7 +458,7 @@ func send() {
 
 	InfoMessage("Initializing OBEX session..", true)
 
-	sessionPath, err := ObexConn.CreateSession(device.Address)
+	sessionPath, err := UI.Obex.CreateSession(device.Address)
 	if err != nil {
 		ErrorMessage(err)
 		return
@@ -467,7 +467,7 @@ func send() {
 	InfoMessage("Created OBEX session", false)
 
 	for _, file := range filePicker() {
-		transferPath, transferProps, err := ObexConn.SendFile(sessionPath, file)
+		transferPath, transferProps, err := UI.Obex.SendFile(sessionPath, file)
 		if err != nil {
 			ErrorMessage(err)
 			continue
@@ -478,19 +478,19 @@ func send() {
 		}
 	}
 
-	ObexConn.RemoveSession(sessionPath)
+	UI.Obex.RemoveSession(sessionPath)
 }
 
 // networkAP launches a popup with the available networks.
 func networkAP() {
-	App.QueueUpdateDraw(func() {
+	UI.QueueUpdateDraw(func() {
 		networkSelect()
 	})
 }
 
 // profiles launches a popup with the available audio profiles.
 func profiles() {
-	App.QueueUpdateDraw(func() {
+	UI.QueueUpdateDraw(func() {
 		audioProfiles()
 	})
 }
@@ -507,7 +507,7 @@ func hideplayer() {
 
 // info retreives the selected device, and shows the device information.
 func info() {
-	App.QueueUpdateDraw(func() {
+	UI.QueueUpdateDraw(func() {
 		getDeviceInfo()
 	})
 }
@@ -523,7 +523,7 @@ func remove() {
 		return
 	}
 
-	if err := BluezConn.RemoveDevice(device.Path); err != nil {
+	if err := UI.Bluez.RemoveDevice(device.Path); err != nil {
 		ErrorMessage(err)
 		return
 	}

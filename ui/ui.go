@@ -3,28 +3,44 @@ package ui
 import (
 	"syscall"
 
+	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/network"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 )
 
-var (
-	// App contains the application.
-	App *tview.Application
-
+type Application struct {
 	// Pages holds the DeviceTable, along with
 	// any menu popups that will be added.
 	Pages *tview.Pages
 
-	UILayout *tview.Flex
+	// Layout holds the layout of the application.
+	Layout *tview.Flex
 
-	appSuspend bool
-)
+	// Status holds the status bar.
+	Status Status
+
+	// Bluez holds the current bluez DBus connection.
+	Bluez *bluez.Bluez
+
+	// Obex holds the current bluez obex DBus connection.
+	Obex *bluez.Obex
+
+	// network holds the current network connection.
+	Network *network.Network
+
+	suspend bool
+
+	*tview.Application
+}
+
+var UI Application
 
 // StartUI starts the UI.
 func StartUI() {
-	App = tview.NewApplication()
-	Pages = tview.NewPages()
+	UI.Application = tview.NewApplication()
+	UI.Pages = tview.NewPages()
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -33,23 +49,23 @@ func StartUI() {
 		AddItem(deviceTable(), 0, 10, true)
 	flex.SetBackgroundColor(theme.GetColor("Background"))
 
-	Pages.AddPage("main", flex, true, true)
-	Pages.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Pages.AddPage("main", flex, true, true)
+	UI.Pages.SetBackgroundColor(theme.GetColor("Background"))
 
-	UILayout = tview.NewFlex().
+	UI.Layout = tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(Pages, 0, 10, true).
+		AddItem(UI.Pages, 0, 10, true).
 		AddItem(statusBar(), 1, 0, false)
-	UILayout.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Layout.SetBackgroundColor(theme.GetColor("Background"))
 
-	App.SetFocus(flex)
-	App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	UI.SetFocus(flex)
+	UI.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyCtrlC:
 			return nil
 
 		case tcell.KeyCtrlZ:
-			appSuspend = true
+			UI.suspend = true
 
 		case tcell.KeyCtrlX:
 			cancelOperation(true)
@@ -57,7 +73,7 @@ func StartUI() {
 
 		return event
 	})
-	App.SetBeforeDrawFunc(func(t tcell.Screen) bool {
+	UI.SetBeforeDrawFunc(func(t tcell.Screen) bool {
 		suspendUI(t)
 
 		return false
@@ -66,7 +82,7 @@ func StartUI() {
 	setupDevices()
 	InfoMessage("bluetuith is ready.", false)
 
-	if err := App.SetRoot(UILayout, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
+	if err := UI.SetRoot(UI.Layout, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }
@@ -75,16 +91,16 @@ func StartUI() {
 func StopUI() {
 	stopStatus()
 
-	App.Stop()
+	UI.Stop()
 }
 
 // suspendUI suspends the application.
 func suspendUI(t tcell.Screen) {
-	if !appSuspend {
+	if !UI.suspend {
 		return
 	}
 
-	appSuspend = false
+	UI.suspend = false
 
 	if err := t.Suspend(); err != nil {
 		return

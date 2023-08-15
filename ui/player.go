@@ -11,41 +11,42 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-var (
-	playerStop        chan struct{}
-	playerKeyEvent    chan string
-	playerButtonEvent chan struct{}
+type MediaPlayer struct {
+	skip bool
 
-	mediaLock  sync.Mutex
+	keyEvent               chan string
+	stopEvent, buttonEvent chan struct{}
+
 	playerLock *semaphore.Weighted
-
-	playerSkip bool
-)
+	lock       sync.Mutex
+}
 
 const mediaButtons = `["rewind"][::b][<<][""] ["prev"][::b][<][""] ["play"][::b][|>][""] ["next"][::b][>][""] ["fastforward"][::b][>>][""]`
 
+var mediaplayer MediaPlayer
+
 // StartMediaPlayer shows the media player.
 func StartMediaPlayer() {
-	mediaLock.Lock()
-	defer mediaLock.Unlock()
+	mediaplayer.lock.Lock()
+	defer mediaplayer.lock.Unlock()
 
 	device := getDeviceFromSelection(false)
 	if device.Path == "" {
 		return
 	}
 
-	err := BluezConn.InitMediaPlayer(device.Path)
+	err := UI.Bluez.InitMediaPlayer(device.Path)
 	if err != nil {
 		ErrorMessage(err)
 		return
 	}
 
-	if playerKeyEvent == nil {
-		playerStop = make(chan struct{})
-		playerKeyEvent = make(chan string, 1)
-		playerButtonEvent = make(chan struct{}, 1)
+	if mediaplayer.keyEvent == nil {
+		mediaplayer.stopEvent = make(chan struct{})
+		mediaplayer.keyEvent = make(chan string, 1)
+		mediaplayer.buttonEvent = make(chan struct{}, 1)
 
-		playerLock = semaphore.NewWeighted(1)
+		mediaplayer.playerLock = semaphore.NewWeighted(1)
 	}
 
 	go mediaPlayerLoop(device.Name)
@@ -54,9 +55,9 @@ func StartMediaPlayer() {
 // StopMediaPlayer closes the media player.
 func StopMediaPlayer() {
 	select {
-	case <-playerStop:
+	case <-mediaplayer.stopEvent:
 
-	case playerStop <- struct{}{}:
+	case mediaplayer.stopEvent <- struct{}{}:
 
 	default:
 	}
@@ -64,10 +65,10 @@ func StopMediaPlayer() {
 
 // mediaPlayerLoop updates the media player.
 func mediaPlayerLoop(deviceName string) {
-	if !playerLock.TryAcquire(1) {
+	if !mediaplayer.playerLock.TryAcquire(1) {
 		return
 	}
-	defer playerLock.Release(1)
+	defer mediaplayer.playerLock.Release(1)
 
 	player, views := setupMediaPlayer(deviceName)
 	playerInfo := views[0]
@@ -76,26 +77,26 @@ func mediaPlayerLoop(deviceName string) {
 	playerTrack := views[3]
 	playerButtons := views[4]
 
-	App.QueueUpdateDraw(func() {
-		UILayout.AddItem(player, 8, 0, false)
+	UI.QueueUpdateDraw(func() {
+		UI.Layout.AddItem(player, 8, 0, false)
 	})
 
-	mediaSignal := BluezConn.WatchSignal()
+	mediaSignal := UI.Bluez.WatchSignal()
 
 	t := time.NewTicker(1 * time.Second)
 	defer t.Stop()
 
 PlayerLoop:
 	for {
-		media, err := BluezConn.GetMediaProperties()
+		media, err := UI.Bluez.GetMediaProperties()
 		if err != nil {
 			break PlayerLoop
 		}
 
-		_, _, width, _ := Pages.GetRect()
+		_, _, width, _ := UI.Pages.GetRect()
 		title, buttons, tracknum, progress := getProgress(media, mediaButtons, width, isPlayerSkip())
 
-		App.QueueUpdateDraw(func() {
+		UI.QueueUpdateDraw(func() {
 			playerInfo.SetText(media.Track.Artist + " - " + media.Track.Album)
 
 			playerTitle.SetText(title)
@@ -105,10 +106,10 @@ PlayerLoop:
 		})
 
 		select {
-		case <-playerStop:
+		case <-mediaplayer.stopEvent:
 			break PlayerLoop
 
-		case highlight, ok := <-playerKeyEvent:
+		case highlight, ok := <-mediaplayer.keyEvent:
 			if !ok {
 				break PlayerLoop
 			}
@@ -116,7 +117,7 @@ PlayerLoop:
 			playerButtons.Highlight(highlight)
 			t.Reset(1 * time.Second)
 
-		case <-playerButtonEvent:
+		case <-mediaplayer.buttonEvent:
 			t.Reset(1 * time.Second)
 
 		case signal, ok := <-mediaSignal:
@@ -124,7 +125,7 @@ PlayerLoop:
 				break PlayerLoop
 			}
 
-			_, ok = BluezConn.ParseSignalData(signal).(bluez.MediaProperties)
+			_, ok = UI.Bluez.ParseSignalData(signal).(bluez.MediaProperties)
 			if !ok {
 				continue PlayerLoop
 			}
@@ -135,11 +136,11 @@ PlayerLoop:
 		}
 	}
 
-	App.QueueUpdateDraw(func() {
-		UILayout.RemoveItem(player)
+	UI.QueueUpdateDraw(func() {
+		UI.Layout.RemoveItem(player)
 	})
 
-	BluezConn.Conn().RemoveSignal(mediaSignal)
+	UI.Bluez.Conn().RemoveSignal(mediaSignal)
 }
 
 // setupMediaPlayer sets up the media player elements.
@@ -246,19 +247,19 @@ func playerEvents(event *tcell.EventKey, button bool) {
 	var highlight string
 	var nokey, norune bool
 
-	if UILayout.GetItemCount() <= 2 {
+	if UI.Layout.GetItemCount() <= 2 {
 		return
 	}
 
 	switch event.Key() {
 	case tcell.KeyRight:
-		BluezConn.FastForward()
+		UI.Bluez.FastForward()
 
 		setPlayerSkip(true)
 		highlight = "fastforward"
 
 	case tcell.KeyLeft:
-		BluezConn.Rewind()
+		UI.Bluez.Rewind()
 
 		setPlayerSkip(true)
 		highlight = "rewind"
@@ -269,23 +270,23 @@ func playerEvents(event *tcell.EventKey, button bool) {
 
 	switch event.Rune() {
 	case '<':
-		BluezConn.Previous()
+		UI.Bluez.Previous()
 
 	case '>':
-		BluezConn.Next()
+		UI.Bluez.Next()
 
 	case ']':
-		BluezConn.Stop()
+		UI.Bluez.Stop()
 
 	case ' ':
 		if isPlayerSkip() {
-			BluezConn.Play()
+			UI.Bluez.Play()
 			setPlayerSkip(false)
 
 			break
 		}
 
-		BluezConn.TogglePlayPause()
+		UI.Bluez.TogglePlayPause()
 
 	default:
 		norune = true
@@ -294,7 +295,7 @@ func playerEvents(event *tcell.EventKey, button bool) {
 	if !nokey || !norune {
 		if button {
 			select {
-			case playerButtonEvent <- struct{}{}:
+			case mediaplayer.buttonEvent <- struct{}{}:
 
 			default:
 			}
@@ -303,7 +304,7 @@ func playerEvents(event *tcell.EventKey, button bool) {
 		}
 
 		select {
-		case playerKeyEvent <- highlight:
+		case mediaplayer.keyEvent <- highlight:
 
 		default:
 		}
@@ -311,15 +312,15 @@ func playerEvents(event *tcell.EventKey, button bool) {
 }
 
 func isPlayerSkip() bool {
-	mediaLock.Lock()
-	defer mediaLock.Unlock()
+	mediaplayer.lock.Lock()
+	defer mediaplayer.lock.Unlock()
 
-	return playerSkip
+	return mediaplayer.skip
 }
 
 func setPlayerSkip(skip bool) {
-	mediaLock.Lock()
-	defer mediaLock.Unlock()
+	mediaplayer.lock.Lock()
+	defer mediaplayer.lock.Unlock()
 
-	playerSkip = skip
+	mediaplayer.skip = skip
 }

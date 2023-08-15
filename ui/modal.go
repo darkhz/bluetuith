@@ -3,7 +3,7 @@ package ui
 import "github.com/darkhz/tview"
 
 func ShowModal(page string, table *tview.Table, proportions ...int) {
-	prevPage, _ := Pages.GetFrontPage()
+	prevPage, _ := UI.Pages.GetFrontPage()
 
 	height := proportions[0]
 	width := proportions[1]
@@ -20,7 +20,7 @@ func ShowModal(page string, table *tview.Table, proportions ...int) {
 		AddItem(tableWrap, 0, 60, true).
 		AddItem(nil, 0, width, false)
 
-	Pages.AddAndSwitchToPage(page, tableFlex, true).ShowPage(prevPage)
+	UI.Pages.AddAndSwitchToPage(page, tableFlex, true).ShowPage(prevPage)
 
-	App.SetFocus(table)
+	UI.SetFocus(table)
 }

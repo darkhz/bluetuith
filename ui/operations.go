@@ -2,23 +2,26 @@ package ui
 
 import "sync"
 
-var (
-	opLock     sync.Mutex
-	cancelFunc func()
-)
+type Operation struct {
+	cancel func()
+
+	lock sync.Mutex
+}
+
+var operation Operation
 
 // startOperation sets up the cancellation handler,
 // and starts the operation.
 func startOperation(dofunc, cancel func()) {
-	opLock.Lock()
-	defer opLock.Unlock()
+	operation.lock.Lock()
+	defer operation.lock.Unlock()
 
-	if cancelFunc != nil {
+	if operation.cancel != nil {
 		InfoMessage("Operation still in progress", false)
 		return
 	}
 
-	cancelFunc = cancel
+	operation.cancel = cancel
 
 	go func() {
 		dofunc()
@@ -30,15 +33,15 @@ func startOperation(dofunc, cancel func()) {
 func cancelOperation(cancelfunc bool) {
 	var cancel func()
 
-	opLock.Lock()
-	defer opLock.Unlock()
+	operation.lock.Lock()
+	defer operation.lock.Unlock()
 
-	if cancelFunc == nil {
+	if operation.cancel == nil {
 		return
 	}
 
-	cancel = cancelFunc
-	cancelFunc = nil
+	cancel = operation.cancel
+	operation.cancel = nil
 
 	if cancelfunc {
 		go cancel()

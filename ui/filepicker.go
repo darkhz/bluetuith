@@ -2,7 +2,6 @@ package ui
 
 import (
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -14,41 +13,39 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// FilePicker describes a filepicker.
+type FilePicker struct {
+	table          *tview.Table
+	title, buttons *tview.TextView
+
+	prevDir, currentPath string
+	isHidden             bool
+
+	listChan      chan []string
+	prevFileInfo  fs.DirEntry
+	selectedFiles map[string]fs.DirEntry
+
+	lock, selection, hide sync.Mutex
+}
+
 const filePickButtonRegion = `["ok"][::b][OK[][""] ["cancel"][::b][Cancel[][""] ["hidden"][::b][Toggle hidden[][""] ["invert"][Invert selection[][""] ["all"][Select All[][""]`
 
-var (
-	filePickTable   *tview.Table
-	filePickTitle   *tview.TextView
-	filePickButtons *tview.TextView
-	filePickerLock  sync.Mutex
-
-	prevDir      string
-	currentPath  string
-	prevFileInfo fs.FileInfo
-
-	isHidden bool
-	hideLock sync.Mutex
-
-	fileSelection     map[string]fs.FileInfo
-	fileSelectionLock sync.Mutex
-
-	fileListChan chan []string
-)
+var filepicker FilePicker
 
 // filePicker shows a file picker, and returns
 // a list of all the selected files.
 func filePicker() []string {
-	App.QueueUpdateDraw(func() {
+	UI.QueueUpdateDraw(func() {
 		setupFilePicker()
 	})
 
-	return <-fileListChan
+	return <-filepicker.listChan
 }
 
 // setupFilePicker sets up the file picker.
 func setupFilePicker() {
-	fileListChan = make(chan []string)
-	fileSelection = make(map[string]fs.FileInfo)
+	filepicker.listChan = make(chan []string)
+	filepicker.selectedFiles = make(map[string]fs.DirEntry)
 
 	infoTitle := tview.NewTextView()
 	infoTitle.SetDynamicColors(true)
@@ -67,7 +64,7 @@ func setupFilePicker() {
 		AddItem(filePickerButtons(), 2, 0, false)
 	pickerflex.SetBackgroundColor(theme.GetColor("Background"))
 
-	Pages.AddAndSwitchToPage("filepicker", pickerflex, true)
+	UI.Pages.AddAndSwitchToPage("filepicker", pickerflex, true)
 
 	if !getHidden() {
 		toggleHidden()
@@ -78,11 +75,11 @@ func setupFilePicker() {
 
 // filePickerTable sets up and returns the filepicker table.
 func filePickerTable() *tview.Table {
-	filePickTable = tview.NewTable()
-	filePickTable.SetSelectorWrap(true)
-	filePickTable.SetSelectable(true, false)
-	filePickTable.SetBackgroundColor(theme.GetColor("Background"))
-	filePickTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	filepicker.table = tview.NewTable()
+	filepicker.table.SetSelectorWrap(true)
+	filepicker.table.SetSelectable(true, false)
+	filepicker.table.SetBackgroundColor(theme.GetColor("Background"))
+	filepicker.table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyLeft:
 			go changeDir(false, true)
@@ -102,8 +99,8 @@ func filePickerTable() *tview.Table {
 			fallthrough
 
 		case tcell.KeyEscape:
-			close(fileListChan)
-			Pages.RemovePage("filepicker")
+			close(filepicker.listChan)
+			UI.Pages.RemovePage("filepicker")
 		}
 
 		switch event.Rune() {
@@ -120,32 +117,32 @@ func filePickerTable() *tview.Table {
 		return event
 	})
 
-	return filePickTable
+	return filepicker.table
 }
 
 // filePickerTitle sets up and returns the filepicker title area.
 // This will be used to show the current directory path.
 func filePickerTitle() *tview.TextView {
-	filePickTitle = tview.NewTextView()
-	filePickTitle.SetDynamicColors(true)
-	filePickTitle.SetBackgroundColor(theme.GetColor("Background"))
-	filePickTitle.SetTextAlign(tview.AlignLeft)
+	filepicker.title = tview.NewTextView()
+	filepicker.title.SetDynamicColors(true)
+	filepicker.title.SetBackgroundColor(theme.GetColor("Background"))
+	filepicker.title.SetTextAlign(tview.AlignLeft)
 
-	return filePickTitle
+	return filepicker.title
 }
 
 // filePickerButtons sets up and returns the filepicker buttons.
 func filePickerButtons() *tview.TextView {
-	filePickButtons = tview.NewTextView()
-	filePickButtons.SetRegions(true)
-	filePickButtons.SetDynamicColors(true)
-	filePickButtons.SetBackgroundColor(theme.GetColor("Background"))
-	filePickButtons.SetHighlightedFunc(func(added, removed, remaining []string) {
+	filepicker.buttons = tview.NewTextView()
+	filepicker.buttons.SetRegions(true)
+	filepicker.buttons.SetDynamicColors(true)
+	filepicker.buttons.SetBackgroundColor(theme.GetColor("Background"))
+	filepicker.buttons.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if added == nil {
 			return
 		}
 
-		for _, region := range filePickButtons.GetRegionInfos() {
+		for _, region := range filepicker.buttons.GetRegionInfos() {
 			if region.ID == added[0] {
 				buttonHandler(added[0])
 				break
@@ -153,25 +150,25 @@ func filePickerButtons() *tview.TextView {
 		}
 	})
 
-	filePickButtons.SetTextAlign(tview.AlignLeft)
-	filePickButtons.SetText(theme.ColorWrap("Text", filePickButtonRegion))
+	filepicker.buttons.SetTextAlign(tview.AlignLeft)
+	filepicker.buttons.SetText(theme.ColorWrap("Text", filePickButtonRegion))
 
-	return filePickButtons
+	return filepicker.buttons
 }
 
 // sendFileList sends a slice of all the selected files
 // to the file list channel, which is received by filePicker().
 func sendFileList() {
-	fileSelectionLock.Lock()
-	defer fileSelectionLock.Unlock()
+	filepicker.selection.Lock()
+	defer filepicker.selection.Unlock()
 
 	var fileList []string
 
-	for path := range fileSelection {
+	for path := range filepicker.selectedFiles {
 		fileList = append(fileList, path)
 	}
 
-	fileListChan <- fileList
+	filepicker.listChan <- fileList
 }
 
 // selectFile sets the parameters for the file selection handler.
@@ -199,23 +196,23 @@ func selectFile(key rune) {
 func changeDir(cdFwd bool, cdBack bool) {
 	var testPath string
 
-	filePickerLock.Lock()
-	defer filePickerLock.Unlock()
+	filepicker.lock.Lock()
+	defer filepicker.lock.Unlock()
 
-	if currentPath == "" {
+	if filepicker.currentPath == "" {
 		var err error
 
-		currentPath, err = os.UserHomeDir()
+		filepicker.currentPath, err = os.UserHomeDir()
 		if err != nil {
 			ErrorMessage(err)
 			return
 		}
 	}
 
-	testPath = currentPath
+	testPath = filepicker.currentPath
 
-	row, _ := filePickTable.GetSelection()
-	cell := filePickTable.GetCell(row, 1)
+	row, _ := filepicker.table.GetSelection()
+	cell := filepicker.table.GetCell(row, 1)
 	if cell == nil {
 		return
 	}
@@ -226,7 +223,7 @@ func changeDir(cdFwd bool, cdBack bool) {
 
 	switch {
 	case cdFwd:
-		entry, ok := cell.GetReference().(fs.FileInfo)
+		entry, ok := cell.GetReference().(fs.DirEntry)
 		if !ok {
 			return
 		}
@@ -235,7 +232,7 @@ func changeDir(cdFwd bool, cdBack bool) {
 		testPath = filepath.Join(testPath, entry.Name())
 
 	case cdBack:
-		prevDir = filepath.Base(testPath)
+		filepicker.prevDir = filepath.Base(testPath)
 		testPath = trimPath(testPath, cdBack)
 	}
 
@@ -252,53 +249,58 @@ func changeDir(cdFwd bool, cdBack bool) {
 		return dlist[i].Name() < dlist[j].Name()
 	})
 
-	currentPath = testPath
+	filepicker.currentPath = testPath
 
 	createDirList(dlist, cdBack)
 }
 
 // createDirList displays the contents of the directory in the filepicker.
-func createDirList(dlist []fs.FileInfo, cdBack bool) {
-	App.QueueUpdateDraw(func() {
+func createDirList(dlist []fs.DirEntry, cdBack bool) {
+	UI.QueueUpdateDraw(func() {
 		var pos int
 		var prevrow int = -1
 		var rowpadding int = -1
 
-		filePickTable.SetSelectable(false, false)
-		filePickTable.Clear()
+		filepicker.table.SetSelectable(false, false)
+		filepicker.table.Clear()
 
 		for row, entry := range dlist {
 			var attr tcell.AttrMask
 			var entryColor tcell.Color
 
-			name := entry.Name()
-			fileTotalSize := formatSize(entry.Size())
-			fileModifiedTime := entry.ModTime().Format("02 Jan 2006 03:04 PM")
-			permissions := strings.ToLower(entry.Mode().String())
+			info, err := entry.Info()
+			if err != nil {
+				continue
+			}
+
+			name := info.Name()
+			fileTotalSize := formatSize(info.Size())
+			fileModifiedTime := info.ModTime().Format("02 Jan 2006 03:04 PM")
+			permissions := strings.ToLower(entry.Type().String())
 			if len(permissions) > 10 {
 				permissions = permissions[1:]
 			}
 
 			if entry.IsDir() {
-				if currentPath != "/" {
+				if filepicker.currentPath != "/" {
 					rowpadding = 0
 
-					if cdBack && name == prevDir {
+					if cdBack && name == filepicker.prevDir {
 						pos = row
 					}
 
-					if entry == prevFileInfo {
+					if entry == filepicker.prevFileInfo {
 						name = ".."
 						prevrow = row
 
 						row = 0
-						filePickTable.InsertRow(0)
+						filepicker.table.InsertRow(0)
 
-						if filePickTable.GetRowCount() > 0 {
+						if filepicker.table.GetRowCount() > 0 {
 							pos++
 						}
 					}
-				} else if currentPath == "/" && name == "/" {
+				} else if filepicker.currentPath == "/" && name == "/" {
 					rowpadding = -1
 					continue
 				}
@@ -310,11 +312,11 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 				entryColor = theme.GetColor("Text")
 			}
 
-			filePickTable.SetCell(row+rowpadding, 0, tview.NewTableCell(" ").
+			filepicker.table.SetCell(row+rowpadding, 0, tview.NewTableCell(" ").
 				SetSelectable(false),
 			)
 
-			filePickTable.SetCell(row+rowpadding, 1, tview.NewTableCell(tview.Escape(name)).
+			filepicker.table.SetCell(row+rowpadding, 1, tview.NewTableCell(tview.Escape(name)).
 				SetExpansion(1).
 				SetReference(entry).
 				SetAttributes(attr).
@@ -333,7 +335,7 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 				fileTotalSize,
 				fileModifiedTime,
 			} {
-				filePickTable.SetCell(row+rowpadding, col+2, tview.NewTableCell(text).
+				filepicker.table.SetCell(row+rowpadding, col+2, tview.NewTableCell(text).
 					SetAlign(tview.AlignRight).
 					SetTextColor(tcell.ColorGrey).
 					SetSelectedStyle(tcell.Style{}.
@@ -347,20 +349,20 @@ func createDirList(dlist []fs.FileInfo, cdBack bool) {
 				prevrow = -1
 			}
 
-			markFileSelection(row, entry, checkFileSelected(filepath.Join(currentPath, name)))
+			markFileSelection(row, entry, checkFileSelected(filepath.Join(filepicker.currentPath, name)))
 		}
 
-		filePickTitle.SetText(theme.ColorWrap("Text", "Directory: "+currentPath))
+		filepicker.title.SetText(theme.ColorWrap("Text", "Directory: "+filepicker.currentPath))
 
-		filePickTable.ScrollToBeginning()
-		filePickTable.SetSelectable(true, false)
-		filePickTable.Select(pos, 0)
+		filepicker.table.ScrollToBeginning()
+		filepicker.table.SetSelectable(true, false)
+		filepicker.table.Select(pos, 0)
 	})
 }
 
 // dirList lists a directory's contents.
-func dirList(testPath string) ([]fs.FileInfo, bool) {
-	var dlist []fs.FileInfo
+func dirList(testPath string) ([]fs.DirEntry, bool) {
+	var dlist []fs.DirEntry
 
 	_, err := os.Lstat(testPath)
 	if err != nil {
@@ -372,13 +374,15 @@ func dirList(testPath string) ([]fs.FileInfo, bool) {
 		return nil, false
 	}
 
-	list, err := ioutil.ReadDir(testPath)
+	list, err := os.ReadDir(testPath)
 	if err != nil {
 		return nil, false
 	}
 
-	prevFileInfo = dir
-	dlist = append(dlist, dir)
+	dirEntry := fs.FileInfoToDirEntry(dir)
+
+	filepicker.prevFileInfo = dirEntry
+	dlist = append(dlist, dirEntry)
 
 	for _, entry := range list {
 		if getHidden() && strings.HasPrefix(entry.Name(), ".") {
@@ -404,8 +408,8 @@ func buttonHandler(button string) {
 		fallthrough
 
 	case "cancel":
-		close(fileListChan)
-		Pages.RemovePage("filepicker")
+		close(filepicker.listChan)
+		UI.Pages.RemovePage("filepicker")
 
 	case "hidden":
 		toggleHidden()
@@ -418,10 +422,10 @@ func buttonHandler(button string) {
 		selectFileHandler(true, false)
 	}
 
-	filePickButtons.Highlight("")
+	filepicker.buttons.Highlight("")
 }
 
-// selectFileHandler iterates over the filePickTable's rows,
+// selectFileHandler iterates over the filepicker.table's rows,
 // determines the type of selection to be made (single, inverse or all),
 // and marks the selections.
 func selectFileHandler(all, inverse bool, row ...int) {
@@ -433,9 +437,9 @@ func selectFileHandler(all, inverse bool, row ...int) {
 	if row != nil {
 		pos = row[0]
 	} else {
-		pos, _ = filePickTable.GetSelection()
+		pos, _ = filepicker.table.GetSelection()
 	}
-	totalrows := filePickTable.GetRowCount()
+	totalrows := filepicker.table.GetRowCount()
 
 	for i := 0; i < totalrows; i++ {
 		var checkSelected bool
@@ -446,17 +450,17 @@ func selectFileHandler(all, inverse bool, row ...int) {
 			userSelected = append(userSelected, struct{}{})
 		}
 
-		cell := filePickTable.GetCell(i, 1)
+		cell := filepicker.table.GetCell(i, 1)
 		if cell == nil {
 			return
 		}
 
-		entry, ok := cell.GetReference().(fs.FileInfo)
+		entry, ok := cell.GetReference().(fs.DirEntry)
 		if !ok {
 			return
 		}
 
-		fullpath := filepath.Join(currentPath, entry.Name())
+		fullpath := filepath.Join(filepicker.currentPath, entry.Name())
 		if singleSelection || inverseSelection {
 			checkSelected = checkFileSelected(fullpath)
 		}
@@ -470,7 +474,7 @@ func selectFileHandler(all, inverse bool, row ...int) {
 
 		if singleSelection {
 			if i+1 < totalrows {
-				filePickTable.Select(i+1, 0)
+				filepicker.table.Select(i+1, 0)
 				return
 			}
 
@@ -478,42 +482,42 @@ func selectFileHandler(all, inverse bool, row ...int) {
 		}
 	}
 
-	filePickTable.Select(pos, 0)
+	filepicker.table.Select(pos, 0)
 }
 
-// addFileSelection adds a file to the fileSelection list.
-func addFileSelection(path string, info fs.FileInfo) {
-	fileSelectionLock.Lock()
-	defer fileSelectionLock.Unlock()
+// addFileSelection adds a file to the filepicker.selectedFiles list.
+func addFileSelection(path string, info fs.DirEntry) {
+	filepicker.selection.Lock()
+	defer filepicker.selection.Unlock()
 
-	if !info.Mode().IsRegular() {
+	if !info.Type().IsRegular() {
 		return
 	}
 
-	fileSelection[path] = info
+	filepicker.selectedFiles[path] = info
 }
 
-// removeFileSelection removes a file from the fileSelection list.
+// removeFileSelection removes a file from the filepicker.selectedFiles list.
 func removeFileSelection(path string) {
-	fileSelectionLock.Lock()
-	defer fileSelectionLock.Unlock()
+	filepicker.selection.Lock()
+	defer filepicker.selection.Unlock()
 
-	delete(fileSelection, path)
+	delete(filepicker.selectedFiles, path)
 }
 
 // checkFileSelected checks if a file is selected.
 func checkFileSelected(path string) bool {
-	fileSelectionLock.Lock()
-	defer fileSelectionLock.Unlock()
+	filepicker.selection.Lock()
+	defer filepicker.selection.Unlock()
 
-	_, selected := fileSelection[path]
+	_, selected := filepicker.selectedFiles[path]
 
 	return selected
 }
 
 // markFileSelection marks the selection for files only, directories are skipped.
-func markFileSelection(row int, info fs.FileInfo, selected bool, userSelected ...struct{}) {
-	if !info.Mode().IsRegular() {
+func markFileSelection(row int, info fs.DirEntry, selected bool, userSelected ...struct{}) {
+	if !info.Type().IsRegular() {
 		if info.IsDir() && userSelected != nil {
 			go changeDir(true, false)
 		}
@@ -521,7 +525,7 @@ func markFileSelection(row int, info fs.FileInfo, selected bool, userSelected ..
 		return
 	}
 
-	cell := filePickTable.GetCell(row, 0)
+	cell := filepicker.table.GetCell(row, 0)
 
 	if selected {
 		cell.Text = "+"
@@ -545,16 +549,16 @@ func trimPath(testPath string, cdBack bool) string {
 
 // getHidden checks if hidden files can be shown or not.
 func getHidden() bool {
-	hideLock.Lock()
-	defer hideLock.Unlock()
+	filepicker.hide.Lock()
+	defer filepicker.hide.Unlock()
 
-	return isHidden
+	return filepicker.isHidden
 }
 
 // toggleHidden toggles the hidden files mode.
 func toggleHidden() {
-	hideLock.Lock()
-	defer hideLock.Unlock()
+	filepicker.hide.Lock()
+	defer filepicker.hide.Unlock()
 
-	isHidden = !isHidden
+	filepicker.isHidden = !filepicker.isHidden
 }
