@@ -24,7 +24,7 @@ func deviceTable() *tview.Table {
 	DeviceTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyCtrlM:
-			MenuBar.Highlight("adapter")
+			menu.bar.Highlight("adapter")
 			return event
 		}
 
@@ -36,24 +36,18 @@ func deviceTable() *tview.Table {
 
 		playerEvents(event, false)
 
-		menuListInputHandler(event)
+		menuInputHandler(event)
 
 		return event
 	})
 	DeviceTable.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
-		if menuListMouseHandler(action, event) == nil {
-			return action, nil
-		}
-
 		if action == tview.MouseRightClick {
 			device := getDeviceFromSelection(false)
 			if device.Path == "" {
 				return action, event
 			}
 
-			setMenuList(0, 0, "device", menuOptions["device"], struct{}{})
-
-			go UI.Draw()
+			setMenu(0, 0, "device", menu.options["device"], struct{}{})
 		}
 
 		return action, event
@@ -141,24 +135,10 @@ func getDeviceInfo() {
 	}
 	props = append(props, []string{"UUIDs", ""})
 
-	deviceInfoTable := tview.NewTable()
-	deviceInfoTable.SetBorder(true)
-	deviceInfoTable.SetSelectorWrap(true)
-	deviceInfoTable.SetSelectable(true, false)
-	deviceInfoTable.SetBorderColor(theme.GetColor("Border"))
-	deviceInfoTable.SetBackgroundColor(theme.GetColor("Background"))
-	deviceInfoTable.SetTitle(theme.ColorWrap("Text", "[ DEVICE INFO ]"))
-	deviceInfoTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
-			UI.Pages.RemovePage("infomodal")
-		}
-
-		return event
-	})
-	deviceInfoTable.SetSelectionChangedFunc(func(row, col int) {
-		_, _, _, height := deviceInfoTable.GetRect()
-		deviceInfoTable.SetOffset(row-((height-1)/2), 0)
+	infoModal := NewModal("info", "Device Information", nil, 40, 100)
+	infoModal.Table.SetSelectionChangedFunc(func(row, col int) {
+		_, _, _, height := infoModal.Table.GetRect()
+		infoModal.Table.SetOffset(row-((height-1)/2), 0)
 	})
 
 	for i, prop := range props {
@@ -173,7 +153,7 @@ func getDeviceInfo() {
 			propValue += " (" + device.Type + ")"
 		}
 
-		deviceInfoTable.SetCell(i, 0, tview.NewTableCell("[::b]"+propName+":").
+		infoModal.Table.SetCell(i, 0, tview.NewTableCell("[::b]"+propName+":").
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
 			SetTextColor(theme.GetColor("Text")).
@@ -183,7 +163,7 @@ func getDeviceInfo() {
 			),
 		)
 
-		deviceInfoTable.SetCell(i, 1, tview.NewTableCell(propValue).
+		infoModal.Table.SetCell(i, 1, tview.NewTableCell(propValue).
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
 			SetTextColor(theme.GetColor("Text")).
@@ -194,12 +174,12 @@ func getDeviceInfo() {
 		)
 	}
 
-	rows := deviceInfoTable.GetRowCount() - 1
+	rows := infoModal.Table.GetRowCount() - 1
 	for i, serviceUUID := range device.UUIDs {
 		serviceType := bluez.ServiceType(serviceUUID)
 		serviceUUID = "(" + serviceUUID + ")"
 
-		deviceInfoTable.SetCell(rows+i, 1, tview.NewTableCell(serviceType).
+		infoModal.Table.SetCell(rows+i, 1, tview.NewTableCell(serviceType).
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
 			SetTextColor(theme.GetColor("Text")).
@@ -209,7 +189,7 @@ func getDeviceInfo() {
 			),
 		)
 
-		deviceInfoTable.SetCell(rows+i, 2, tview.NewTableCell(serviceUUID).
+		infoModal.Table.SetCell(rows+i, 2, tview.NewTableCell(serviceUUID).
 			SetExpansion(0).
 			SetTextColor(theme.GetColor("Text")).
 			SetSelectedStyle(tcell.Style{}.
@@ -219,7 +199,12 @@ func getDeviceInfo() {
 		)
 	}
 
-	ShowModal("infomodal", deviceInfoTable, 60, 1)
+	infoModal.Height = infoModal.Table.GetRowCount() + 4
+	if infoModal.Height > 60 {
+		infoModal.Height = 60
+	}
+
+	infoModal.Show()
 }
 
 // getDeviceFromSelection retrieves device information from

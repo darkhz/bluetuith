@@ -13,6 +13,7 @@ import (
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/tview"
+	"github.com/gdamore/tcell/v2"
 )
 
 // SetTrusted sets the trusted state of a device.
@@ -135,6 +136,31 @@ func getProgress(media bluez.MediaProperties, buttons string, width int, skip bo
 		formatDuration(duration)
 
 	return title, buttons, track, progress
+}
+
+// horizontalLine returns a box with a thick horizontal line.
+func horizontalLine() *tview.Box {
+	return tview.NewBox().
+		SetBackgroundColor(tcell.ColorDefault).
+		SetDrawFunc(func(
+			screen tcell.Screen,
+			x, y, width, height int) (int, int, int, int) {
+			centerY := y + height/2
+			for cx := x; cx < x+width; cx++ {
+				screen.SetContent(
+					cx,
+					centerY,
+					tview.BoxDrawingsLightHorizontal,
+					nil,
+					tcell.StyleDefault.Foreground(tcell.ColorWhite),
+				)
+			}
+
+			return x + 1,
+				centerY + 1,
+				width - 2,
+				height - (centerY + 1 - y)
+		})
 }
 
 // formatDuration converts a duration into a human-readable format.

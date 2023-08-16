@@ -37,7 +37,7 @@ func networkSelect() {
 		return
 	}
 
-	setSelectorMenu(
+	setContextMenu(
 		"device",
 		func(networkMenu *tview.Table) {
 			row, _ := networkMenu.GetSelection()

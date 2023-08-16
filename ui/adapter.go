@@ -14,7 +14,7 @@ import (
 // adapterChange launches a popup with a list of adapters.
 // Changing the selection will change the currently selected adapter.
 func adapterChange() {
-	setSelectorMenu(
+	setContextMenu(
 		"adapter", nil,
 		func(adapterMenu *tview.Table, row, col int) {
 			cell := adapterMenu.GetCell(row, 0)
@@ -98,8 +98,8 @@ func adapterEvent(signal *dbus.Signal, signalData interface{}) {
 
 	case "org.freedesktop.DBus.ObjectManager.InterfacesAdded":
 		UI.QueueUpdateDraw(func() {
-			if UI.Pages.HasPage("adaptermenu") {
-				UI.Pages.RemovePage("adaptermenu")
+			if modal, ok := ModalExists("adapter"); ok {
+				modal.Exit(false)
 				adapterChange()
 			}
 		})

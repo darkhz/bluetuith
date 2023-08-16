@@ -137,36 +137,31 @@ func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error
 		return dbus.MakeFailedError(err)
 	}
 
-	pincodeTable := tview.NewTable()
-	pincodeTable.SetBorder(true)
-	pincodeTable.SetTitle("Pin Code")
-	pincodeTable.SetSelectable(true, false)
-	pincodeTable.SetBorderColor(theme.GetColor("Border"))
-	pincodeTable.SetBackgroundColor(theme.GetColor("Background"))
-	pincodeTable.SetTitle(theme.ColorWrap("Text", "[ PIN CODE ]"))
-	pincodeTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
-			ui.UI.Pages.RemovePage("pincode")
-		}
+	width := 40
+	if w := len(device.Name); w > 40 {
+		width = w
+	}
+
+	text := fmt.Sprintf(
+		"The pincode for [::bu]%s[-:-:-] is:\n\n[::b]%s[-:-:-]\n\nPress any key or click the 'X' button to close this dialog.",
+		device.Name, pincode,
+	)
+
+	pincodeTextView := tview.NewTextView()
+	pincodeTextView.SetText(text)
+	pincodeTextView.SetDynamicColors(true)
+	pincodeTextView.SetTextAlign(tview.AlignCenter)
+	pincodeTextView.SetTextColor(theme.GetColor("Text"))
+	pincodeTextView.SetBackgroundColor(theme.GetColor("Background"))
+
+	pincodeModal := ui.NewModal("pincode", "Pin Code", pincodeTextView, 10, width)
+	pincodeTextView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		pincodeModal.Exit(false)
 
 		return event
 	})
-
-	pincodeTable.SetCell(0, 0, tview.NewTableCell("[::b]"+device.Name+":").
-		SetExpansion(1).
-		SetAlign(tview.AlignRight).
-		SetTextColor(theme.GetColor("Text")),
-	)
-	pincodeTable.SetCell(0, 1, tview.NewTableCell("[::u]"+pincode).
-		SetExpansion(1).
-		SetTextColor(theme.GetColor("Text")),
-	)
-
-	pincodeTable.Select(0, 0)
-
 	go ui.UI.QueueUpdateDraw(func() {
-		ui.ShowModal("pincode", pincodeTable, 10, 100)
+		pincodeModal.Show()
 	})
 
 	return nil

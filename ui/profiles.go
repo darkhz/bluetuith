@@ -27,7 +27,7 @@ func audioProfiles() {
 		return profiles[i].Name == "off"
 	})
 
-	setSelectorMenu(
+	setContextMenu(
 		"device",
 		func(profileMenu *tview.Table) {
 			row, _ := profileMenu.GetSelection()

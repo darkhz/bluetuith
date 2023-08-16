@@ -100,7 +100,7 @@ func filePickerTable() *tview.Table {
 
 		case tcell.KeyEscape:
 			close(filepicker.listChan)
-			UI.Pages.RemovePage("filepicker")
+			UI.Pages.SwitchToPage("main")
 		}
 
 		switch event.Rune() {
@@ -409,7 +409,7 @@ func buttonHandler(button string) {
 
 	case "cancel":
 		close(filepicker.listChan)
-		UI.Pages.RemovePage("filepicker")
+		UI.Pages.SwitchToPage("main")
 
 	case "hidden":
 		toggleHidden()

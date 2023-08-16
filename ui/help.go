@@ -62,23 +62,10 @@ func showHelp() {
 		"Stop":              "]",
 	}
 
-	helpTable := tview.NewTable()
-	helpTable.SetBorder(true)
-	helpTable.SetSelectable(true, false)
-	helpTable.SetBorderColor(theme.GetColor("Border"))
-	helpTable.SetTitle(theme.ColorWrap("Text", "[ HELP ]"))
-	helpTable.SetBackgroundColor(theme.GetColor("Background"))
-	helpTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
-			UI.Pages.RemovePage("helpmodal")
-		}
-
-		return event
-	})
-	helpTable.SetSelectionChangedFunc(func(row, col int) {
+	helpModal := NewModal("help", "Help", nil, 40, 60)
+	helpModal.Table.SetSelectionChangedFunc(func(row, col int) {
 		if row == 1 {
-			helpTable.ScrollToBeginning()
+			helpModal.Table.ScrollToBeginning()
 		}
 	})
 	helpModal.Table.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
@@ -95,7 +82,7 @@ func showHelp() {
 		"Progress View": progressViewKeyBindings,
 		"Media Player":  mediaPlayerKeyBindings,
 	} {
-		helpTable.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
+		helpModal.Table.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft).
 			SetTextColor(theme.GetColor("Text")),
@@ -104,7 +91,7 @@ func showHelp() {
 		row++
 
 		for op, key := range helpMap {
-			helpTable.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap("Text", op)).
+			helpModal.Table.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap("Text", op)).
 				SetExpansion(1).
 				SetAlign(tview.AlignLeft).
 				SetTextColor(theme.GetColor("Text")).
@@ -114,7 +101,7 @@ func showHelp() {
 				),
 			)
 
-			helpTable.SetCell(row, 1, tview.NewTableCell(theme.ColorWrap("Text", key)).
+			helpModal.Table.SetCell(row, 1, tview.NewTableCell(theme.ColorWrap("Text", key)).
 				SetExpansion(0).
 				SetAlign(tview.AlignLeft).
 				SetTextColor(theme.GetColor("Text")).
@@ -131,5 +118,5 @@ func showHelp() {
 
 	}
 
-	ShowModal("helpmodal", helpTable, 20, 60)
+	helpModal.Show()
 }

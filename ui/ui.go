@@ -32,6 +32,7 @@ type Application struct {
 	Network *network.Network
 
 	suspend bool
+	page string
 
 	*tview.Application
 }
@@ -50,8 +51,17 @@ func StartUI() {
 		AddItem(deviceTable(), 0, 10, true)
 	flex.SetBackgroundColor(theme.GetColor("Background"))
 
+	UI.page = "main"
 	UI.Pages.AddPage("main", flex, true, true)
 	UI.Pages.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Pages.SetChangedFunc(func() {
+		page, _ := UI.Pages.GetFrontPage()
+
+		switch page {
+		case "main", "filepicker", "progressview":
+			UI.page = page
+		}
+	})
 
 	UI.Layout = tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -74,7 +84,11 @@ func StartUI() {
 
 		return event
 	})
+	UI.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+		return modalMouseHandler(event, action)
+	})
 	UI.SetBeforeDrawFunc(func(t tcell.Screen) bool {
+		ResizeModal()
 		suspendUI(t)
 
 		return false
