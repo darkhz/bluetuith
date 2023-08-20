@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	var warn string
+
 	bluezConn, err := bluez.NewBluez()
 	if err != nil {
 		cmd.PrintError("Could not initialize bluez DBus connection", err)
@@ -22,21 +24,21 @@ func main() {
 
 	networkConn, err := network.NewNetwork()
 	if err != nil {
-		cmd.Print("Network connection is disabled since the NetworkManager DBus connection could not be initialized.", 0)
+		warn += "Network connection is disabled since the NetworkManager DBus connection could not be initialized.\n\n"
 	}
 	cmd.AddProperty("network", err == nil)
 
 	obexConn, err := bluez.NewObex()
 	if err != nil {
-		cmd.Print("Could not initialize bluez OBEX DBus connection.", 0)
+		warn += "Could not initialize bluez OBEX DBus connection.\n\n"
 	} else {
 		if err = agent.SetupObexAgent(); err != nil {
-			cmd.Print("Send/receive files is disabled since the bluez OBEX agent could not be setup.", 0)
+			warn += "Send/receive files is disabled since the bluez OBEX agent could not be setup.\n\n"
 		}
 	}
 	cmd.AddProperty("obex", err == nil)
 
-	ui.SetConnections(bluezConn, obexConn, networkConn)
+	ui.SetConnections(bluezConn, obexConn, networkConn, warn)
 	ui.StartUI()
 	ui.StopMediaPlayer()
 

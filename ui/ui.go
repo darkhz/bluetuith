@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"strings"
 	"syscall"
 
 	"github.com/darkhz/bluetuith/bluez"
@@ -32,7 +33,8 @@ type Application struct {
 	Network *network.Network
 
 	suspend bool
-	page string
+	warn, page string
+	focus   tview.Primitive
 
 	*tview.Application
 }
@@ -51,6 +53,7 @@ func StartUI() {
 		AddItem(deviceTable(), 0, 10, true)
 	flex.SetBackgroundColor(theme.GetColor("Background"))
 
+	UI.focus = flex
 	UI.page = "main"
 	UI.Pages.AddPage("main", flex, true, true)
 	UI.Pages.SetBackgroundColor(theme.GetColor("Background"))
@@ -69,7 +72,6 @@ func StartUI() {
 		AddItem(statusBar(), 1, 0, false)
 	UI.Layout.SetBackgroundColor(theme.GetColor("Background"))
 
-	UI.SetFocus(flex)
 	UI.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyCtrlC:
@@ -95,9 +97,10 @@ func StartUI() {
 	})
 
 	setupDevices()
+	displayWarning()
 	InfoMessage("bluetuith is ready.", false)
 
-	if err := UI.SetRoot(UI.Layout, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
+	if err := UI.SetRoot(UI.Layout, true).SetFocus(UI.focus).EnableMouse(true).Run(); err != nil {
 		cmd.PrintError("Cannot initialize application", err)
 	}
 }
@@ -110,10 +113,11 @@ func StopUI() {
 }
 
 // SetConnections sets the connections to bluez and networkmanager.
-func SetConnections(b *bluez.Bluez, o *bluez.Obex, n *network.Network) {
+func SetConnections(b *bluez.Bluez, o *bluez.Obex, n *network.Network, warn string) {
 	UI.Bluez = b
 	UI.Obex = o
 	UI.Network = n
+	UI.warn = warn
 }
 
 // suspendUI suspends the application.
@@ -133,6 +137,36 @@ func suspendUI(t tcell.Screen) {
 	if err := t.Resume(); err != nil {
 		return
 	}
+}
+
+func displayWarning() {
+	if UI.warn == "" {
+		return
+	}
+
+	height := 10
+	if strings.Count(UI.warn, "\n") > 2 {
+		height += 4
+	}
+
+	UI.warn += "\n\n-- Press any key to close this dialog --\n\n"
+
+	warningTextView := tview.NewTextView()
+	warningTextView.SetText(UI.warn)
+	warningTextView.SetDynamicColors(true)
+	warningTextView.SetTextAlign(tview.AlignCenter)
+	warningTextView.SetTextColor(theme.GetColor("Text"))
+	warningTextView.SetBackgroundColor(theme.GetColor("Background"))
+
+	modal := NewModal("warning", "Warning", warningTextView, height, 60)
+	warningTextView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		modal.Exit(false)
+
+		return event
+	})
+
+	UI.focus = modal.Flex
+	modal.Show()
 }
 
 func confirmQuit() bool {
