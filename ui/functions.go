@@ -316,7 +316,7 @@ func visibleSend() bool {
 		return false
 	}
 
-	return cmd.GetConfigProperty("obex") == "true" &&
+	return cmd.IsPropertyEnabled("obex") &&
 		device.HaveService(bluez.OBEX_OBJPUSH_SVCLASS_ID)
 }
 
@@ -327,7 +327,7 @@ func visibleNetwork() bool {
 		return false
 	}
 
-	return cmd.GetConfigProperty("network") == "true" &&
+	return cmd.IsPropertyEnabled("network") &&
 		device.HaveService(bluez.NAP_SVCLASS_ID) &&
 		(device.HaveService(bluez.PANU_SVCLASS_ID) ||
 			device.HaveService(bluez.DIALUP_NET_SVCLASS_ID))

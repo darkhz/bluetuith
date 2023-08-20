@@ -1,10 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"strconv"
-
 	"github.com/darkhz/bluetuith/agent"
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
@@ -12,58 +8,36 @@ import (
 	"github.com/darkhz/bluetuith/ui"
 )
 
-func errMessage(err string) {
-	fmt.Fprintf(os.Stderr, "Error: %s\n", err)
-}
-
-func warnMessage(warn string) {
-	fmt.Fprintf(os.Stderr, "Warning: %s\n", warn)
-}
-
 func main() {
-	if err := cmd.SetupConfig(); err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	bluezConn, err := bluez.NewBluez()
 	if err != nil {
-		errMessage("Could not initialize bluez DBus connection")
-		return
+		cmd.PrintError("Could not initialize bluez DBus connection", err)
 	}
 
 	if err := agent.SetupAgent(bluezConn.Conn()); err != nil {
-		errMessage("Could not setup bluez agent")
-		return
+		cmd.PrintError("Could not setup bluez agent", err)
 	}
 
-	cmd.ParseCmdFlags(bluezConn)
+	cmd.Init(bluezConn)
 
 	networkConn, err := network.NewNetwork()
 	if err != nil {
-		warnMessage("Could not initialize NetworkManager DBus connection")
-		warnMessage("Network connection is disabled")
+		cmd.Print("Network connection is disabled since the NetworkManager DBus connection could not be initialized.", 0)
 	}
-	cmd.AddConfigProperty("network", strconv.FormatBool(err == nil))
+	cmd.AddProperty("network", err == nil)
 
 	obexConn, err := bluez.NewObex()
 	if err != nil {
-		warnMessage("Could not initialize bluez OBEX DBus connection")
+		cmd.Print("Could not initialize bluez OBEX DBus connection.", 0)
 	} else {
-		err = agent.SetupObexAgent()
-		if err != nil {
-			warnMessage("Could not setup bluez OBEX agent")
-			warnMessage("Send/receive files is disabled")
+		if err = agent.SetupObexAgent(); err != nil {
+			cmd.Print("Send/receive files is disabled since the bluez OBEX agent could not be setup.", 0)
 		}
 	}
-	cmd.AddConfigProperty("obex", strconv.FormatBool(err == nil))
+	cmd.AddProperty("obex", err == nil)
 
-	ui.SetBluezConn(bluezConn)
-	ui.SetObexConn(obexConn)
-	ui.SetNetworkConn(networkConn)
-
+	ui.SetConnections(bluezConn, obexConn, networkConn)
 	ui.StartUI()
-
 	ui.StopMediaPlayer()
 
 	agent.RemoveObexAgent()

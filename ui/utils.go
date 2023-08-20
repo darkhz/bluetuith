@@ -12,24 +12,8 @@ import (
 
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
-	"github.com/darkhz/bluetuith/network"
 	"github.com/darkhz/tview"
 )
-
-// SetBluezConn sets up the bluez connection.
-func SetBluezConn(b *bluez.Bluez) {
-	UI.Bluez = b
-}
-
-// SetObexConn sets up the bluez obex connection.
-func SetObexConn(o *bluez.Obex) {
-	UI.Obex = o
-}
-
-// SetNetworkConn sets up the network connection.
-func SetNetworkConn(n *network.Network) {
-	UI.Network = n
-}
 
 // SetTrusted sets the trusted state of a device.
 func SetTrusted(devicePath string, enable bool) error {
@@ -68,7 +52,7 @@ func formatSize(size int64) string {
 // If the directory is not specified, it automatically creates a directory in the
 // user's home path and moves the file there.
 func savefile(path string) error {
-	userpath := cmd.GetConfigProperty("receive-dir")
+	userpath := cmd.GetProperty("receive-dir")
 	if userpath == "" {
 		homedir, err := os.UserHomeDir()
 		if err != nil {

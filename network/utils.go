@@ -45,8 +45,8 @@ func checkSettings(conn nm.Connection, connType string) error {
 		return NMSettingModifyError
 	}
 
-	apn := cmd.GetConfigProperty("gsm-apn")
-	number := cmd.GetConfigProperty("gsm-number")
+	apn := cmd.GetProperty("gsm-apn")
+	number := cmd.GetProperty("gsm-number")
 
 	if apn != gsmSettings["apn"] {
 		gsmSettings["apn"] = apn
@@ -81,8 +81,8 @@ func getSettings(bdaddr []byte, name, connType, uuid string) map[string]map[stri
 	}
 
 	if connType == "dun" {
-		apn := cmd.GetConfigProperty("gsm-apn")
-		number := cmd.GetConfigProperty("gsm-number")
+		apn := cmd.GetProperty("gsm-apn")
+		number := cmd.GetProperty("gsm-number")
 
 		settings["gsm"] = map[string]interface{}{
 			"apn":    apn,

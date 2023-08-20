@@ -4,6 +4,7 @@ import (
 	"syscall"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/network"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
@@ -83,7 +84,7 @@ func StartUI() {
 	InfoMessage("bluetuith is ready.", false)
 
 	if err := UI.SetRoot(UI.Layout, true).SetFocus(DeviceTable).EnableMouse(true).Run(); err != nil {
-		panic(err)
+		cmd.PrintError("Cannot initialize application", err)
 	}
 }
 
@@ -92,6 +93,13 @@ func StopUI() {
 	stopStatus()
 
 	UI.Stop()
+}
+
+// SetConnections sets the connections to bluez and networkmanager.
+func SetConnections(b *bluez.Bluez, o *bluez.Obex, n *network.Network) {
+	UI.Bluez = b
+	UI.Obex = o
+	UI.Network = n
 }
 
 // suspendUI suspends the application.

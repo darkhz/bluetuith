@@ -6,68 +6,77 @@ import (
 	"path/filepath"
 
 	"github.com/darkhz/bluetuith/theme"
+	"github.com/knadh/koanf/v2"
 )
 
-var (
-	configPath       string
-	configProperties map[string]string
-)
+// Config describes the configuration for the app.
+type Config struct {
+	path string
 
-// SetupConfig checks for the config directory,
+	*koanf.Koanf
+}
+
+var config Config
+
+// setup checks for the config directory,
 // and creates one if it doesn't exist.
-func SetupConfig() error {
-	var dotConfigExists bool
+func (c *Config) setup() {
+	var configExists bool
+
+	c.Koanf = koanf.New(".")
 
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		PrintError(err.Error())
 	}
 
-	configProperties = make(map[string]string)
-	configDirs := []string{".config/bluetuith", ".bluetuith"}
+	dirs := []string{".config/bluetuith", ".bluetuith"}
+	for i, dir := range dirs {
+		p := filepath.Join(homedir, dir)
+		dirs[i] = p
 
-	for i, dir := range configDirs {
-		fullpath := filepath.Join(homedir, dir)
-		configDirs[i] = fullpath
-
-		if _, err := os.Stat(fullpath); err == nil {
-			configPath = fullpath
-			return theme.CreateThemesDir(configPath)
+		if _, err := os.Stat(p); err == nil {
+			c.path = p
+			if err := theme.CreateThemesDir(c.path); err != nil {
+				PrintError(err.Error())
+			}
 		}
 
-		if i == 0 {
-			if _, err := os.Stat(
-				filepath.Clean(filepath.Dir(fullpath)),
-			); err == nil {
-				dotConfigExists = true
-			}
+		if i > 0 {
+			continue
+		}
+
+		if _, err := os.Stat(filepath.Clean(filepath.Dir(p))); err == nil {
+			configExists = true
 		}
 	}
 
-	if configPath == "" {
-		if dotConfigExists {
-			err := os.Mkdir(configDirs[0], 0700)
-			if err != nil {
-				return fmt.Errorf("Cannot create %s", configDirs[0])
-			}
+	if c.path == "" {
+		var pos int
+		var err error
 
-			configPath = configDirs[0]
+		if configExists {
+			err = os.Mkdir(dirs[0], 0700)
 		} else {
-			err := os.Mkdir(configDirs[1], 0700)
-			if err != nil {
-				return fmt.Errorf("Cannot create %s", configDirs[1])
-			}
-
-			configPath = configDirs[1]
+			pos = 1
+			err = os.Mkdir(dirs[1], 0700)
 		}
+
+		if err != nil {
+			PrintError(err.Error())
+		}
+
+		c.path = dirs[pos]
 	}
 
-	return theme.CreateThemesDir(configPath)
+	if err := theme.CreateThemesDir(config.path); err != nil {
+		PrintError(err.Error())
+	}
 }
 
 // ConfigPath returns the absolute path for the given configType.
 func ConfigPath(configType string) (string, error) {
-	confPath := filepath.Join(configPath, configType)
+	confPath := filepath.Join(config.path, configType)
 
 	if _, err := os.Stat(confPath); err != nil {
 		fd, err := os.Create(confPath)
@@ -81,11 +90,16 @@ func ConfigPath(configType string) (string, error) {
 }
 
 // GetConfigProperty returns the value for the given property.
-func GetConfigProperty(property string) string {
-	return configProperties[property]
+func GetProperty(property string) string {
+	return config.String(property)
+}
+
+// IsPropertyEnabled returns if a property is enabled.
+func IsPropertyEnabled(property string) bool {
+	return config.Bool(property)
 }
 
 // AddConfigProperty adds a property and its value to the properties store.
-func AddConfigProperty(property, value string) {
-	configProperties[property] = value
+func AddProperty(property string, value interface{}) {
+	config.Set(property, value)
 }
