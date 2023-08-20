@@ -46,6 +46,11 @@ var options = []Option{
 		Name:        "set-theme",
 		Description: "Specify a theme." + theme.GetThemes(),
 	},
+	{
+		Name:        "generate",
+		Description: "Generate configuration.",
+		IsBoolean:   true,
+	},
 }
 
 func parse() {
@@ -191,4 +196,15 @@ func cmdOptionTheme() {
 	if err := theme.ParseThemeFile(optionTheme); err != nil {
 		PrintError(err.Error())
 	}
+}
+
+func cmdOptionGenerate() {
+	optionGenerate := IsPropertyEnabled("generate")
+	if !optionGenerate {
+		return
+	}
+
+	generate()
+
+	os.Exit(0)
 }

@@ -11,6 +11,7 @@ func Init(bluez *bluez.Bluez) {
 	cmdOptionAdapter(bluez)
 	cmdOptionListAdapters(bluez)
 
+	cmdOptionGenerate()
 	cmdOptionTheme()
 
 	cmdOptionGsm()

@@ -15,6 +15,13 @@ func Print(message string, status ...int) {
 	}
 }
 
+// PrintWarn prints a warning to the screen.
+func PrintWarn(message string) {
+	message = "[-] " + message
+
+	color.New(color.FgYellow, color.Bold).Println(message)
+}
+
 // PrintError prints an error to the screen.
 func PrintError(message string, err ...error) {
 	message = "[!] " + message

@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/darkhz/bluetuith/theme"
+	"github.com/hjson/hjson-go/v4"
 	"github.com/knadh/koanf/v2"
 )
 
@@ -102,4 +106,78 @@ func IsPropertyEnabled(property string) bool {
 // AddConfigProperty adds a property and its value to the properties store.
 func AddProperty(property string, value interface{}) {
 	config.Set(property, value)
+}
+
+// generate generates and updates the configuration.
+// Any existing values are appended to it.
+func generate() {
+	parseOldConfig()
+
+	genMap := make(map[string]interface{})
+
+	for _, option := range options {
+		if !option.IsBoolean {
+			genMap[option.Name] = config.Get(option.Name)
+		}
+	}
+
+	data, err := hjson.Marshal(genMap)
+	if err != nil {
+		PrintError(err.Error())
+	}
+
+	conf, err := ConfigPath("bluetuith.conf")
+	if err != nil {
+		PrintError(err.Error())
+	}
+
+	file, err := os.OpenFile(conf, os.O_WRONLY|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		PrintError(err.Error())
+	}
+	defer file.Close()
+
+	_, err = file.Write(data)
+	if err != nil {
+		PrintError(err.Error())
+	}
+
+	if err := file.Sync(); err != nil {
+		PrintError(err.Error())
+	}
+}
+
+// parseOldConfig parses and stores values from the old configuration.
+func parseOldConfig() {
+	file, err := ConfigPath("config")
+	if err != nil {
+		return
+	}
+
+	fd, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		PrintWarn("Config: The old configuration could not be read")
+		return
+	}
+
+	scanner := bufio.NewScanner(fd)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
+
+		values := strings.Split(line, "=")
+		if len(values) != 2 {
+			continue
+		}
+
+		AddProperty(values[0], values[1])
+	}
+
+	fd.Close()
+
+	if err = scanner.Err(); err != nil && err != io.EOF {
+		PrintWarn("Config: The old configuration could not be parsed")
+	}
 }
