@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"sort"
 	"sync"
 
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -14,28 +14,124 @@ type Menu struct {
 	bar   *tview.TextView
 	modal *Modal
 
-	options map[string]map[string]*MenuOption
+	options map[string]map[cmd.Key]*MenuOption
 
 	lock sync.Mutex
 }
 
 // MenuOption describes an option layout for a submenu.
 type MenuOption struct {
-	index      int
-	title      string
-	menuid     string
-	togglestr  string
-	displaystr string
-	keybinding rune
-	toggled    bool
-	oncreate   func() bool
-	onclick    func() bool
-	visible    func() bool
+	index int
+
+	Key cmd.Key
+
+	Display           string
+	Enabled, Disabled string
+
+	Toggled                    bool
+	OnCreate, OnClick, Visible bool
+
+	*cmd.KeyData
 }
 
 const menuBarRegions = `["adapter"][::b][Adapter[][""] ["device"][::b][Device[][""]`
 
-var menu Menu
+var (
+	menu Menu
+
+	menuKeybindings = map[string][]*MenuOption{
+		"adapter": {
+			{
+				Key:      cmd.KeyAdapterTogglePower,
+				Enabled:  "On",
+				Disabled: "Off",
+				OnClick:  true,
+				OnCreate: true,
+			},
+			{
+				Key:      cmd.KeyAdapterToggleDiscoverable,
+				Enabled:  "On",
+				Disabled: "Off",
+				OnClick:  true,
+				OnCreate: true,
+			},
+			{
+				Key:      cmd.KeyAdapterTogglePairable,
+				Enabled:  "On",
+				Disabled: "Off",
+				OnClick:  true,
+				OnCreate: true,
+			},
+			{
+				Key:      cmd.KeyAdapterToggleScan,
+				Disabled: "Stop Scan",
+				OnClick:  true,
+			},
+			{
+				Key:     cmd.KeyAdapterChange,
+				OnClick: true,
+			},
+			{
+				Key:     cmd.KeyProgressView,
+				OnClick: true,
+			},
+			{
+				Key:     cmd.KeyPlayerHide,
+				OnClick: true,
+			},
+			{
+				Key:     cmd.KeyQuit,
+				OnClick: true,
+			},
+		},
+		"device": {
+			{
+				Key:      cmd.KeyDeviceConnect,
+				Disabled: "Disconnect",
+				OnClick:  true,
+				OnCreate: true,
+			},
+			{
+				Key:     cmd.KeyDevicePair,
+				OnClick: true,
+			},
+			{
+				Key:      cmd.KeyDeviceTrust,
+				Disabled: "Untrust",
+				OnClick:  true,
+				OnCreate: true,
+			},
+			{
+				Key:     cmd.KeyDeviceSendFiles,
+				OnClick: true,
+				Visible: true,
+			},
+			{
+				Key:     cmd.KeyDeviceNetwork,
+				OnClick: true,
+				Visible: true,
+			},
+			{
+				Key:     cmd.KeyDeviceAudioProfiles,
+				OnClick: true,
+				Visible: true,
+			},
+			{
+				Key:     cmd.KeyPlayerShow,
+				OnClick: true,
+				Visible: true,
+			},
+			{
+				Key:     cmd.KeyDeviceInfo,
+				OnClick: true,
+			},
+			{
+				Key:     cmd.KeyDeviceRemove,
+				OnClick: true,
+			},
+		},
+	}
+)
 
 // menuBar sets up and returns the menu bar.
 func menuBar() *tview.TextView {
@@ -52,7 +148,7 @@ func menuBar() *tview.TextView {
 
 		for _, region := range menu.bar.GetRegionInfos() {
 			if region.ID == added[0] {
-				setMenu(region.FromX, 1, added[0], menu.options[added[0]])
+				setMenu(region.FromX, 1, added[0])
 				break
 			}
 		}
@@ -65,187 +161,58 @@ func menuBar() *tview.TextView {
 
 // setupMenuOptions sets up the menu options with its attributes.
 func setupMenuOptions() {
-	menu.options = make(map[string]map[string]*MenuOption)
+	menu.options = make(map[string]map[cmd.Key]*MenuOption)
 
-	adapterOptions := []*MenuOption{
-		{
-			index:      0,
-			title:      "Power on",
-			menuid:     "power",
-			togglestr:  "Power off",
-			keybinding: 'o',
-			onclick:    onClickFunc("power"),
-			oncreate:   createPower,
-		},
-		{
-			index:      1,
-			title:      "Discovery on",
-			menuid:     "discoverable",
-			togglestr:  "Discovery off",
-			keybinding: 'S',
-			onclick:    onClickFunc("discoverable"),
-			oncreate:   createDiscoverable,
-		},
-		{
-			index:      2,
-			title:      "Pairable on",
-			menuid:     "pairable",
-			togglestr:  "Pairable off",
-			keybinding: 'P',
-			onclick:    onClickFunc("pairable"),
-			oncreate:   createPairable,
-		},
-		{
-			index:      3,
-			title:      "Scan",
-			menuid:     "scan",
-			togglestr:  "Stop scan",
-			keybinding: 's',
-			onclick:    onClickFunc("scan"),
-		},
+	for menuName, keybindings := range menuKeybindings {
+		if menu.options[menuName] == nil {
+			menu.options[menuName] = make(map[cmd.Key]*MenuOption)
 
-		{
-			index:      4,
-			title:      "Change",
-			menuid:     "change",
-			keybinding: 'a',
-			onclick:    onClickFunc("change"),
-		},
-		{
-			index:      5,
-			title:      "Progress View",
-			menuid:     "progress",
-			keybinding: 'v',
-			onclick:    onClickFunc("progress"),
-		},
-		{
-			index:      6,
-			title:      "Hide player",
-			menuid:     "playerhide",
-			keybinding: 'M',
-			onclick:    onClickFunc("hideplayer"),
-		},
-		{
-			index:      7,
-			title:      "Quit",
-			menuid:     "quit",
-			keybinding: 'Q',
-			onclick:    onClickFunc("quit"),
-		},
-	}
-
-	deviceOptions := []*MenuOption{
-		{
-			index:      0,
-			title:      "Connect",
-			menuid:     "connect",
-			togglestr:  "Disconnect",
-			keybinding: 'c',
-			onclick:    onClickFunc("connect"),
-			oncreate:   createConnect,
-		},
-		{
-			index:      1,
-			title:      "Pair",
-			menuid:     "pair",
-			keybinding: 'p',
-			onclick:    onClickFunc("pair"),
-		},
-		{
-			index:      2,
-			title:      "Trust",
-			menuid:     "trust",
-			togglestr:  "Untrust",
-			keybinding: 't',
-			onclick:    onClickFunc("trust"),
-			oncreate:   createTrust,
-		},
-		{
-			index:      3,
-			title:      "Send Files",
-			menuid:     "send",
-			keybinding: 'f',
-			onclick:    onClickFunc("send"),
-			visible:    visibleSend,
-		},
-		{
-			index:      4,
-			title:      "Network",
-			menuid:     "network",
-			keybinding: 'n',
-			onclick:    onClickFunc("network"),
-			visible:    visibleNetwork,
-		},
-		{
-			index:      5,
-			title:      "Audio Profiles",
-			menuid:     "profiles",
-			keybinding: 'A',
-			onclick:    onClickFunc("profiles"),
-			visible:    visibleProfile,
-		},
-		{
-			index:      6,
-			title:      "Media player",
-			menuid:     "player",
-			keybinding: 'm',
-			onclick:    onClickFunc("showplayer"),
-			visible:    visiblePlayer,
-		},
-		{
-			index:      7,
-			title:      "Info",
-			menuid:     "info",
-			keybinding: 'i',
-			onclick:    onClickFunc("info"),
-		},
-		{
-			index:      8,
-			title:      "Remove",
-			menuid:     "remove",
-			keybinding: 'd',
-			onclick:    onClickFunc("remove"),
-		},
-	}
-
-	for _, opt := range []string{"adapter", "device"} {
-		if menu.options[opt] == nil {
-			menu.options[opt] = make(map[string]*MenuOption)
-		}
-
-		switch opt {
-		case "adapter":
-			for _, menuopt := range adapterOptions {
-				menuopt.displaystr = menuopt.title
-				menu.options[opt][menuopt.menuid] = menuopt
-			}
-
-		case "device":
-			for _, menuopt := range deviceOptions {
-				menuopt.displaystr = menuopt.title
-				menu.options[opt][menuopt.menuid] = menuopt
+			for index, keybinding := range keybindings {
+				keybinding.index = index
+				menu.options[menuName][keybinding.Key] = keybinding
+				keybinding.KeyData = cmd.OperationData(keybinding.Key)
 			}
 		}
+
 	}
 }
 
 // setMenuItemToggle sets the toggled state of the specified menu item using
 // the menu's name and the submenu's ID.
-func setMenuItemToggle(menuName, menuID string, toggle bool, nodraw ...struct{}) {
+func setMenuItemToggle(menuName string, menuKey cmd.Key, toggle bool, nodraw ...struct{}) {
 	menu.lock.Lock()
 	defer menu.lock.Unlock()
 
-	menuItem := menu.options[menuName][menuID]
-	if menuItem.togglestr == "" {
+	menuItem := menu.options[menuName][menuKey]
+	if menuItem == nil || menuItem.KeyData == nil {
+		return
+	}
+
+	title := menuItem.Title
+	switch {
+	case menuItem.Disabled == "":
+		menuItem.Display = title
+		return
+
+	case menuItem.Enabled == "" && menuItem.Disabled != "":
+		if toggle {
+			menuItem.Display = menuItem.Disabled
+		} else {
+			menuItem.Display = title
+		}
+
+		menuItem.Toggled = toggle
+
 		return
 	}
 
 	if toggle {
-		menuItem.displaystr = menuItem.togglestr
+		menuItem.Display = title + " " + menuItem.Disabled
 	} else {
-		menuItem.displaystr = menuItem.title
+		menuItem.Display = title + " " + menuItem.Enabled
 	}
-	menuItem.toggled = toggle
+
+	menuItem.Toggled = toggle
 
 	if nodraw == nil {
 		UI.QueueUpdateDraw(func() {
@@ -257,24 +224,24 @@ func setMenuItemToggle(menuName, menuID string, toggle bool, nodraw ...struct{})
 					return
 				}
 
-				cell.Text = menuItem.displaystr
+				cell.Text = menuItem.Display
 			}
 		})
 	}
 }
 
 // setMenu sets up a submenu for the specified menu.
-func setMenu(x, y int, menuID string, options map[string]*MenuOption, device ...struct{}) {
-	var menuoptions []*MenuOption
+func setMenu(x, y int, menuID string, device ...struct{}) {
+	var width int
 
 	modal := menu.modal
 	modal.Table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
+		switch cmd.KeyOperation(event) {
+		case cmd.KeyClose:
 			exitMenu()
 			return event
 
-		case tcell.KeyTab:
+		case cmd.KeySwitch:
 			switchMenu()
 			return event
 		}
@@ -294,41 +261,41 @@ func setMenu(x, y int, menuID string, options map[string]*MenuOption, device ...
 			return
 		}
 
-		ref.onclick()
-	})
-
-	for _, opt := range options {
-		if opt.visible != nil && !opt.visible() {
-			continue
-		}
-
-		menuoptions = append(menuoptions, opt)
-	}
-	sort.Slice(menuoptions, func(i, j int) bool {
-		return menuoptions[i].index < menuoptions[j].index
+		KeyHandler(ref.Key, FunctionClick)()
 	})
 
 	modal.Table.Clear()
-	for index, menuopt := range menuoptions {
-		if menuopt.oncreate != nil {
-			setMenuItemToggle(menuID, menuopt.menuid, menuopt.oncreate(), struct{}{})
+	for index, menuopt := range menuKeybindings[menuID] {
+		toggle := menuopt.Toggled
+		if toggleHandler := KeyHandler(menuopt.Key, FunctionCreate); menuopt.OnCreate && toggleHandler != nil {
+			toggle = toggleHandler()
 		}
 
-		modal.Table.SetCell(index, 0, tview.NewTableCell(menuopt.displaystr).
+		setMenuItemToggle(menuID, menuopt.Key, toggle, struct{}{})
+
+		display := menuopt.Display
+		keybinding := cmd.KeyName(menuopt.KeyData.Kb)
+
+		displayWidth := len(display) + len(keybinding) + 6
+		if displayWidth > width {
+			width = displayWidth
+		}
+
+		modal.Table.SetCell(index, 0, tview.NewTableCell(display).
 			SetExpansion(1).
 			SetReference(menuopt).
 			SetAlign(tview.AlignLeft).
-			SetClickedFunc(menuopt.onclick).
 			SetTextColor(theme.GetColor("MenuItem")).
+			SetClickedFunc(KeyHandler(menuopt.Key, FunctionClick)).
 			SetSelectedStyle(tcell.Style{}.
 				Foreground(theme.GetColor("MenuItem")).
 				Background(theme.BackgroundColor("MenuItem")),
 			),
 		)
-		modal.Table.SetCell(index, 1, tview.NewTableCell(string(menuopt.keybinding)).
+		modal.Table.SetCell(index, 1, tview.NewTableCell(keybinding).
 			SetExpansion(1).
 			SetAlign(tview.AlignRight).
-			SetClickedFunc(menuopt.onclick).
+			SetClickedFunc(KeyHandler(menuopt.Key, FunctionClick)).
 			SetTextColor(theme.GetColor("MenuItem")).
 			SetSelectedStyle(tcell.Style{}.
 				Foreground(theme.GetColor("MenuItem")).
@@ -339,7 +306,7 @@ func setMenu(x, y int, menuID string, options map[string]*MenuOption, device ...
 
 	modal.Table.Select(0, 0)
 
-	drawMenuBox(x, y, 20, device != nil)
+	drawMenuBox(x, y, width, device != nil)
 }
 
 // setContextMenu sets up a selector menu.
@@ -357,15 +324,15 @@ func setContextMenu(
 	modal.Table.Clear()
 	modal.Table.SetSelectorWrap(false)
 	modal.Table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEnter:
+		switch cmd.KeyOperation(event) {
+		case cmd.KeySelect:
 			if selected != nil {
 				selected(modal.Table)
 			}
 
 			fallthrough
 
-		case tcell.KeyEscape:
+		case cmd.KeyClose:
 			exitMenu()
 		}
 
@@ -471,7 +438,7 @@ func menuInputHandler(event *tcell.EventKey) {
 		return
 	}
 
-	key := cmd.KeyOperation(event, cmd.KeyContextDevice, cmd.KeyContextAdapter)
+	key := cmd.KeyOperation(event, cmd.KeyContextProgress)
 
 	for _, options := range menu.options {
 		for menuKey, option := range options {
@@ -480,7 +447,7 @@ func menuInputHandler(event *tcell.EventKey) {
 					return
 				}
 
-				opt.onclick()
+				KeyHandler(menuKey, FunctionClick)()
 
 				return
 			}
