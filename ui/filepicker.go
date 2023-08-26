@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -80,37 +81,35 @@ func filePickerTable() *tview.Table {
 	filepicker.table.SetSelectable(true, false)
 	filepicker.table.SetBackgroundColor(theme.GetColor("Background"))
 	filepicker.table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyLeft:
-			go changeDir(false, true)
-
-		case tcell.KeyRight:
+		switch cmd.KeyOperation(event, cmd.KeyContextFiles) {
+		case cmd.KeyFilebrowserDirForward:
 			go changeDir(true, false)
 
-		case tcell.KeyCtrlH:
+		case cmd.KeyFilebrowserDirBack:
+			go changeDir(false, true)
+
+		case cmd.KeyFilebrowserToggleHidden:
 			toggleHidden()
 			fallthrough
 
-		case tcell.KeyCtrlR:
+		case cmd.KeyFilebrowserRefresh:
 			go changeDir(false, false)
 
-		case tcell.KeyCtrlS:
+		case cmd.KeyFilebrowserConfirmSelection:
 			sendFileList()
 			fallthrough
 
-		case tcell.KeyEscape:
+		case cmd.KeyClose:
 			close(filepicker.listChan)
 			UI.Pages.SwitchToPage("main")
-		}
 
-		switch event.Rune() {
-		case 'q':
+		case cmd.KeyQuit:
 			go quit()
 
-		case '?':
+		case cmd.KeyHelp:
 			showHelp()
 
-		case 'A', 'a', ' ':
+		case cmd.KeyFilebrowserSelectAll, cmd.KeyFilebrowserInvertSelection, cmd.KeyFilebrowserSelect:
 			selectFile(event.Rune())
 		}
 

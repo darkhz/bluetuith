@@ -7,6 +7,7 @@ func Init(bluez *bluez.Bluez) {
 	config.setup()
 
 	parse()
+	validateKeybindings()
 
 	cmdOptionAdapter(bluez)
 	cmdOptionListAdapters(bluez)

@@ -73,14 +73,16 @@ func StartUI() {
 	UI.Layout.SetBackgroundColor(theme.GetColor("Background"))
 
 	UI.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyCtrlC:
+		operation := cmd.KeyOperation(event)
+		if operation != cmd.KeyQuit && event.Key() == tcell.KeyCtrlC {
 			return nil
+		}
 
-		case tcell.KeyCtrlZ:
+		switch operation {
+		case cmd.KeySuspend:
 			UI.suspend = true
 
-		case tcell.KeyCtrlX:
+		case cmd.KeyCancel:
 			cancelOperation(true)
 		}
 

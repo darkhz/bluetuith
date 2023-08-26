@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -265,26 +266,24 @@ func progressView(switchToView bool) {
 		progressUI.view.SetSelectable(true, false)
 		progressUI.view.SetBackgroundColor(theme.GetColor("Background"))
 		progressUI.view.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-			switch event.Key() {
-			case tcell.KeyEscape:
+			switch cmd.KeyOperation(event, cmd.KeyContextProgress) {
+			case cmd.KeyClose:
 				if UI.Status.HasPage("progressview") && getProgressCount() > 0 {
 					UI.Status.SwitchToPage("progressview")
 				}
 
 				UI.Pages.SwitchToPage("main")
-			}
 
-			switch event.Rune() {
-			case 'x':
+			case cmd.KeyProgressTransferCancel:
 				CancelProgress()
 
-			case 'z':
+			case cmd.KeyProgressTransferSuspend:
 				SuspendProgress()
 
-			case 'g':
+			case cmd.KeyProgressTransferResume:
 				ResumeProgress()
 
-			case 'q':
+			case cmd.KeyQuit:
 				go quit()
 			}
 

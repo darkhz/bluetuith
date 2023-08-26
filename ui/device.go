@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -22,14 +23,12 @@ func deviceTable() *tview.Table {
 	DeviceTable.SetSelectable(true, false)
 	DeviceTable.SetBackgroundColor(theme.GetColor("Background"))
 	DeviceTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyCtrlM:
+		switch cmd.KeyOperation(event) {
+		case cmd.KeyMenu:
 			menu.bar.Highlight("adapter")
 			return event
-		}
 
-		switch event.Rune() {
-		case '?':
+		case cmd.KeyHelp:
 			showHelp()
 			return event
 		}
@@ -47,7 +46,7 @@ func deviceTable() *tview.Table {
 				return action, event
 			}
 
-			setMenu(0, 0, "device", menu.options["device"], struct{}{})
+			setMenu(0, 0, "device", struct{}{})
 		}
 
 		return action, event

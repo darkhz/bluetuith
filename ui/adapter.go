@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -28,7 +29,7 @@ func adapterChange() {
 			}
 
 			if err := UI.Bluez.StopDiscovery(UI.Bluez.GetCurrentAdapter().Path); err == nil {
-				setMenuItemToggle("adapter", "scan", false, struct{}{})
+				setMenuItemToggle("adapter", cmd.KeyAdapterToggleScan, false, struct{}{})
 			}
 
 			if strings.Contains(UI.Status.MessageBox.GetText(true), "Scanning for devices") {

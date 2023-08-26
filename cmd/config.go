@@ -121,6 +121,12 @@ func generate() {
 		}
 	}
 
+	keys := config.Get("keybindings")
+	if keys == nil {
+		keys = make(map[string]interface{})
+	}
+		genMap["keybindings"] = keys
+
 	data, err := hjson.Marshal(genMap)
 	if err != nil {
 		PrintError(err.Error())

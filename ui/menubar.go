@@ -471,10 +471,12 @@ func menuInputHandler(event *tcell.EventKey) {
 		return
 	}
 
-	for _, option := range menu.options {
-		for _, opt := range option {
-			if event.Rune() == opt.keybinding {
-				if opt.visible != nil && !opt.visible() {
+	key := cmd.KeyOperation(event, cmd.KeyContextDevice, cmd.KeyContextAdapter)
+
+	for _, options := range menu.options {
+		for menuKey, option := range options {
+			if menuKey == key {
+				if option.Visible && !KeyHandler(menuKey, FunctionVisible)() {
 					return
 				}
 

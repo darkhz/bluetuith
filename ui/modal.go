@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -67,8 +68,8 @@ func NewModal(name, title string, item tview.Primitive, height, width int) *Moda
 		table.SetSelectable(true, false)
 		table.SetBackgroundColor(theme.GetColor("Background"))
 		table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-			switch event.Key() {
-			case tcell.KeyEscape:
+			switch cmd.KeyOperation(event) {
+			case cmd.KeyClose:
 				modal.Exit(false)
 			}
 

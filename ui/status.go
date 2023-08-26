@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -80,13 +81,13 @@ func SetInput(label string, multichar ...struct{}) string {
 			if multichar != nil {
 				UI.Status.InputField.SetAcceptanceFunc(nil)
 				UI.Status.InputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-					switch event.Key() {
-					case tcell.KeyEnter:
+					switch cmd.KeyOperation(event) {
+					case cmd.KeySelect:
 						ch <- true
 
 						exit()
 
-					case tcell.KeyEscape:
+					case cmd.KeyClose:
 						ch <- false
 
 						exit()
