@@ -106,6 +106,11 @@ func (b *Bluez) GetDevices() []Device {
 	}
 
 	for _, device := range store.Devices {
+		if device.Paired || device.Trusted || device.Blocked {
+			devices = append([]Device{device}, devices...)
+			continue
+		}
+
 		devices = append(devices, device)
 	}
 
