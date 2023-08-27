@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -31,6 +32,21 @@ func deviceTable() *tview.Table {
 		case cmd.KeyHelp:
 			showHelp()
 			return event
+
+		case cmd.KeySelect:
+			props, err := UI.Bluez.GetAdapterProperties(UI.Bluez.GetCurrentAdapter().Path)
+			if err != nil {
+				ErrorMessage(err)
+				break
+			}
+
+			pairable, ok := props["Pairable"].Value().(bool)
+			if !ok {
+				ErrorMessage(errors.New("Cannot get pairable state"))
+				break
+			}
+			InfoMessage(fmt.Sprintf("%#v", pairable), false)
+			updateAdapterStatus(UI.Bluez.GetCurrentAdapter())
 		}
 
 		playerEvents(event, false)
@@ -72,7 +88,7 @@ func listDevices() {
 		UI.Bluez.GetCurrentAdapter().Name,
 		UI.Bluez.GetCurrentAdapterID(),
 	)
-	setMenuBarHeader(theme.ColorWrap("Adapter", headerText, "bu"))
+	setMenuBarHeader(theme.ColorWrap("Adapter", headerText, "::bu"))
 
 	DeviceTable.Clear()
 	for i, device := range UI.Bluez.GetDevices() {

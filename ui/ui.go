@@ -32,9 +32,9 @@ type Application struct {
 	// network holds the current network connection.
 	Network *network.Network
 
-	suspend bool
+	suspend    bool
 	warn, page string
-	focus   tview.Primitive
+	focus      tview.Primitive
 
 	*tview.Application
 }
@@ -46,9 +46,18 @@ func StartUI() {
 	UI.Application = tview.NewApplication()
 	UI.Pages = tview.NewPages()
 
+	box := tview.NewBox().
+		SetBackgroundColor(theme.GetColor(theme.ThemeMenuBar))
+
+	menuArea := tview.NewFlex().
+		AddItem(menuBar(), 0, 1, false).
+		AddItem(box, 1, 0, false).
+		AddItem(adapterStatusView(), 0, 1, false)
+	menuArea.SetBackgroundColor(theme.GetColor("Background"))
+
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(menuBar(), 1, 0, false).
+		AddItem(menuArea, 1, 0, false).
 		AddItem(nil, 1, 0, false).
 		AddItem(deviceTable(), 0, 10, true)
 	flex.SetBackgroundColor(theme.GetColor("Background"))
@@ -100,6 +109,8 @@ func StartUI() {
 
 	setupDevices()
 	displayWarning()
+	updateAdapterStatus(UI.Bluez.GetCurrentAdapter())
+
 	InfoMessage("bluetuith is ready.", false)
 
 	if err := UI.SetRoot(UI.Layout, true).SetFocus(UI.focus).EnableMouse(true).Run(); err != nil {

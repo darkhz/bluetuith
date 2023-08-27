@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -11,6 +12,24 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/godbus/dbus/v5"
 )
+
+// AdapterStatus describes the adapter status display.
+type AdapterStatus struct {
+	view *tview.TextView
+}
+
+var adapterStatus AdapterStatus
+
+// adapterStatusView sets up and returns the adapter status display.
+func adapterStatusView() *tview.TextView {
+	adapterStatus.view = tview.NewTextView()
+	adapterStatus.view.SetRegions(true)
+	adapterStatus.view.SetDynamicColors(true)
+	adapterStatus.view.SetTextAlign(tview.AlignRight)
+	adapterStatus.view.SetBackgroundColor(theme.GetColor("MenuBar"))
+
+	return adapterStatus.view
+}
 
 // adapterChange launches a popup with a list of adapters.
 // Changing the selection will change the currently selected adapter.
@@ -37,6 +56,7 @@ func adapterChange() {
 			}
 
 			UI.Bluez.SetCurrentAdapter(adapter)
+			updateAdapterStatus(adapter)
 
 			listDevices()
 		},
@@ -81,9 +101,105 @@ func adapterChange() {
 		})
 }
 
+// updateAdapterStatus updates the adapter status display.
+func updateAdapterStatus(adapter bluez.Adapter) {
+	var state string
+	var regions []string
+
+	properties := map[string]bool{
+		"Powered":      false,
+		"Discovering":  false,
+		"Discoverable": false,
+		"Pairable":     false,
+	}
+
+	props, err := UI.Bluez.GetAdapterProperties(adapter.Path)
+	if err != nil {
+		return
+	}
+
+	for name := range properties {
+		enabled, ok := props[name].Value().(bool)
+		if !ok {
+			continue
+		}
+
+		properties[name] = enabled
+	}
+
+	for _, status := range []struct {
+		Title   string
+		Enabled bool
+		Color   string
+	}{
+		{
+			Title:   "Powered",
+			Color:   "AdapterPowered",
+			Enabled: properties["Powered"],
+		},
+		{
+			Title:   "Scanning",
+			Color:   "AdapterScanning",
+			Enabled: properties["Discovering"],
+		},
+		{
+			Title:   "Discoverable",
+			Color:   "AdapterDiscoverable",
+			Enabled: properties["Discoverable"],
+		},
+		{
+			Title:   "Pairable",
+			Color:   "AdapterPairable",
+			Enabled: properties["Pairable"],
+		},
+	} {
+		if !status.Enabled {
+			if status.Title == "Powered" {
+				status.Title = "Not " + status.Title
+				status.Color = "AdapterNotPowered"
+			} else {
+				continue
+			}
+		}
+
+		region := strings.ToLower(status.Title)
+
+		textColor := "white"
+		if IsColorBright(theme.GetColor(status.Color)) {
+			textColor = "black"
+		}
+
+		state += theme.ColorWrap(
+			status.Color,
+			fmt.Sprintf("[\"%s\"] %s [\"\"]", region, status.Title), ":"+textColor+":b",
+		)
+
+		state += " "
+
+		regions = append(regions, region)
+	}
+
+	adapterStatus.view.SetText(state)
+	adapterStatus.view.Highlight(regions...)
+}
+
 // adapterEvent handles adapter-specific events.
 func adapterEvent(signal *dbus.Signal, signalData interface{}) {
 	switch signal.Name {
+	case "org.freedesktop.DBus.Properties.PropertiesChanged":
+		adapter, ok := signalData.(bluez.Adapter)
+		if !ok {
+			return
+		}
+
+		if adapter.Path != UI.Bluez.GetCurrentAdapter().Path {
+			return
+		}
+
+		UI.QueueUpdateDraw(func() {
+			updateAdapterStatus(adapter)
+		})
+
 	case "org.freedesktop.DBus.ObjectManager.InterfacesRemoved":
 		adapterPath, ok := signalData.(string)
 		if !ok {

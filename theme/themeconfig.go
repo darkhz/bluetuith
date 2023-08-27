@@ -13,7 +13,12 @@ var ThemeConfig = map[string]string{
 	"StatusInfo":  "white",
 	"StatusError": "red",
 
-	"Adapter": "white",
+	"Adapter":             "white",
+	"AdapterPowered":      "green",
+	"AdapterNotPowered":   "red",
+	"AdapterDiscoverable": "aqua",
+	"AdapterScanning":     "yellow",
+	"AdapterPairable":     "pink",
 
 	"Device":                   "white",
 	"DeviceType":               "white",

@@ -13,10 +13,10 @@ import (
 func ColorWrap(elementName, elementContent string, attributes ...string) string {
 	attr := "::b"
 	if attributes != nil {
-		attr = "::" + attributes[0]
+		attr = attributes[0]
 	}
 
-	return fmt.Sprintf("[%s%s]%s", ThemeConfig[elementName], attr, elementContent)
+	return fmt.Sprintf("[%s%s]%s[-:-:-]", ThemeConfig[elementName], attr, elementContent)
 }
 
 // BackgroundColor checks whether the given color is a light

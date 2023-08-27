@@ -52,7 +52,7 @@ func setupFilePicker() {
 	infoTitle.SetDynamicColors(true)
 	infoTitle.SetTextAlign(tview.AlignCenter)
 	infoTitle.SetBackgroundColor(theme.GetColor("Background"))
-	infoTitle.SetText(theme.ColorWrap("Text", "Select files to send", "bu"))
+	infoTitle.SetText(theme.ColorWrap("Text", "Select files to send", "::bu"))
 
 	pickerflex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
