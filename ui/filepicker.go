@@ -100,8 +100,7 @@ func filePickerTable() *tview.Table {
 			fallthrough
 
 		case cmd.KeyClose:
-			close(filepicker.listChan)
-			UI.Pages.SwitchToPage("main")
+			buttonHandler("cancel")
 
 		case cmd.KeyQuit:
 			go quit()
@@ -408,6 +407,8 @@ func buttonHandler(button string) {
 
 	case "cancel":
 		close(filepicker.listChan)
+
+		UI.Pages.RemovePage("filepicker")
 		UI.Pages.SwitchToPage("main")
 
 	case "hidden":

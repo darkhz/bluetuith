@@ -1,6 +1,7 @@
 package bluez
 
 import (
+	"context"
 	"path/filepath"
 	"sync"
 
@@ -88,14 +89,25 @@ func (o *Obex) Conn() *dbus.Conn {
 }
 
 // CreateSession creates a new OBEX transfer session.
-func (o *Obex) CreateSession(address string) (dbus.ObjectPath, error) {
+func (o *Obex) CreateSession(ctx context.Context, address string) (dbus.ObjectPath, error) {
 	var sessionPath dbus.ObjectPath
 
 	args := make(map[string]interface{})
 	args["Target"] = "opp"
 
-	if err := o.CallClient("CreateSession", address, args).Store(&sessionPath); err != nil {
-		return "", err
+	session := o.CallClientAsync(ctx, "CreateSession", address, args)
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+
+	case call := <-session.Done:
+		if call.Err != nil {
+			return "", call.Err
+		}
+
+		if err := call.Store(&sessionPath); err != nil {
+			return "", err
+		}
 	}
 
 	sessionProperties, err := o.GetSessionProperties(sessionPath)
@@ -328,6 +340,11 @@ func (o *Obex) ParseSignalData(signal *dbus.Signal) interface{} {
 // CallClient calls the Client1 interface with the provided method.
 func (o *Obex) CallClient(method string, args ...interface{}) *dbus.Call {
 	return o.conn.Object(dbusObexName, dbusObexPath).Call(dbusObexClientIface+"."+method, 0, args...)
+}
+
+// CallClientAsync calls the Client1 interface asynchronously with the provided method.
+func (o *Obex) CallClientAsync(ctx context.Context, method string, args ...interface{}) *dbus.Call {
+	return o.conn.Object(dbusObexName, dbusObexPath).GoWithContext(ctx, dbusObexClientIface+"."+method, 0, nil, args...)
 }
 
 // CallObjectPush calls the ObjectPush1 interface with the provided method.

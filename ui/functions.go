@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"errors"
 
 	"github.com/darkhz/bluetuith/bluez"
@@ -472,29 +473,41 @@ func send() bool {
 		return false
 	}
 
-	InfoMessage("Initializing OBEX session..", true)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	sessionPath, err := UI.Obex.CreateSession(device.Address)
-	if err != nil {
-		ErrorMessage(err)
-		return false
-	}
+	startOperation(
+		func() {
+			InfoMessage("Initializing OBEX session..", true)
 
-	InfoMessage("Created OBEX session", false)
+			sessionPath, err := UI.Obex.CreateSession(ctx, device.Address)
+			if err != nil {
+				ErrorMessage(err)
+				return
+			}
 
-	for _, file := range filePicker() {
-		transferPath, transferProps, err := UI.Obex.SendFile(sessionPath, file)
-		if err != nil {
-			ErrorMessage(err)
-			continue
-		}
+			cancelOperation(false)
 
-		if !StartProgress(transferPath, transferProps) {
-			break
-		}
-	}
+			InfoMessage("Created OBEX session", false)
 
-	UI.Obex.RemoveSession(sessionPath)
+			for _, file := range filePicker() {
+				transferPath, transferProps, err := UI.Obex.SendFile(sessionPath, file)
+				if err != nil {
+					ErrorMessage(err)
+					continue
+				}
+
+				if !StartProgress(transferPath, transferProps) {
+					break
+				}
+			}
+
+			UI.Obex.RemoveSession(sessionPath)
+		},
+		func() {
+			cancel()
+			InfoMessage("Cancelled OBEX session creation", false)
+		},
+	)
 
 	return true
 }

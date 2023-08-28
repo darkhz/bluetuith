@@ -58,6 +58,7 @@ func adapterChange() {
 			UI.Bluez.SetCurrentAdapter(adapter)
 			updateAdapterStatus(adapter)
 
+			cancelOperation(true)
 			listDevices()
 		},
 		func(adapterMenu *tview.Table) (int, int) {
