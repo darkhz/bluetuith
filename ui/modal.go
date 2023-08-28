@@ -32,22 +32,22 @@ func NewModal(name, title string, item tview.Primitive, height, width int) *Moda
 	var table *tview.Table
 
 	box := tview.NewBox()
-	box.SetBackgroundColor(theme.GetColor("Background"))
+	box.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	modalTitle := tview.NewTextView()
 	modalTitle.SetDynamicColors(true)
 	modalTitle.SetText("[::bu]" + title)
 	modalTitle.SetTextAlign(tview.AlignCenter)
-	modalTitle.SetTextColor(theme.GetColor("Text"))
-	modalTitle.SetBackgroundColor(theme.GetColor("Background"))
+	modalTitle.SetTextColor(theme.GetColor(theme.ThemeText))
+	modalTitle.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	closeButton := tview.NewTextView()
 	closeButton.SetRegions(true)
 	closeButton.SetDynamicColors(true)
 	closeButton.SetText(`["close"][::b][X[]`)
 	closeButton.SetTextAlign(tview.AlignRight)
-	closeButton.SetTextColor(theme.GetColor("Text"))
-	closeButton.SetBackgroundColor(theme.GetColor("Background"))
+	closeButton.SetTextColor(theme.GetColor(theme.ThemeText))
+	closeButton.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	closeButton.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if added == nil {
 			return
@@ -66,7 +66,7 @@ func NewModal(name, title string, item tview.Primitive, height, width int) *Moda
 		table = tview.NewTable()
 		table.SetSelectorWrap(true)
 		table.SetSelectable(true, false)
-		table.SetBackgroundColor(theme.GetColor("Background"))
+		table.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 		table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			switch cmd.KeyOperation(event) {
 			case cmd.KeyClose:
@@ -86,8 +86,8 @@ func NewModal(name, title string, item tview.Primitive, height, width int) *Moda
 	flex.AddItem(titleFlex, 1, 0, false)
 	flex.AddItem(horizontalLine(), 1, 0, false)
 	flex.AddItem(item, 0, 1, true)
-	flex.SetBorderColor(theme.GetColor("Border"))
-	flex.SetBackgroundColor(theme.GetColor("Background"))
+	flex.SetBorderColor(theme.GetColor(theme.ThemeBorder))
+	flex.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	modal = &Modal{
 		Name:  name,
@@ -107,8 +107,8 @@ func NewMenuModal(name string, regionX, regionY int) *Modal {
 	table.SetBorder(true)
 	table.SetSelectable(true, false)
 	table.SetBackgroundColor(tcell.ColorDefault)
-	table.SetBorderColor(theme.GetColor("Border"))
-	table.SetBackgroundColor(theme.GetColor("Background"))
+	table.SetBorderColor(theme.GetColor(theme.ThemeBorder))
+	table.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).

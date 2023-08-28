@@ -33,16 +33,6 @@ func GetDeviceFromPath(devicePath string) (bluez.Device, error) {
 	return device, nil
 }
 
-// IsColorBright returns whether the color is bright.
-func IsColorBright(color tcell.Color) bool {
-	r, g, b := color.RGB()
-	red, green, blue := float64(r), float64(g), float64(b)
-
-	hsp := math.Sqrt((0.16 * (red * red)) + (0.73 * (green * green)) + (0.11 * (blue * blue)))
-
-	return hsp > 127.5
-}
-
 // formatSize returns the human readable form of a size value in bytes.
 // Adapted from: https://yourbasic.org/golang/formatting-byte-size-to-human-readable-format/
 func formatSize(size int64) string {

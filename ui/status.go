@@ -33,17 +33,17 @@ type message struct {
 // statusBar sets up the statusbar.
 func statusBar() *tview.Pages {
 	UI.Status.Pages = tview.NewPages()
-	UI.Status.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Status.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	UI.Status.InputField = tview.NewInputField()
-	UI.Status.InputField.SetLabelColor(theme.GetColor("Text"))
-	UI.Status.InputField.SetFieldTextColor(theme.GetColor("Text"))
-	UI.Status.InputField.SetBackgroundColor(theme.GetColor("Background"))
-	UI.Status.InputField.SetFieldBackgroundColor(theme.GetColor("Background"))
+	UI.Status.InputField.SetLabelColor(theme.GetColor(theme.ThemeText))
+	UI.Status.InputField.SetFieldTextColor(theme.GetColor(theme.ThemeText))
+	UI.Status.InputField.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+	UI.Status.InputField.SetFieldBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	UI.Status.MessageBox = tview.NewTextView()
 	UI.Status.MessageBox.SetDynamicColors(true)
-	UI.Status.MessageBox.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Status.MessageBox.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	UI.Status.AddPage("input", UI.Status.InputField, true, true)
 	UI.Status.AddPage("messages", UI.Status.MessageBox, true, true)
@@ -134,7 +134,7 @@ func InfoMessage(text string, persist bool) {
 	}
 
 	select {
-	case UI.Status.msgchan <- message{theme.ColorWrap("StatusInfo", text), persist}:
+	case UI.Status.msgchan <- message{theme.ColorWrap(theme.ThemeStatusInfo, text), persist}:
 		return
 
 	default:
@@ -152,7 +152,7 @@ func ErrorMessage(err error) {
 	}
 
 	select {
-	case UI.Status.msgchan <- message{theme.ColorWrap("StatusError", "Error: "+err.Error()), false}:
+	case UI.Status.msgchan <- message{theme.ColorWrap(theme.ThemeStatusError, "Error: "+err.Error()), false}:
 		return
 
 	default:

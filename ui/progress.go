@@ -63,14 +63,14 @@ func NewProgress(transferPath dbus.ObjectPath, props bluez.ObexTransferPropertie
 		SetExpansion(1).
 		SetSelectable(false).
 		SetAlign(tview.AlignLeft).
-		SetTextColor(theme.GetColor("ProgressText"))
+		SetTextColor(theme.GetColor(theme.ThemeProgressText))
 
 	progress.progress = tview.NewTableCell("").
 		SetExpansion(1).
 		SetSelectable(false).
 		SetReference(&progress).
 		SetAlign(tview.AlignRight).
-		SetTextColor(theme.GetColor("ProgressBar"))
+		SetTextColor(theme.GetColor(theme.ThemeProgressBar))
 
 	progress.progressBar = progressbar.NewOptions64(
 		int64(props.Size),
@@ -259,12 +259,12 @@ func progressView(switchToView bool) {
 		title := tview.NewTextView()
 		title.SetDynamicColors(true)
 		title.SetTextAlign(tview.AlignLeft)
-		title.SetBackgroundColor(theme.GetColor("Background"))
-		title.SetText(theme.ColorWrap("Text", "Progress View", "bu"))
+		title.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+		title.SetText(theme.ColorWrap(theme.ThemeText, "Progress View", "::bu"))
 
 		progressUI.view = tview.NewTable()
 		progressUI.view.SetSelectable(true, false)
-		progressUI.view.SetBackgroundColor(theme.GetColor("Background"))
+		progressUI.view.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 		progressUI.view.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			switch cmd.KeyOperation(event, cmd.KeyContextProgress) {
 			case cmd.KeyClose:
@@ -295,7 +295,7 @@ func progressView(switchToView bool) {
 		progressViewButtons.SetDynamicColors(true)
 		progressViewButtons.SetTextAlign(tview.AlignLeft)
 		progressViewButtons.SetText(progressViewButtonRegion)
-		progressViewButtons.SetBackgroundColor(theme.GetColor("Background"))
+		progressViewButtons.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 		progressViewButtons.SetHighlightedFunc(func(added, removed, remaining []string) {
 			if added == nil {
 				return
@@ -347,7 +347,7 @@ func statusProgressView(switchToView bool) {
 	if progressUI.status == nil {
 		progressUI.status = tview.NewTable()
 		progressUI.status.SetSelectable(true, true)
-		progressUI.status.SetBackgroundColor(theme.GetColor("Background"))
+		progressUI.status.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	}
 
 	UI.Status.AddPage("progressview", progressUI.status, true, false)

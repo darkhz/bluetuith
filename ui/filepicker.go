@@ -51,8 +51,8 @@ func setupFilePicker() {
 	infoTitle := tview.NewTextView()
 	infoTitle.SetDynamicColors(true)
 	infoTitle.SetTextAlign(tview.AlignCenter)
-	infoTitle.SetBackgroundColor(theme.GetColor("Background"))
-	infoTitle.SetText(theme.ColorWrap("Text", "Select files to send", "::bu"))
+	infoTitle.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+	infoTitle.SetText(theme.ColorWrap(theme.ThemeText, "Select files to send", "::bu"))
 
 	pickerflex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -63,7 +63,7 @@ func setupFilePicker() {
 		AddItem(filePickerTable(), 0, 10, true).
 		AddItem(nil, 1, 0, false).
 		AddItem(filePickerButtons(), 2, 0, false)
-	pickerflex.SetBackgroundColor(theme.GetColor("Background"))
+	pickerflex.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	UI.Pages.AddAndSwitchToPage("filepicker", pickerflex, true)
 
@@ -79,7 +79,7 @@ func filePickerTable() *tview.Table {
 	filepicker.table = tview.NewTable()
 	filepicker.table.SetSelectorWrap(true)
 	filepicker.table.SetSelectable(true, false)
-	filepicker.table.SetBackgroundColor(theme.GetColor("Background"))
+	filepicker.table.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	filepicker.table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch cmd.KeyOperation(event, cmd.KeyContextFiles) {
 		case cmd.KeyFilebrowserDirForward:
@@ -124,7 +124,7 @@ func filePickerTable() *tview.Table {
 func filePickerTitle() *tview.TextView {
 	filepicker.title = tview.NewTextView()
 	filepicker.title.SetDynamicColors(true)
-	filepicker.title.SetBackgroundColor(theme.GetColor("Background"))
+	filepicker.title.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	filepicker.title.SetTextAlign(tview.AlignLeft)
 
 	return filepicker.title
@@ -135,7 +135,7 @@ func filePickerButtons() *tview.TextView {
 	filepicker.buttons = tview.NewTextView()
 	filepicker.buttons.SetRegions(true)
 	filepicker.buttons.SetDynamicColors(true)
-	filepicker.buttons.SetBackgroundColor(theme.GetColor("Background"))
+	filepicker.buttons.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	filepicker.buttons.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if added == nil {
 			return
@@ -150,7 +150,7 @@ func filePickerButtons() *tview.TextView {
 	})
 
 	filepicker.buttons.SetTextAlign(tview.AlignLeft)
-	filepicker.buttons.SetText(theme.ColorWrap("Text", filePickButtonRegion))
+	filepicker.buttons.SetText(theme.ColorWrap(theme.ThemeText, filePickButtonRegion))
 
 	return filepicker.buttons
 }
@@ -308,7 +308,7 @@ func createDirList(dlist []fs.DirEntry, cdBack bool) {
 				entryColor = tcell.ColorBlue
 				name += string(os.PathSeparator)
 			} else {
-				entryColor = theme.GetColor("Text")
+				entryColor = theme.GetColor(theme.ThemeText)
 			}
 
 			filepicker.table.SetCell(row+rowpadding, 0, tview.NewTableCell(" ").
@@ -325,7 +325,7 @@ func createDirList(dlist []fs.DirEntry, cdBack bool) {
 				SetSelectedStyle(tcell.Style{}.
 					Bold(true).
 					Foreground(entryColor).
-					Background(theme.BackgroundColor("Text")),
+					Background(theme.BackgroundColor(theme.ThemeText)),
 				),
 			)
 
@@ -351,7 +351,7 @@ func createDirList(dlist []fs.DirEntry, cdBack bool) {
 			markFileSelection(row, entry, checkFileSelected(filepath.Join(filepicker.currentPath, name)))
 		}
 
-		filepicker.title.SetText(theme.ColorWrap("Text", "Directory: "+filepicker.currentPath))
+		filepicker.title.SetText(theme.ColorWrap(theme.ThemeText, "Directory: "+filepicker.currentPath))
 
 		filepicker.table.ScrollToBeginning()
 		filepicker.table.SetSelectable(true, false)
@@ -532,7 +532,7 @@ func markFileSelection(row int, info fs.DirEntry, selected bool, userSelected ..
 		cell.Text = " "
 	}
 
-	cell.Text = theme.ColorWrap("Text", cell.Text)
+	cell.Text = theme.ColorWrap(theme.ThemeText, cell.Text)
 }
 
 // trimPath trims a given path and appends a path separator where appropriate.

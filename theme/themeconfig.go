@@ -2,59 +2,86 @@ package theme
 
 import (
 	"errors"
-	"strings"
+	"fmt"
+)
+
+// ThemeContext describes the type of context to apply the color into.
+type ThemeContext string
+
+// The different context types for themes.
+const (
+	ThemeText                     ThemeContext = "Text"
+	ThemeBorder                   ThemeContext = "Border"
+	ThemeBackground               ThemeContext = "Background"
+	ThemeStatusInfo               ThemeContext = "StatusInfo"
+	ThemeStatusError              ThemeContext = "StatusError"
+	ThemeAdapter                  ThemeContext = "Adapter"
+	ThemeAdapterPowered           ThemeContext = "AdapterPowered"
+	ThemeAdapterNotPowered        ThemeContext = "AdapterNotPowered"
+	ThemeAdapterDiscoverable      ThemeContext = "AdapterDiscoverable"
+	ThemeAdapterScanning          ThemeContext = "AdapterScanning"
+	ThemeAdapterPairable          ThemeContext = "AdapterPairable"
+	ThemeDevice                   ThemeContext = "Device"
+	ThemeDeviceType               ThemeContext = "DeviceType"
+	ThemeDeviceConnected          ThemeContext = "DeviceConnected"
+	ThemeDeviceDiscovered         ThemeContext = "DeviceDiscovered"
+	ThemeDeviceProperty           ThemeContext = "DeviceProperty"
+	ThemeDevicePropertyConnected  ThemeContext = "DevicePropertyConnected"
+	ThemeDevicePropertyDiscovered ThemeContext = "DevicePropertyDiscovered"
+	ThemeMenu                     ThemeContext = "Menu"
+	ThemeMenuBar                  ThemeContext = "MenuBar"
+	ThemeMenuItem                 ThemeContext = "MenuItem"
+	ThemeProgressBar              ThemeContext = "ProgressBar"
+	ThemeProgressText             ThemeContext = "ProgressText"
 )
 
 // ThemeConfig stores a list of color for the modifier elements.
-var ThemeConfig = map[string]string{
-	"Text":        "white",
-	"Border":      "white",
-	"Background":  "default",
-	"StatusInfo":  "white",
-	"StatusError": "red",
+var ThemeConfig = map[ThemeContext]string{
+	ThemeText:        "white",
+	ThemeBorder:      "white",
+	ThemeBackground:  "default",
+	ThemeStatusInfo:  "white",
+	ThemeStatusError: "red",
 
-	"Adapter":             "white",
-	"AdapterPowered":      "green",
-	"AdapterNotPowered":   "red",
-	"AdapterDiscoverable": "aqua",
-	"AdapterScanning":     "yellow",
-	"AdapterPairable":     "pink",
+	ThemeAdapter:             "white",
+	ThemeAdapterPowered:      "green",
+	ThemeAdapterNotPowered:   "red",
+	ThemeAdapterDiscoverable: "aqua",
+	ThemeAdapterScanning:     "yellow",
+	ThemeAdapterPairable:     "mediumorchid",
 
-	"Device":                   "white",
-	"DeviceType":               "white",
-	"DeviceConnected":          "white",
-	"DeviceDiscovered":         "white",
-	"DeviceProperty":           "grey",
-	"DevicePropertyConnected":  "green",
-	"DevicePropertyDiscovered": "orange",
+	ThemeDevice:                   "white",
+	ThemeDeviceType:               "white",
+	ThemeDeviceConnected:          "white",
+	ThemeDeviceDiscovered:         "white",
+	ThemeDeviceProperty:           "grey",
+	ThemeDevicePropertyConnected:  "green",
+	ThemeDevicePropertyDiscovered: "orange",
 
-	"Menu":     "white",
-	"MenuBar":  "default",
-	"MenuItem": "white",
+	ThemeMenu:     "white",
+	ThemeMenuBar:  "default",
+	ThemeMenuItem: "white",
 
-	"ProgressBar":  "white",
-	"ProgressText": "white",
+	ThemeProgressBar:  "white",
+	ThemeProgressText: "white",
 }
 
 // ParseThemeConfig parses the theme configuration.
-func ParseThemeConfig(themeConfig string) error {
-	elementsAndColors := strings.Split(themeConfig, ",")
-
-	for _, elementAndColor := range elementsAndColors {
-		elementWithColor := strings.Split(elementAndColor, "=")
-		if len(elementWithColor) != 2 || !isValidElementColor(elementWithColor) {
-			return errors.New(elementAndColor + ": Theme configuration is incorrect.")
+func ParseThemeConfig(themeConfig map[string]string) error {
+	for context, color := range themeConfig {
+		if !isValidElementColor(color) {
+			return errors.New(fmt.Sprintf("Theme configuration is incorrect for %s (%s)", context, color))
 		}
 
-		switch elementWithColor[1] {
+		switch color {
 		case "black":
-			elementWithColor[1] = "#000000"
+			color = "#000000"
 
 		case "transparent":
-			elementWithColor[1] = "default"
+			color = "default"
 		}
 
-		ThemeConfig[elementWithColor[0]] = elementWithColor[1]
+		ThemeConfig[ThemeContext(context)] = color
 	}
 
 	return nil

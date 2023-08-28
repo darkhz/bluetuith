@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/darkhz/bluetuith/theme"
 	"github.com/hjson/hjson-go/v4"
 	"github.com/knadh/koanf/v2"
 )
@@ -41,9 +40,7 @@ func (c *Config) setup() {
 
 		if _, err := os.Stat(p); err == nil {
 			c.path = p
-			if err := theme.CreateThemesDir(c.path); err != nil {
-				PrintError(err.Error())
-			}
+			return
 		}
 
 		if i > 0 {
@@ -73,9 +70,7 @@ func (c *Config) setup() {
 		c.path = dirs[pos]
 	}
 
-	if err := theme.CreateThemesDir(config.path); err != nil {
-		PrintError(err.Error())
-	}
+	return
 }
 
 // ConfigPath returns the absolute path for the given configType.
@@ -125,7 +120,13 @@ func generate() {
 	if keys == nil {
 		keys = make(map[string]interface{})
 	}
-		genMap["keybindings"] = keys
+	genMap["keybindings"] = keys
+
+	theme := config.Get("theme")
+	if t, ok := theme.(string); ok && t == "" {
+		theme = make(map[string]interface{})
+	}
+	genMap["theme"] = theme
 
 	data, err := hjson.Marshal(genMap)
 	if err != nil {

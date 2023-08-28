@@ -2,15 +2,14 @@ package theme
 
 import (
 	"fmt"
-	"os"
 	"sort"
-	"strings"
 
+	"github.com/alexeyco/simpletable"
 	"github.com/gdamore/tcell/v2"
 )
 
 // ColorWrap wraps the text content with the modifier element's color.
-func ColorWrap(elementName, elementContent string, attributes ...string) string {
+func ColorWrap(elementName ThemeContext, elementContent string, attributes ...string) string {
 	attr := "::b"
 	if attributes != nil {
 		attr = attributes[0]
@@ -22,8 +21,8 @@ func ColorWrap(elementName, elementContent string, attributes ...string) string 
 // BackgroundColor checks whether the given color is a light
 // or dark color, and returns the appropriate color that is
 // visible on top of the given color.
-func BackgroundColor(textColor string) tcell.Color {
-	if isLightColor(GetColor(textColor)) {
+func BackgroundColor(themeContext ThemeContext) tcell.Color {
+	if isLightColor(GetColor(themeContext)) {
 		return tcell.Color16
 	}
 
@@ -31,8 +30,8 @@ func BackgroundColor(textColor string) tcell.Color {
 }
 
 // GetColor returns the color of the modifier element.
-func GetColor(colorType string) tcell.Color {
-	color := ThemeConfig[colorType]
+func GetColor(themeContext ThemeContext) tcell.Color {
+	color := ThemeConfig[themeContext]
 	if color == "black" {
 		return tcell.Color16
 	}
@@ -40,75 +39,45 @@ func GetColor(colorType string) tcell.Color {
 	return tcell.GetColor(color)
 }
 
-// GetElementModifiers returns a list of modifiers.
-func GetElementModifiers() string {
-	var modifiers string
-	var elements []string
+// GetElementData returns the element types and colors in a tabular format.
+func GetElementData() string {
+	var elements, colors []string
 
 	for element := range ThemeConfig {
-		elements = append(elements, element)
+		elements = append(elements, string(element))
 	}
 	sort.Strings(elements)
-
-	for _, element := range elements {
-		modifiers += element + ", \n"
-	}
-
-	return strings.TrimRight(modifiers, ", \n")
-}
-
-// GetElementColors returns a list of colors for the modifiers.
-func GetElementColors() string {
-	var count int
-	var colors []string
-	var modifierColors string
 
 	for color := range tcell.ColorNames {
 		colors = append(colors, color)
 	}
 	sort.Strings(colors)
 
-	for _, color := range colors {
-		if count > 60 {
-			count = 0
-			modifierColors += "\n"
-		}
-
-		text := color + ", "
-		modifierColors += text
-		count += len(text)
+	elementsTable := simpletable.New()
+	elementsTable.SetStyle(simpletable.StyleUnicode)
+	elementsTable.Header = &simpletable.Header{
+		Cells: []*simpletable.Cell{
+			{Align: simpletable.AlignCenter, Text: "Theme Element Types"},
+			{Align: simpletable.AlignCenter, Text: "Theme Colors"},
+		},
 	}
 
-	return strings.TrimRight(modifierColors, ", ")
-}
+	for i, e := range elements {
+		r := []*simpletable.Cell{}
+		r = append(r, &simpletable.Cell{Text: e}, &simpletable.Cell{Text: colors[i]})
 
-// GetThemes returns a list of themes that are stored
-// in the themes directory.
-func GetThemes() string {
-	var count int
-	var themeFiles string
+		elementsTable.Body.Cells = append(elementsTable.Body.Cells, r)
 
-	files, err := os.ReadDir(themesDir)
-	if err != nil {
-		return ""
 	}
 
-	for _, file := range files {
-		if count > 60 {
-			count = 0
-			themeFiles += "\n"
-		}
+	for _, c := range colors[len(elements):] {
+		r := []*simpletable.Cell{}
+		r = append(r, &simpletable.Cell{Text: ""}, &simpletable.Cell{Text: c})
 
-		text := file.Name() + ", "
-		themeFiles += text
-		count += len(themeFiles)
+		elementsTable.Body.Cells = append(elementsTable.Body.Cells, r)
 	}
 
-	if themeFiles != "" {
-		themeFiles = "\n\nAvailable themes:\n" + themeFiles
-	}
-
-	return strings.TrimRight(themeFiles, ", ")
+	return elementsTable.String()
 }
 
 // isLightColor checks if the given color is a light color.
@@ -118,16 +87,14 @@ func isLightColor(color tcell.Color) bool {
 	r, g, b := color.RGB()
 	brightness := (r*299 + g*587 + b*114) / 1000
 
-	return brightness > 128
+	return brightness > 130
 }
 
 // isValidElementColor returns whether the modifier-value pair is valid.
-func isValidElementColor(elementWithColor []string) bool {
-	if _, ok := ThemeConfig[elementWithColor[0]]; ok {
-		if elementWithColor[1] == "transparent" ||
-			tcell.GetColor(elementWithColor[1]) != tcell.ColorDefault {
-			return true
-		}
+func isValidElementColor(color string) bool {
+	if color == "transparent" ||
+		tcell.GetColor(color) != tcell.ColorDefault {
+		return true
 	}
 
 	return false

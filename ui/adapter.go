@@ -26,7 +26,7 @@ func adapterStatusView() *tview.TextView {
 	adapterStatus.view.SetRegions(true)
 	adapterStatus.view.SetDynamicColors(true)
 	adapterStatus.view.SetTextAlign(tview.AlignRight)
-	adapterStatus.view.SetBackgroundColor(theme.GetColor("MenuBar"))
+	adapterStatus.view.SetBackgroundColor(theme.GetColor(theme.ThemeMenuBar))
 
 	return adapterStatus.view
 }
@@ -81,18 +81,18 @@ func adapterChange() {
 					SetExpansion(1).
 					SetReference(adapter).
 					SetAlign(tview.AlignLeft).
-					SetTextColor(theme.GetColor("Adapter")).
+					SetTextColor(theme.GetColor(theme.ThemeAdapter)).
 					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor("Adapter")).
-						Background(theme.BackgroundColor("Adapter")),
+						Foreground(theme.GetColor(theme.ThemeAdapter)).
+						Background(theme.BackgroundColor(theme.ThemeAdapter)),
 					),
 				)
 				adapterMenu.SetCell(row, 1, tview.NewTableCell("("+bluez.GetAdapterID(adapter.Path)+")").
 					SetAlign(tview.AlignRight).
-					SetTextColor(theme.GetColor("Adapter")).
+					SetTextColor(theme.GetColor(theme.ThemeAdapter)).
 					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor("Adapter")).
-						Background(theme.BackgroundColor("Adapter")),
+						Foreground(theme.GetColor(theme.ThemeAdapter)).
+						Background(theme.BackgroundColor(theme.ThemeAdapter)),
 					),
 				)
 			}
@@ -130,27 +130,27 @@ func updateAdapterStatus(adapter bluez.Adapter) {
 	for _, status := range []struct {
 		Title   string
 		Enabled bool
-		Color   string
+		Color   theme.ThemeContext
 	}{
 		{
 			Title:   "Powered",
-			Color:   "AdapterPowered",
 			Enabled: properties["Powered"],
+			Color:   theme.ThemeAdapterPowered,
 		},
 		{
 			Title:   "Scanning",
-			Color:   "AdapterScanning",
 			Enabled: properties["Discovering"],
+			Color:   theme.ThemeAdapterScanning,
 		},
 		{
 			Title:   "Discoverable",
-			Color:   "AdapterDiscoverable",
 			Enabled: properties["Discoverable"],
+			Color:   theme.ThemeAdapterDiscoverable,
 		},
 		{
 			Title:   "Pairable",
-			Color:   "AdapterPairable",
 			Enabled: properties["Pairable"],
+			Color:   theme.ThemeAdapterPairable,
 		},
 	} {
 		if !status.Enabled {
@@ -164,10 +164,7 @@ func updateAdapterStatus(adapter bluez.Adapter) {
 
 		region := strings.ToLower(status.Title)
 
-		textColor := "white"
-		if IsColorBright(theme.GetColor(status.Color)) {
-			textColor = "black"
-		}
+		textColor := theme.BackgroundColor(status.Color).Name()
 
 		state += theme.ColorWrap(
 			status.Color,

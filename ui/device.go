@@ -22,7 +22,7 @@ func deviceTable() *tview.Table {
 	DeviceTable = tview.NewTable()
 	DeviceTable.SetSelectorWrap(true)
 	DeviceTable.SetSelectable(true, false)
-	DeviceTable.SetBackgroundColor(theme.GetColor("Background"))
+	DeviceTable.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	DeviceTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch cmd.KeyOperation(event) {
 		case cmd.KeyMenu:
@@ -88,7 +88,7 @@ func listDevices() {
 		UI.Bluez.GetCurrentAdapter().Name,
 		UI.Bluez.GetCurrentAdapterID(),
 	)
-	setMenuBarHeader(theme.ColorWrap("Adapter", headerText, "::bu"))
+	setMenuBarHeader(theme.ColorWrap(theme.ThemeAdapter, headerText, "::bu"))
 
 	DeviceTable.Clear()
 	for i, device := range UI.Bluez.GetDevices() {
@@ -171,7 +171,7 @@ func getDeviceInfo() {
 		infoModal.Table.SetCell(i, 0, tview.NewTableCell("[::b]"+propName+":").
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor("Text")).
+			SetTextColor(theme.GetColor(theme.ThemeText)).
 			SetSelectedStyle(tcell.Style{}.
 				Bold(true).
 				Underline(true),
@@ -181,10 +181,10 @@ func getDeviceInfo() {
 		infoModal.Table.SetCell(i, 1, tview.NewTableCell(propValue).
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor("Text")).
+			SetTextColor(theme.GetColor(theme.ThemeText)).
 			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("Text")).
-				Background(theme.BackgroundColor("Text")),
+				Foreground(theme.GetColor(theme.ThemeText)).
+				Background(theme.BackgroundColor(theme.ThemeBackground)),
 			),
 		)
 	}
@@ -197,19 +197,19 @@ func getDeviceInfo() {
 		infoModal.Table.SetCell(rows+i, 1, tview.NewTableCell(serviceType).
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor("Text")).
+			SetTextColor(theme.GetColor(theme.ThemeText)).
 			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("Text")).
-				Background(theme.BackgroundColor("Text")),
+				Foreground(theme.GetColor(theme.ThemeText)).
+				Background(theme.BackgroundColor(theme.ThemeBackground)),
 			),
 		)
 
 		infoModal.Table.SetCell(rows+i, 2, tview.NewTableCell(serviceUUID).
 			SetExpansion(0).
-			SetTextColor(theme.GetColor("Text")).
+			SetTextColor(theme.GetColor(theme.ThemeText)).
 			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("Text")).
-				Background(theme.BackgroundColor("Text")),
+				Foreground(theme.GetColor(theme.ThemeText)).
+				Background(theme.BackgroundColor(theme.ThemeBackground)),
 			),
 		)
 	}
@@ -265,16 +265,16 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 	if name == "" {
 		name = device.Address
 	}
-	name += theme.ColorWrap("DeviceType", " ("+device.Type+")")
+	name += theme.ColorWrap(theme.ThemeDeviceType, " ("+device.Type+")")
 
-	nameColor := "Device"
-	propColor := "DeviceProperty"
+	nameColor := theme.ThemeDevice
+	propColor := theme.ThemeDeviceProperty
 
 	if device.Connected {
 		props += "Connected"
 
-		nameColor = "DeviceConnected"
-		propColor = "DevicePropertyConnected"
+		nameColor = theme.ThemeDeviceConnected
+		propColor = theme.ThemeDevicePropertyConnected
 
 		if device.RSSI < 0 {
 			rssi := strconv.FormatInt(int64(device.RSSI), 10)
@@ -302,8 +302,8 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 		props = "(" + strings.TrimRight(props, ", ") + ")"
 	} else {
 		props = "[New Device[]"
-		nameColor = "DeviceDiscovered"
-		propColor = "DevicePropertyDiscovered"
+		nameColor = theme.ThemeDeviceDiscovered
+		propColor = theme.ThemeDevicePropertyDiscovered
 	}
 
 	DeviceTable.SetCell(

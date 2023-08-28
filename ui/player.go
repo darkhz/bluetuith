@@ -148,41 +148,41 @@ func setupMediaPlayer(deviceName string) (*tview.Flex, []*tview.TextView) {
 	info := tview.NewTextView()
 	info.SetDynamicColors(true)
 	info.SetTextAlign(tview.AlignCenter)
-	info.SetTextColor(theme.GetColor("Text"))
-	info.SetBackgroundColor(theme.GetColor("Background"))
+	info.SetTextColor(theme.GetColor(theme.ThemeText))
+	info.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	title := tview.NewTextView()
 	title.SetDynamicColors(true)
 	title.SetTextAlign(tview.AlignCenter)
-	title.SetTextColor(theme.GetColor("Text"))
-	title.SetBackgroundColor(theme.GetColor("Background"))
+	title.SetTextColor(theme.GetColor(theme.ThemeText))
+	title.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	progress := tview.NewTextView()
 	progress.SetDynamicColors(true)
 	progress.SetTextAlign(tview.AlignCenter)
-	progress.SetTextColor(theme.GetColor("Text"))
-	progress.SetBackgroundColor(theme.GetColor("Background"))
+	progress.SetTextColor(theme.GetColor(theme.ThemeText))
+	progress.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	track := tview.NewTextView()
 	track.SetDynamicColors(true)
 	track.SetTextAlign(tview.AlignLeft)
-	track.SetTextColor(theme.GetColor("Text"))
-	track.SetBackgroundColor(theme.GetColor("Background"))
+	track.SetTextColor(theme.GetColor(theme.ThemeText))
+	track.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	device := tview.NewTextView()
 	device.SetText(deviceName)
 	device.SetDynamicColors(true)
 	device.SetTextAlign(tview.AlignRight)
-	device.SetTextColor(theme.GetColor("Text"))
-	device.SetBackgroundColor(theme.GetColor("Background"))
+	device.SetTextColor(theme.GetColor(theme.ThemeText))
+	device.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	buttons := tview.NewTextView()
 	buttons.SetRegions(true)
 	buttons.SetText(mediaButtons)
 	buttons.SetDynamicColors(true)
 	buttons.SetTextAlign(tview.AlignCenter)
-	buttons.SetTextColor(theme.GetColor("Text"))
-	buttons.SetBackgroundColor(theme.GetColor("Background"))
+	buttons.SetTextColor(theme.GetColor(theme.ThemeText))
+	buttons.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	buttons.SetHighlightedFunc(func(added, removed, remaining []string) {
 		var ch rune
 		var key tcell.Key
@@ -225,7 +225,7 @@ func setupMediaPlayer(deviceName string) (*tview.Flex, []*tview.TextView) {
 		AddItem(buttons, 0, 1, false).
 		AddItem(nil, 1, 0, false).
 		AddItem(device, 0, 1, false)
-	buttonFlex.SetBackgroundColor(theme.GetColor("Background"))
+	buttonFlex.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	player := tview.NewFlex().
 		AddItem(nil, 1, 0, false).
@@ -237,7 +237,7 @@ func setupMediaPlayer(deviceName string) (*tview.Flex, []*tview.TextView) {
 		AddItem(nil, 1, 0, false).
 		AddItem(buttonFlex, 1, 0, false).
 		SetDirection(tview.FlexRow)
-	player.SetBackgroundColor(theme.GetColor("Background"))
+	player.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	return player, []*tview.TextView{info, title, progress, track, buttons}
 }

@@ -56,10 +56,10 @@ func audioProfiles() {
 					SetReference(profile).
 					SetAlign(tview.AlignLeft).
 					SetOnClickedFunc(setProfile).
-					SetTextColor(theme.GetColor("Text")).
+					SetTextColor(theme.GetColor(theme.ThemeText)).
 					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor("Text")).
-						Background(theme.BackgroundColor("Text")),
+						Foreground(theme.GetColor(theme.ThemeText)).
+						Background(theme.BackgroundColor(theme.ThemeText)),
 					),
 				)
 
@@ -105,10 +105,10 @@ func markActiveProfile(profileMenu *tview.Table, device bluez.Device, index ...i
 
 		profileMenu.SetCell(i, 0, tview.NewTableCell(activeIndicator).
 			SetSelectable(false).
-			SetTextColor(theme.GetColor("Text")).
+			SetTextColor(theme.GetColor(theme.ThemeText)).
 			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("Text")).
-				Background(theme.BackgroundColor("Text")),
+				Foreground(theme.GetColor(theme.ThemeText)).
+				Background(theme.BackgroundColor(theme.ThemeText)),
 			),
 		)
 	}

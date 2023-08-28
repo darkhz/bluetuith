@@ -43,8 +43,8 @@ var options = []Option{
 		Description: "Specify GSM number to dial. (Required for DUN)",
 	},
 	{
-		Name:        "set-theme",
-		Description: "Specify a theme." + theme.GetThemes(),
+		Name:        "theme",
+		Description: "Specify a theme in the HJSON format. (For example, '{ Adapter: \"red\" }')",
 	},
 	{
 		Name:        "generate",
@@ -98,6 +98,8 @@ func parse() {
 
 			usage += s + "\n"
 		})
+
+		usage += "\n" + theme.GetElementData()
 
 		Print(usage, 0)
 	}
@@ -188,12 +190,28 @@ func cmdOptionGsm() {
 }
 
 func cmdOptionTheme() {
-	optionTheme := GetProperty("set-theme")
-	if optionTheme == "" {
+	if !config.Exists("theme") {
 		return
 	}
 
-	if err := theme.ParseThemeFile(optionTheme); err != nil {
+	optionTheme := config.Get("theme")
+	if t, ok := optionTheme.(string); ok {
+		themeConfig, err := hjson.Parser().Unmarshal([]byte(t))
+		if err != nil {
+			PrintError("Provided theme format is invalid", err)
+		}
+
+		optionTheme = themeConfig
+	}
+
+	config.Set("theme", optionTheme)
+
+	themeMap := config.StringMap("theme")
+	if len(themeMap) == 0 {
+		return
+	}
+
+	if err := theme.ParseThemeConfig(themeMap); err != nil {
 		PrintError(err.Error())
 	}
 }

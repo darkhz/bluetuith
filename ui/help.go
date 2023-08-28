@@ -85,29 +85,29 @@ func showHelp() {
 		helpModal.Table.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor("Text")),
+			SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 
 		row++
 
 		for op, key := range helpMap {
-			helpModal.Table.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap("Text", op)).
+			helpModal.Table.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, op)).
 				SetExpansion(1).
 				SetAlign(tview.AlignLeft).
-				SetTextColor(theme.GetColor("Text")).
+				SetTextColor(theme.GetColor(theme.ThemeText)).
 				SetSelectedStyle(tcell.Style{}.
-					Foreground(theme.GetColor("Text")).
-					Background(theme.BackgroundColor("Text")),
+					Foreground(theme.GetColor(theme.ThemeText)).
+					Background(theme.BackgroundColor(theme.ThemeText)),
 				),
 			)
 
-			helpModal.Table.SetCell(row, 1, tview.NewTableCell(theme.ColorWrap("Text", key)).
+			helpModal.Table.SetCell(row, 1, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, key)).
 				SetExpansion(0).
 				SetAlign(tview.AlignLeft).
-				SetTextColor(theme.GetColor("Text")).
+				SetTextColor(theme.GetColor(theme.ThemeText)).
 				SetSelectedStyle(tcell.Style{}.
-					Foreground(theme.GetColor("Text")).
-					Background(theme.BackgroundColor("Text")),
+					Foreground(theme.GetColor(theme.ThemeText)).
+					Background(theme.BackgroundColor(theme.ThemeText)),
 				),
 			)
 

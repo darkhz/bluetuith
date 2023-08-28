@@ -53,19 +53,19 @@ func StartUI() {
 		AddItem(menuBar(), 0, 1, false).
 		AddItem(box, 1, 0, false).
 		AddItem(adapterStatusView(), 0, 1, false)
-	menuArea.SetBackgroundColor(theme.GetColor("Background"))
+	menuArea.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(menuArea, 1, 0, false).
 		AddItem(nil, 1, 0, false).
 		AddItem(deviceTable(), 0, 10, true)
-	flex.SetBackgroundColor(theme.GetColor("Background"))
+	flex.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	UI.focus = flex
 	UI.page = "main"
 	UI.Pages.AddPage("main", flex, true, true)
-	UI.Pages.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Pages.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	UI.Pages.SetChangedFunc(func() {
 		page, _ := UI.Pages.GetFrontPage()
 
@@ -79,7 +79,7 @@ func StartUI() {
 		SetDirection(tview.FlexRow).
 		AddItem(UI.Pages, 0, 10, true).
 		AddItem(statusBar(), 1, 0, false)
-	UI.Layout.SetBackgroundColor(theme.GetColor("Background"))
+	UI.Layout.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	UI.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		operation := cmd.KeyOperation(event)
@@ -168,8 +168,8 @@ func displayWarning() {
 	warningTextView.SetText(UI.warn)
 	warningTextView.SetDynamicColors(true)
 	warningTextView.SetTextAlign(tview.AlignCenter)
-	warningTextView.SetTextColor(theme.GetColor("Text"))
-	warningTextView.SetBackgroundColor(theme.GetColor("Background"))
+	warningTextView.SetTextColor(theme.GetColor(theme.ThemeText))
+	warningTextView.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	modal := NewModal("warning", "Warning", warningTextView, height, 60)
 	warningTextView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {

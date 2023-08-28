@@ -151,8 +151,8 @@ func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error
 	pincodeTextView.SetText(text)
 	pincodeTextView.SetDynamicColors(true)
 	pincodeTextView.SetTextAlign(tview.AlignCenter)
-	pincodeTextView.SetTextColor(theme.GetColor("Text"))
-	pincodeTextView.SetBackgroundColor(theme.GetColor("Background"))
+	pincodeTextView.SetTextColor(theme.GetColor(theme.ThemeText))
+	pincodeTextView.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	pincodeModal := ui.NewModal("pincode", "Pin Code", pincodeTextView, 10, width)
 	pincodeTextView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {

@@ -140,7 +140,7 @@ func menuBar() *tview.TextView {
 	menu.bar = tview.NewTextView()
 	menu.bar.SetRegions(true)
 	menu.bar.SetDynamicColors(true)
-	menu.bar.SetBackgroundColor(theme.GetColor("MenuBar"))
+	menu.bar.SetBackgroundColor(theme.GetColor(theme.ThemeMenuBar))
 	menu.bar.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if added == nil {
 			return
@@ -285,21 +285,21 @@ func setMenu(x, y int, menuID string, device ...struct{}) {
 			SetExpansion(1).
 			SetReference(menuopt).
 			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor("MenuItem")).
+			SetTextColor(theme.GetColor(theme.ThemeMenuItem)).
 			SetClickedFunc(KeyHandler(menuopt.Key, FunctionClick)).
 			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("MenuItem")).
-				Background(theme.BackgroundColor("MenuItem")),
+				Foreground(theme.GetColor(theme.ThemeMenuItem)).
+				Background(theme.BackgroundColor(theme.ThemeMenuItem)),
 			),
 		)
 		modal.Table.SetCell(index, 1, tview.NewTableCell(keybinding).
 			SetExpansion(1).
 			SetAlign(tview.AlignRight).
 			SetClickedFunc(KeyHandler(menuopt.Key, FunctionClick)).
-			SetTextColor(theme.GetColor("MenuItem")).
+			SetTextColor(theme.GetColor(theme.ThemeMenuItem)).
 			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor("MenuItem")).
-				Background(theme.BackgroundColor("MenuItem")),
+				Foreground(theme.GetColor(theme.ThemeMenuItem)).
+				Background(theme.BackgroundColor(theme.ThemeMenuItem)),
 			),
 		)
 	}
@@ -400,7 +400,7 @@ func drawMenuBox(x, y, width int, device bool) {
 // setMenuBarHeader appends the header text with
 // the menu bar's regions.
 func setMenuBarHeader(header string) {
-	menu.bar.SetText(header + "[-:-:-] " + theme.ColorWrap("Menu", menuBarRegions))
+	menu.bar.SetText(header + "[-:-:-] " + theme.ColorWrap(theme.ThemeMenu, menuBarRegions))
 }
 
 // switchMenu switches between menus.

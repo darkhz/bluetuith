@@ -70,18 +70,18 @@ func networkSelect() {
 					SetExpansion(1).
 					SetReference(ctype).
 					SetAlign(tview.AlignLeft).
-					SetTextColor(theme.GetColor("Text")).
+					SetTextColor(theme.GetColor(theme.ThemeText)).
 					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor("Text")).
-						Background(theme.BackgroundColor("Text")),
+						Foreground(theme.GetColor(theme.ThemeText)).
+						Background(theme.BackgroundColor(theme.ThemeText)),
 					),
 				)
 				networkMenu.SetCell(row, 1, tview.NewTableCell("("+strings.ToUpper(ctype)+")").
 					SetAlign(tview.AlignRight).
-					SetTextColor(theme.GetColor("Text")).
+					SetTextColor(theme.GetColor(theme.ThemeText)).
 					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor("Text")).
-						Background(theme.BackgroundColor("Text")),
+						Foreground(theme.GetColor(theme.ThemeText)).
+						Background(theme.BackgroundColor(theme.ThemeText)),
 					),
 				)
 			}
