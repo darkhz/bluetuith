@@ -51,6 +51,11 @@ var options = []Option{
 		Description: "Generate configuration.",
 		IsBoolean:   true,
 	},
+	{
+		Name:        "version",
+		Description: "Print version information.",
+		IsBoolean:   true,
+	},
 }
 
 func parse() {
@@ -225,4 +230,21 @@ func cmdOptionGenerate() {
 	generate()
 
 	os.Exit(0)
+}
+
+func cmdOptionVersion() {
+	optionVersion := IsPropertyEnabled("version")
+	if !optionVersion {
+		return
+	}
+
+	text := "Bluetuith v%s"
+
+	versionInfo := strings.Split(Version, "@")
+	if len(versionInfo) < 2 {
+		Print(fmt.Sprintf(text, versionInfo), 0)
+	}
+
+	text += " (%s)"
+	Print(fmt.Sprintf(text, versionInfo[0], versionInfo[1]), 0)
 }

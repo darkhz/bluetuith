@@ -6,6 +6,9 @@ builds:
       - GO111MODULE=on
       - GOPROXY=https://proxy.golang.org
 
+    ldflags:
+      - -s -w -X github.com/darkhz/bluetuith/cmd.Version={{.Version}}@{{.ShortCommit}}
+
     goos:
       - linux
 
