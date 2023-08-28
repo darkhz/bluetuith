@@ -238,7 +238,7 @@ func setMenuItemToggle(menuName string, menuKey cmd.Key, toggle bool, nodraw ...
 
 // setMenu sets up a submenu for the specified menu.
 func setMenu(x, y int, menuID string, device ...struct{}) {
-	var width int
+	var width, skipped int
 
 	modal := menu.modal
 	modal.Table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -272,6 +272,11 @@ func setMenu(x, y int, menuID string, device ...struct{}) {
 
 	modal.Table.Clear()
 	for index, menuopt := range menuKeybindings[menuID] {
+		if menuopt.Visible && !KeyHandler(menuopt.Key, FunctionVisible)() {
+			skipped++
+			continue
+		}
+
 		toggle := menuopt.Toggled
 		if toggleHandler := KeyHandler(menuopt.Key, FunctionCreate); menuopt.OnCreate && toggleHandler != nil {
 			toggle = toggleHandler()
@@ -287,7 +292,7 @@ func setMenu(x, y int, menuID string, device ...struct{}) {
 			width = displayWidth
 		}
 
-		modal.Table.SetCell(index, 0, tview.NewTableCell(display).
+		modal.Table.SetCell(index-skipped, 0, tview.NewTableCell(display).
 			SetExpansion(1).
 			SetReference(menuopt).
 			SetAlign(tview.AlignLeft).
@@ -298,7 +303,7 @@ func setMenu(x, y int, menuID string, device ...struct{}) {
 				Background(theme.BackgroundColor(theme.ThemeMenuItem)),
 			),
 		)
-		modal.Table.SetCell(index, 1, tview.NewTableCell(keybinding).
+		modal.Table.SetCell(index-skipped, 1, tview.NewTableCell(keybinding).
 			SetExpansion(1).
 			SetAlign(tview.AlignRight).
 			SetClickedFunc(KeyHandler(menuopt.Key, FunctionClick)).
