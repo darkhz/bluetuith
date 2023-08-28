@@ -165,11 +165,7 @@ func getDeviceInfo() {
 		infoModal.Table.SetCell(i, 1, tview.NewTableCell(propValue).
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor(theme.ThemeText)).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor(theme.ThemeText)).
-				Background(theme.BackgroundColor(theme.ThemeBackground)),
-			),
+			SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 	}
 
@@ -181,20 +177,12 @@ func getDeviceInfo() {
 		infoModal.Table.SetCell(rows+i, 1, tview.NewTableCell(serviceType).
 			SetExpansion(1).
 			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor(theme.ThemeText)).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor(theme.ThemeText)).
-				Background(theme.BackgroundColor(theme.ThemeBackground)),
-			),
+			SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 
 		infoModal.Table.SetCell(rows+i, 2, tview.NewTableCell(serviceUUID).
 			SetExpansion(0).
-			SetTextColor(theme.GetColor(theme.ThemeText)).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor(theme.ThemeText)).
-				Background(theme.BackgroundColor(theme.ThemeBackground)),
-			),
+			SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 	}
 
