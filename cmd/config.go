@@ -19,13 +19,18 @@ type Config struct {
 	*koanf.Koanf
 }
 
+// ConfigDir describes the path and properties of a configuration directory.
+type ConfigDir struct {
+	path, fullpath string
+
+	exist, hidden, prefixHomeDir bool
+}
+
 var config Config
 
 // setup checks for the config directory,
 // and creates one if it doesn't exist.
 func (c *Config) setup() {
-	var configExists bool
-
 	c.Koanf = koanf.New(".")
 
 	homedir, err := os.UserHomeDir()
@@ -33,41 +38,56 @@ func (c *Config) setup() {
 		PrintError(err.Error())
 	}
 
-	dirs := []string{".config/bluetuith", ".bluetuith"}
-	for i, dir := range dirs {
-		p := filepath.Join(homedir, dir)
-		dirs[i] = p
+	configPaths := []*ConfigDir{
+		{path: os.Getenv("XDG_CONFIG_HOME")},
+		{path: ".config", prefixHomeDir: true},
+		{path: ".", hidden: true, prefixHomeDir: true},
+	}
 
-		if _, err := os.Stat(p); err == nil {
-			c.path = p
-			return
-		}
+	for _, dir := range configPaths {
+		name := "bluetuith"
 
-		if i > 0 {
+		if dir.path == "" {
 			continue
 		}
 
-		if _, err := os.Stat(filepath.Clean(filepath.Dir(p))); err == nil {
-			configExists = true
+		if dir.hidden {
+			name = "." + name
+		}
+
+		if dir.prefixHomeDir {
+			dir.path = filepath.Join(homedir, dir.path)
+		}
+
+		if _, err := os.Stat(filepath.Clean(dir.path)); err == nil {
+			dir.exist = true
+		}
+
+		dir.fullpath = filepath.Join(dir.path, name)
+		if _, err := os.Stat(filepath.Clean(dir.fullpath)); err == nil {
+			c.path = dir.fullpath
+			break
 		}
 	}
 
 	if c.path == "" {
-		var pos int
-		var err error
+		var pathErrors []string
 
-		if configExists {
-			err = os.Mkdir(dirs[0], 0700)
-		} else {
-			pos = 1
-			err = os.Mkdir(dirs[1], 0700)
+		for _, dir := range configPaths {
+			if err := os.Mkdir(dir.fullpath, os.ModePerm); err == nil {
+				c.path = dir.fullpath
+				break
+			}
+
+			pathErrors = append(pathErrors, dir.fullpath)
 		}
 
-		if err != nil {
-			PrintError(err.Error())
-		}
+		if len(pathErrors) == len(configPaths) {
+			dirError := "The configuration directories could not be created at:\n"
+			dirError += strings.Join(pathErrors, "\n")
 
-		c.path = dirs[pos]
+			PrintError(dirError)
+		}
 	}
 
 	return
