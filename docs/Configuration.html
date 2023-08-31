@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <title>Configuration - Bluetuith</title>
+    <meta name="description" content="A terminal-based Bluetooth manager for Linux">
+    <meta name="author" content="darkhz">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link rel="icon" href="themes/daux/img/favicon-navy.png" type="image/x-icon">
+
+    <!-- Mobile -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- JS -->
+    <script>
+        window.base_url = "";
+        document.documentElement.classList.remove('no-js');
+    </script>
+
+    <!-- Font -->
+    
+    <!-- CSS -->
+            <link href='themes/daux/css/theme-navy.min.css' rel='stylesheet' type='text/css'>
+            <link href='daux_libraries/search.css' rel='stylesheet' type='text/css'>
+    </head>
+<body class="">
+    <div class="Columns content">
+    <aside class="Columns__left Collapsible">
+        <button type="button" class="Button Collapsible__trigger" aria-controls="sidebar_content" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="Collapsible__trigger__bar"></span>
+            <span class="Collapsible__trigger__bar"></span>
+            <span class="Collapsible__trigger__bar"></span>
+        </button>
+
+        <a class="Brand" href="index.html">Bluetuith</a>
+
+    <form role='search' action="/" method="get" class="Search" id="search_form">
+        <label for="search_input">
+            <span class='u-visuallyHidden'>Search</span>
+        </label>
+        <input
+            type="search"
+            id="search_input"
+            class="Search__field"
+            placeholder="Search..."
+            aria-label="Search..."
+            autocomplete="on"
+            results=25
+            autosave=text_search
+        >
+        <label>
+            <input type="submit" class='u-visuallyHidden' />
+            <span class='u-visuallyHidden'>Search...</span>
+            <svg class="Search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451 451">
+                <path d="M447.05 428l-109.6-109.6c29.4-33.8 47.2-77.9 47.2-126.1C384.65 86.2 298.35 0 192.35 0 86.25 0 .05 86.3.05 192.3s86.3 192.3 192.3 192.3c48.2 0 92.3-17.8 126.1-47.2L428.05 447c2.6 2.6 6.1 4 9.5 4s6.9-1.3 9.5-4c5.2-5.2 5.2-13.8 0-19zM26.95 192.3c0-91.2 74.2-165.3 165.3-165.3 91.2 0 165.3 74.2 165.3 165.3s-74.1 165.4-165.3 165.4c-91.1 0-165.3-74.2-165.3-165.4z"/>
+            </svg>
+        </label>
+    </form>
+
+        <div class="Collapsible__content" id="sidebar_content">
+            <!-- Navigation -->
+            <ul class='Nav'>
+<li class='Nav__item '><a href="Installation.html">Installation</a></li>
+<li class='Nav__item Nav__item--active'><a href="Configuration.html">Configuration</a></li>
+<li class='Nav__item  has-children'><a href="Usage/Command_Line_Options.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Usage</a><ul class='Nav'>
+<li class='Nav__item '><a href="Usage/Command_Line_Options.html">Command Line Options</a></li>
+<li class='Nav__item '><a href="Usage/Keybindings.html">Keybindings</a></li></ul></li>
+<li class='Nav__item '><a href="Additional_Notes.html">Additional Notes</a></li>
+<li class='Nav__item '><a href="Credits.html">Credits</a></li></ul>
+            <div class="Links">
+                                    <hr/>
+                                            <a href="https://github.com/darkhz/bluetuith" target="_blank"  rel="noopener noreferrer">GitHub Repository</a>
+                        <br />
+                                            <a href="https://github.com/darkhz/bluetuith/issues" target="_blank"  rel="noopener noreferrer">Help/Support/Bugs</a>
+                        <br />
+                                                </div>
+
+            
+            <div class="DarkModeToggler">
+                <hr/>
+                <label class="Checkbox">Dark Mode                    <input type="checkbox" class="ColorMode__button" />
+                    <div class="Checkbox__indicator"></div>
+                </label>
+            </div>
+
+                
+                                    <div class="PoweredBy">
+                        <hr/>
+                        Powered by Daux.io                    </div>
+                        </div>
+    </aside>
+    <div class="Columns__right">
+        <div class="Columns__right__content">
+            <div class="doc_content">
+                <article class="Page">
+
+    <div class="Page__header">
+        <h1><a href="Configuration.html">Configuration</a></h1>
+                        <span class="EditOn">
+            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/02_Configuration.md" target="_blank">
+                Edit on GitHub            </a>
+        </span>
+            </div>
+
+    <div class="s-content">
+        <p>Generally, bluetuith will work out-of-the-box, with no configuration required.</p>
+<p>In case you need to specify settings without using command-line options, a config file can be used.</p>
+<p>Typing <code>bluetuith --help</code> will show you the location of the config file.<br /></p>
+<p>The configuration file is in the <a href="https://hjson.github.io/" class="Link--external" rel="noopener noreferrer">HJSON</a> format.
+You can use the <a href="Usage/Command_Line_Options.html#generate">–generate</a> flag to generate the configuration.<br /><br />
+For example:</p>
+<pre><code>{
+  adapter: hci0
+  receive-dir: /home/user/files
+  keybindings: {
+  	Menu: Alt+m
+  }
+  theme: {
+  	Adapter: red
+  }
+}
+
+</code></pre>
+<h1><a id="keybindings" href="#keybindings" class="Permalink" aria-hidden="true" title="Permalink">#</a>Keybindings</h1>
+<p>The keybinding configuration is a list of <code>KeybindingType: keybinding</code> values.<br /></p>
+<p>While defining keybindings, the global keybindings must not conflict with the non-global ones.<br />
+It is possible to have duplicate keybindings amongst various non-global keybindings, provided<br />
+they are not part of the same context.</p>
+<p>For example, this is allowed:</p>
+<pre><code>keybindings: {
+	FilebrowserSelect: Space
+	PlayerTogglePlay: Space
+}
+</code></pre>
+<p>But this isn’t:</p>
+<pre><code>keybindings: {
+	Menu: Alt+m
+	Close: Alt+m
+}
+</code></pre>
+<h2><a id="modifiers" href="#modifiers" class="Permalink" aria-hidden="true" title="Permalink">#</a>Modifiers</h2>
+<p>The modifiers currently supported for keybindings are <code>Ctrl</code>, <code>Alt</code> and <code>Shift</code>. <code>Shift</code> should only be used in rare cases.
+For example, instead of :</p>
+<ul>
+<li>
+<code>Shift+a</code>, type <code>A</code>
+</li>
+<li>
+<code>Alt+Shift+e</code>, type <code>Alt+E</code>
+</li>
+</ul>
+<p>and so on.</p>
+<p>For the ‘+’ and the space characters, type Plus and Space respectively.
+For example,</p>
+<pre><code>keybindings: {
+	AdapterChange: Ctrl+Plus
+	PlayerStop: Ctrl+Space
+}
+</code></pre>
+<h2><a id="types" href="#types" class="Permalink" aria-hidden="true" title="Permalink">#</a>Types</h2>
+<p>Note that some keybinding combinations may be valid, but may not work due to the way your terminal/environment handles it.</p>
+<p>The keybinding types are as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Global</th>
+<th>Context</th>
+<th>Default Keybinding</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Menu</td>
+<td>Yes</td>
+<td>App</td>
+<td>Alt+m</td>
+<td>Menu</td>
+</tr>
+<tr>
+<td>Select</td>
+<td>Yes</td>
+<td>App</td>
+<td>Enter</td>
+<td>Select an item</td>
+</tr>
+<tr>
+<td>Cancel</td>
+<td>Yes</td>
+<td>App</td>
+<td>Ctrl+X</td>
+<td>Cancel an operation</td>
+</tr>
+<tr>
+<td>Suspend</td>
+<td>Yes</td>
+<td>App</td>
+<td>Ctrl+Z</td>
+<td>Suspend the application</td>
+</tr>
+<tr>
+<td>Quit</td>
+<td>Yes</td>
+<td>App</td>
+<td>Q</td>
+<td>Quit</td>
+</tr>
+<tr>
+<td>Switch</td>
+<td>Yes</td>
+<td>App</td>
+<td>Tab</td>
+<td>Switch between menuitems/buttons</td>
+</tr>
+<tr>
+<td>Close</td>
+<td>Yes</td>
+<td>App</td>
+<td>Esc</td>
+<td>Close popups/pages</td>
+</tr>
+<tr>
+<td>Help</td>
+<td>Yes</td>
+<td>App</td>
+<td>?</td>
+<td>Show help</td>
+</tr>
+<tr>
+<td>AdapterChange</td>
+<td>No</td>
+<td>Device</td>
+<td>a</td>
+<td>Change adapters</td>
+</tr>
+<tr>
+<td>AdapterTogglePower</td>
+<td>No</td>
+<td>Device</td>
+<td>o</td>
+<td>Toggle adapter power state</td>
+</tr>
+<tr>
+<td>AdapterToggleDiscoverable</td>
+<td>No</td>
+<td>Device</td>
+<td>S</td>
+<td>Toggle adapter discoverable state</td>
+</tr>
+<tr>
+<td>AdapterTogglePairable</td>
+<td>No</td>
+<td>Device</td>
+<td>P</td>
+<td>Toggle adapter pairable state</td>
+</tr>
+<tr>
+<td>AdapterToggleScan</td>
+<td>No</td>
+<td>Device</td>
+<td>s</td>
+<td>Toggle adapter scan state</td>
+</tr>
+<tr>
+<td>DeviceSendFiles</td>
+<td>No</td>
+<td>Device</td>
+<td>f</td>
+<td>Start file transfer session</td>
+</tr>
+<tr>
+<td>DeviceNetwork</td>
+<td>No</td>
+<td>Device</td>
+<td>n</td>
+<td>Show network Options</td>
+</tr>
+<tr>
+<td>DeviceConnect</td>
+<td>No</td>
+<td>Device</td>
+<td>c</td>
+<td>Connect to device</td>
+</tr>
+<tr>
+<td>DevicePair</td>
+<td>No</td>
+<td>Device</td>
+<td>p</td>
+<td>Pair with device</td>
+</tr>
+<tr>
+<td>DeviceTrust</td>
+<td>No</td>
+<td>Device</td>
+<td>t</td>
+<td>Trust device</td>
+</tr>
+<tr>
+<td>DeviceAudioProfiles</td>
+<td>No</td>
+<td>Device</td>
+<td>A</td>
+<td>Show device’s audio profiles</td>
+</tr>
+<tr>
+<td>DeviceInfo</td>
+<td>No</td>
+<td>Device</td>
+<td>i</td>
+<td>Show device information</td>
+</tr>
+<tr>
+<td>DeviceRemove</td>
+<td>No</td>
+<td>Device</td>
+<td>d</td>
+<td>Remove device</td>
+</tr>
+<tr>
+<td>PlayerShow</td>
+<td>No</td>
+<td>Device</td>
+<td>m</td>
+<td>Show Media Player</td>
+</tr>
+<tr>
+<td>PlayerHide</td>
+<td>No</td>
+<td>Device</td>
+<td>M</td>
+<td>Hide Media Player</td>
+</tr>
+<tr>
+<td>PlayerTogglePlay</td>
+<td>No</td>
+<td>Device</td>
+<td>Space</td>
+<td>Play/Pause</td>
+</tr>
+<tr>
+<td>PlayerNext</td>
+<td>No</td>
+<td>Device</td>
+<td>&gt;</td>
+<td>Next Track</td>
+</tr>
+<tr>
+<td>PlayerPrevious</td>
+<td>No</td>
+<td>Device</td>
+<td>&lt;</td>
+<td>Previous Track</td>
+</tr>
+<tr>
+<td>PlayerSeekForward</td>
+<td>No</td>
+<td>Device</td>
+<td>Left</td>
+<td>Seek Forward</td>
+</tr>
+<tr>
+<td>PlayerSeekBackward</td>
+<td>No</td>
+<td>Device</td>
+<td>Right</td>
+<td>Seek Backward</td>
+</tr>
+<tr>
+<td>PlayerStop</td>
+<td>No</td>
+<td>Device</td>
+<td>]</td>
+<td>Stop Playback</td>
+</tr>
+<tr>
+<td>FilebrowserDirForward</td>
+<td>No</td>
+<td>Files</td>
+<td>Right</td>
+<td>Go forward a directory</td>
+</tr>
+<tr>
+<td>FilebrowserDirBack</td>
+<td>No</td>
+<td>Files</td>
+<td>Left</td>
+<td>Go back a directory</td>
+</tr>
+<tr>
+<td>FilebrowserSelect</td>
+<td>No</td>
+<td>Files</td>
+<td>Space</td>
+<td>Select item</td>
+</tr>
+<tr>
+<td>FilebrowserInvertSelection</td>
+<td>No</td>
+<td>Files</td>
+<td>a</td>
+<td>Invert selection</td>
+</tr>
+<tr>
+<td>FilebrowserSelectAll</td>
+<td>No</td>
+<td>Files</td>
+<td>A</td>
+<td>Select all</td>
+</tr>
+<tr>
+<td>FilebrowserRefresh</td>
+<td>No</td>
+<td>Files</td>
+<td>Ctrl+R</td>
+<td>Refresh</td>
+</tr>
+<tr>
+<td>FilebrowserToggleHidden</td>
+<td>No</td>
+<td>Files</td>
+<td>h</td>
+<td>Toggle hidden files</td>
+</tr>
+<tr>
+<td>FilebrowserConfirmSelection</td>
+<td>No</td>
+<td>Files</td>
+<td>Ctrl+S</td>
+<td>Confirm Selection</td>
+</tr>
+<tr>
+<td>ProgressView</td>
+<td>No</td>
+<td>Progress</td>
+<td>v</td>
+<td>View Downloads</td>
+</tr>
+<tr>
+<td>ProgressTransferSuspend</td>
+<td>No</td>
+<td>Progress</td>
+<td>z</td>
+<td>Suspend Transfer</td>
+</tr>
+<tr>
+<td>ProgressTransferResume</td>
+<td>No</td>
+<td>Progress</td>
+<td>g</td>
+<td>Resume Transfer</td>
+</tr>
+<tr>
+<td>ProgressTransferCancel</td>
+<td>No</td>
+<td>Progress</td>
+<td>x</td>
+<td>Cancel Transfer</td>
+</tr>
+</tbody>
+</table>
+<h1><a id="themes" href="#themes" class="Permalink" aria-hidden="true" title="Permalink">#</a>Themes</h1>
+<p>The theme configuration is a list of <code>ElementType: color</code> values.<br />
+Color names or hexadecimal values can be provided for each element type.</p>
+<p>For example:</p>
+<pre><code>theme: {
+	Adapter: red
+	Device: #000000
+}
+</code></pre>
+<p>To get a list of available element types and colors, use the <code>--help</code> command-line option.</p>
+    </div>
+
+        <nav>
+        <ul class="Pager">
+            <li class=Pager--prev><a href="Installation.html">Previous</a></li>            <li class=Pager--next><a href="Usage/Command_Line_Options.html">Next</a></li>        </ul>
+    </nav>
+    </article>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+    window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+    ga('create', '1', '');
+    ga('send', 'pageview');
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    <!-- JS -->
+            <script src="themes/daux/js/main.mjs"></script>
+    
+        <script>
+        
+        window.searchLanguage = "";
+        window.searchTranslation = {"Search_one_result":"1 result","Search_results":"!count results","Search_no_results":"Nothing found","Search_common_words_ignored":"Common words are largely ignored","Search_too_short":"Search too short","Search_one_character_or_more":"Should be one character or more","Search_should_be_x_or_more":"Should be !min characters or more","Link_previous":"Previous","Link_next":"Next"};
+    </script>
+
+    <!-- Search -->
+    <script type="text/javascript" src="daux_libraries/search.min.js"></script>
+
+    <script>
+        window.search({'base_url': ''})
+    </script>
+</body>
+</html>
