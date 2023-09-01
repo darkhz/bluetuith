@@ -20,6 +20,6 @@ This project is currently in the alpha stage.
 - Mouse support
 
 ## Documentation
-The documentation is now hosted [here](https://bluetuith.darkhz.io)
+The documentation is now hosted [here](https://darkhz.github.io/bluetuith)
 
 The wiki is out-of-date.
