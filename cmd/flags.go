@@ -160,7 +160,7 @@ func cmdOptionListAdapters(b *bluez.Bluez) {
 		adapters += "- " + filepath.Base(adapter.Path) + "\n"
 	}
 
-	Print(adapters, 0)
+	Print(strings.TrimRight(adapters, "\n"), 0)
 }
 
 func cmdOptionReceiveDir() {

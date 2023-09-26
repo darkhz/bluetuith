@@ -10,12 +10,12 @@ func Init(bluez *bluez.Bluez) {
 	config.setup()
 
 	parse()
+
+	cmdOptionListAdapters(bluez)
 	cmdOptionVersion()
 
-	validateKeybindings()
-
 	cmdOptionAdapter(bluez)
-	cmdOptionListAdapters(bluez)
+	validateKeybindings()
 
 	cmdOptionGenerate()
 	cmdOptionTheme()
