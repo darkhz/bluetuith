@@ -47,6 +47,11 @@ var options = []Option{
 		Description: "Specify a theme in the HJSON format. (For example, '{ Adapter: \"red\" }')",
 	},
 	{
+		Name:        "no-warning",
+		Description: "Do not display warnings when the application has initialized.",
+		IsBoolean:   true,
+	},
+	{
 		Name:        "generate",
 		Description: "Generate configuration.",
 		IsBoolean:   true,

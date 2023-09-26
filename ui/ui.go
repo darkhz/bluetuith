@@ -153,7 +153,7 @@ func suspendUI(t tcell.Screen) {
 }
 
 func displayWarning() {
-	if UI.warn == "" {
+	if UI.warn == "" || cmd.IsPropertyEnabled("no-warning") {
 		return
 	}
 
