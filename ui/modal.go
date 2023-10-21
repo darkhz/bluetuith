@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
@@ -19,8 +21,9 @@ type Modal struct {
 	Flex  *tview.Flex
 	Table *tview.Table
 
-	y *tview.Flex
-	x *tview.Flex
+	y      *tview.Flex
+	x      *tview.Flex
+	button *tview.TextView
 }
 
 var modals []*Modal
@@ -59,7 +62,7 @@ func NewModal(name, title string, item tview.Primitive, height, width int) *Moda
 	titleFlex := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(box, 0, 1, false).
-		AddItem(modalTitle, 0, 1, false).
+		AddItem(modalTitle, 0, 10, false).
 		AddItem(closeButton, 0, 1, false)
 
 	if item == nil {
@@ -96,6 +99,8 @@ func NewModal(name, title string, item tview.Primitive, height, width int) *Moda
 
 		Height: height,
 		Width:  width,
+
+		button: closeButton,
 	}
 
 	return modal
@@ -123,6 +128,118 @@ func NewMenuModal(name string, regionX, regionY int) *Modal {
 		regionX: regionX,
 		regionY: regionY,
 	}
+}
+
+// NewDisplayModal displays a modal with a message.
+func NewDisplayModal(name, title, message string) {
+	message += "\n\nPress any key or click the 'X' button to close this dialog."
+
+	width := len(strings.Split(message, "\n")[0])
+	if width > 100 {
+		width = 100
+	}
+
+	height := len(tview.WordWrap(message, width)) * 4
+
+	textview := tview.NewTextView()
+	textview.SetText(message)
+	textview.SetDynamicColors(true)
+	textview.SetTextAlign(tview.AlignCenter)
+	textview.SetTextColor(theme.GetColor(theme.ThemeText))
+	textview.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+
+	modal := NewModal(name, title, textview, height, width)
+	textview.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		modal.Exit(false)
+
+		return event
+	})
+
+	go UI.QueueUpdateDraw(func() {
+		modal.Show()
+	})
+}
+
+// NewConfirmModal displays a modal, shows a message and asks for confirmation.
+func NewConfirmModal(name, title, message string) string {
+	var modal *Modal
+
+	message += "\n\nPress y/n to Confirm/Cancel, click the required button or click the 'X' button to close this dialog."
+
+	reply := make(chan string, 10)
+
+	send := func(msg string) {
+		modal.Exit(false)
+
+		select {
+		case reply <- msg:
+		}
+	}
+
+	width := len(strings.Split(message, "\n")[0])
+	if width > 100 {
+		width = 100
+	}
+
+	height := len(tview.WordWrap(message, width)) * 4
+
+	buttons := tview.NewTextView()
+	buttons.SetRegions(true)
+	buttons.SetDynamicColors(true)
+	buttons.SetTextAlign(tview.AlignCenter)
+	buttons.SetTextColor(theme.GetColor(theme.ThemeText))
+	buttons.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+	buttons.SetText(`["confirm"][::b][Confirm[] ["cancel"][::b][Cancel[]`)
+	buttons.SetHighlightedFunc(func(added, removed, remaining []string) {
+		if added == nil {
+			return
+		}
+
+		switch added[0] {
+		case "confirm":
+			send("y")
+
+		case "cancel":
+			send("n")
+		}
+	})
+
+	textview := tview.NewTextView()
+	textview.SetText(message)
+	textview.SetDynamicColors(true)
+	textview.SetTextAlign(tview.AlignCenter)
+	textview.SetTextColor(theme.GetColor(theme.ThemeText))
+	textview.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(textview, 0, 1, false).
+		AddItem(buttons, 1, 0, true)
+
+	modal = NewModal(name, title, flex, height, width)
+	buttons.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case 'y', 'n':
+			send(string(event.Rune()))
+		}
+
+		switch cmd.KeyOperation(event) {
+		case cmd.KeyClose:
+			send("n")
+		}
+
+		return event
+	})
+	modal.button.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		send("n")
+		return event
+	})
+
+	go UI.QueueUpdateDraw(func() {
+		modal.Show()
+	})
+
+	return <-reply
 }
 
 // Show shows the modal.

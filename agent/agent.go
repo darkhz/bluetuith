@@ -4,10 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/bluetuith/ui"
-	"github.com/darkhz/tview"
-	"github.com/gdamore/tcell/v2"
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
 )
@@ -137,59 +134,54 @@ func (a *Agent) DisplayPinCode(path dbus.ObjectPath, pincode string) *dbus.Error
 		return dbus.MakeFailedError(err)
 	}
 
-	width := 40
-	if w := len(device.Name); w > 40 {
-		width = w
-	}
-
-	text := fmt.Sprintf(
-		"The pincode for [::bu]%s[-:-:-] is:\n\n[::b]%s[-:-:-]\n\nPress any key or click the 'X' button to close this dialog.",
+	msg := fmt.Sprintf(
+		"The pincode for [::bu]%s[-:-:-] is:\n\n[::b]%s[-:-:-]",
 		device.Name, pincode,
 	)
 
-	pincodeTextView := tview.NewTextView()
-	pincodeTextView.SetText(text)
-	pincodeTextView.SetDynamicColors(true)
-	pincodeTextView.SetTextAlign(tview.AlignCenter)
-	pincodeTextView.SetTextColor(theme.GetColor(theme.ThemeText))
-	pincodeTextView.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
-
-	pincodeModal := ui.NewModal("pincode", "Pin Code", pincodeTextView, 10, width)
-	pincodeTextView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		pincodeModal.Exit(false)
-
-		return event
-	})
-	go ui.UI.QueueUpdateDraw(func() {
-		pincodeModal.Show()
-	})
+	ui.NewDisplayModal("pincode", "Pin Code", msg)
 
 	return nil
 }
 
-// DisplayPinCode shows a notification with the passkey.
+// DisplayPasskey shows a notification with the passkey.
 func (a *Agent) DisplayPasskey(path dbus.ObjectPath, passkey uint32, entered uint16) *dbus.Error {
 	device, err := ui.GetDeviceFromPath(string(path))
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
 
-	msg := fmt.Sprintf("Passkey for %s is %d, entered %d", device.Name, passkey, entered)
-	ui.InfoMessage(msg, false)
+	msg := fmt.Sprintf(
+		"The passkey for [::bu]%s[-:-:-] is:\n\n[::b]%d[-:-:-]",
+		device.Name, passkey,
+	)
+	if entered > 0 {
+		msg += fmt.Sprintf("\n\nYou have entered %d", entered)
+	}
+
+	ui.NewDisplayModal("passkey-display", "Passkey Display", msg)
 
 	return nil
 }
 
 // RequestConfirmation shows the passkey and asks for confirmation.
 func (a *Agent) RequestConfirmation(path dbus.ObjectPath, passkey uint32) *dbus.Error {
-	msg := fmt.Sprintf("Confirm passkey %d (y/n)", passkey)
+	device, err := ui.GetDeviceFromPath(string(path))
+	if err != nil {
+		return dbus.MakeFailedError(err)
+	}
 
-	reply := ui.SetInput(msg)
+	msg := fmt.Sprintf(
+		"Confirm passkey for [::bu]%s[-:-:-] is \n\n[::b]%d[-:-:-]",
+		device.Name, passkey,
+	)
+
+	reply := ui.NewConfirmModal("passkey-confirm", "Passkey Confirmation", msg)
 	if reply != "y" {
 		return dbus.MakeFailedError(errors.New("Cancelled"))
 	}
 
-	err := ui.SetTrusted(string(path), true)
+	err = ui.SetTrusted(string(path), true)
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
@@ -199,14 +191,19 @@ func (a *Agent) RequestConfirmation(path dbus.ObjectPath, passkey uint32) *dbus.
 
 // RequestAuthorization asks for confirmation before pairing.
 func (a *Agent) RequestAuthorization(path dbus.ObjectPath) *dbus.Error {
-	msg := "Confirm pairing (y/n)"
+	device, err := ui.GetDeviceFromPath(string(path))
+	if err != nil {
+		return dbus.MakeFailedError(err)
+	}
 
-	reply := ui.SetInput(msg)
+	msg := fmt.Sprintf("Confirm pairing with [::bu]%s[-:-:-]", device.Name)
+
+	reply := ui.NewConfirmModal("pairing-confirm", "Pairing Confirmation", msg)
 	if reply != "y" {
 		return dbus.MakeFailedError(errors.New("Cancelled"))
 	}
 
-	err := ui.SetTrusted(string(path), true)
+	err = ui.SetTrusted(string(path), true)
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
