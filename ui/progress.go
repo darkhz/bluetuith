@@ -287,7 +287,7 @@ func progressView(switchToView bool) {
 				go quit()
 			}
 
-			return event
+			return ignoreDefaultEvent(event)
 		})
 
 		progressViewButtons := tview.NewTextView()

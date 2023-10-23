@@ -83,6 +83,21 @@ func getSelectionXY(table *tview.Table) (int, int) {
 	return x, y
 }
 
+// ignoreDefaultEvent ignores the default keyevents in the provided event.
+func ignoreDefaultEvent(event *tcell.EventKey) *tcell.EventKey {
+	switch event.Key() {
+	case tcell.KeyCtrlF, tcell.KeyCtrlB:
+		return nil
+	}
+
+	switch event.Rune() {
+	case 'g', 'G', 'j', 'k', 'h', 'l':
+		return nil
+	}
+
+	return event
+}
+
 // getProgress returns the title and progress of the currently playing media.
 func getProgress(media bluez.MediaProperties, buttons string, width int, skip bool) (string, string, string, string) {
 	var length int

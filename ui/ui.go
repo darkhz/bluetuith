@@ -87,6 +87,14 @@ func StartUI() {
 			return nil
 		}
 
+		if e, ok := cmd.NavigationKey(operation, event); ok {
+			focused := UI.GetFocus()
+			if focused != nil && focused.InputHandler() != nil {
+				focused.InputHandler()(e, nil)
+				return nil
+			}
+		}
+
 		switch operation {
 		case cmd.KeySuspend:
 			UI.suspend = true

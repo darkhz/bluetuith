@@ -37,7 +37,7 @@ func deviceTable() *tview.Table {
 
 		menuInputHandler(event)
 
-		return event
+		return ignoreDefaultEvent(event)
 	})
 	DeviceTable.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
 		if action == tview.MouseRightClick {

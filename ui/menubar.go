@@ -254,7 +254,7 @@ func setMenu(x, y int, menuID string, device ...struct{}) {
 
 		menuInputHandler(event)
 
-		return event
+		return ignoreDefaultEvent(event)
 	})
 	modal.Table.SetSelectedFunc(func(row, col int) {
 		cell := menu.modal.Table.GetCell(row, 0)
@@ -347,7 +347,7 @@ func setContextMenu(
 			exitMenu()
 		}
 
-		return event
+		return ignoreDefaultEvent(event)
 	})
 	modal.Table.SetSelectionChangedFunc(func(row, col int) {
 		if changed == nil {

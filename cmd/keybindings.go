@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/mattn/go-runewidth"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -71,6 +73,12 @@ const (
 	KeyPlayerSeekForward           Key = "PlayerSeekForward"
 	KeyPlayerSeekBackward          Key = "PlayerSeekBackward"
 	KeyPlayerStop                  Key = "PlayerStop"
+	KeyNavigateUp                  Key = "NavigateUp"
+	KeyNavigateDown                Key = "NavigateDown"
+	KeyNavigateRight               Key = "NavigateRight"
+	KeyNavigateLeft                Key = "NavigateLeft"
+	KeyNavigateTop                 Key = "NavigateTop"
+	KeyNavigateBottom              Key = "NavigateBottom"
 )
 
 // KeyContext describes the context where the keybinding is
@@ -134,6 +142,36 @@ var (
 			Context: KeyContextApp,
 			Kb:      Keybinding{tcell.KeyRune, '?', tcell.ModNone},
 			Global:  true,
+		},
+		KeyNavigateUp: {
+			Title:   "Navigate Up",
+			Context: KeyContextApp,
+			Kb:      Keybinding{tcell.KeyUp, ' ', tcell.ModNone},
+		},
+		KeyNavigateDown: {
+			Title:   "Navigate Down",
+			Context: KeyContextApp,
+			Kb:      Keybinding{tcell.KeyDown, ' ', tcell.ModNone},
+		},
+		KeyNavigateRight: {
+			Title:   "Navigate Right",
+			Context: KeyContextApp,
+			Kb:      Keybinding{tcell.KeyRight, ' ', tcell.ModNone},
+		},
+		KeyNavigateLeft: {
+			Title:   "Navigate Left",
+			Context: KeyContextApp,
+			Kb:      Keybinding{tcell.KeyLeft, ' ', tcell.ModNone},
+		},
+		KeyNavigateTop: {
+			Title:   "Navigate Top",
+			Context: KeyContextApp,
+			Kb:      Keybinding{tcell.KeyPgUp, ' ', tcell.ModNone},
+		},
+		KeyNavigateBottom: {
+			Title:   "Navigate Bottom",
+			Context: KeyContextApp,
+			Kb:      Keybinding{tcell.KeyPgDn, ' ', tcell.ModNone},
 		},
 		KeyAdapterTogglePower: {
 			Title:   "Power",
@@ -305,6 +343,15 @@ var (
 	// Keys match the keybinding to the key type.
 	Keys map[KeyContext]map[Keybinding]Key
 
+	navigationKeys = map[Key]Keybinding{
+		KeyNavigateUp:     {tcell.KeyUp, ' ', tcell.ModNone},
+		KeyNavigateDown:   {tcell.KeyDown, ' ', tcell.ModNone},
+		KeyNavigateRight:  {tcell.KeyRight, ' ', tcell.ModNone},
+		KeyNavigateLeft:   {tcell.KeyLeft, ' ', tcell.ModNone},
+		KeyNavigateTop:    {tcell.KeyPgUp, ' ', tcell.ModNone},
+		KeyNavigateBottom: {tcell.KeyPgDn, ' ', tcell.ModNone},
+	}
+
 	translateKeys = map[string]string{
 		"Pgup":      "PgUp",
 		"Pgdn":      "PgDn",
@@ -381,6 +428,22 @@ func KeyName(kb Keybinding) string {
 	return tcell.NewEventKey(kb.Key, kb.Rune, kb.Mod).Name()
 }
 
+// NavigationKey checks whether the provided key is a navigation key.
+func NavigationKey(pressed Key, event *tcell.EventKey) (*tcell.EventKey, bool) {
+
+	kb := Keybinding{event.Key(), event.Rune(), event.Modifiers()}
+	if kb.Key != tcell.KeyRune {
+		kb.Rune = ' '
+	}
+
+	n, ok := navigationKeys[pressed]
+	if !ok || n == kb {
+		return nil, false
+	}
+
+	return tcell.NewEventKey(n.Key, n.Rune, n.Mod), true
+}
+
 // parseKeybindings parses the keybindings from the configuration.
 func validateKeybindings() {
 	if !config.Exists("keybindings") {
@@ -452,10 +515,13 @@ func checkBindings(keyType, key string, keyNames map[string]tcell.Key) {
 	})
 
 	for _, token := range tokens {
-		if len(token) > 1 {
+		length := runewidth.StringWidth(token)
+		if length > 1 {
 			token = cases.Title(language.Und, cases.NoLower).String(token)
-		} else if len(token) == 1 {
-			keybinding.Rune = rune(token[0])
+		} else if length == 1 {
+			c, _ := utf8.DecodeRuneInString(token)
+
+			keybinding.Rune = rune(c)
 			runes = append(runes, keybinding.Rune)
 
 			continue

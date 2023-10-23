@@ -112,7 +112,7 @@ func filePickerTable() *tview.Table {
 			selectFile(event.Rune())
 		}
 
-		return event
+		return ignoreDefaultEvent(event)
 	})
 
 	return filepicker.table

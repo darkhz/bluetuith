@@ -73,7 +73,7 @@ func NewModal(name, title string, item tview.Primitive, height, width int) *Moda
 				modal.Exit(false)
 			}
 
-			return event
+			return ignoreDefaultEvent(event)
 		})
 
 		item = table
