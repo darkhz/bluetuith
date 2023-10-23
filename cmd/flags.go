@@ -52,6 +52,11 @@ var options = []Option{
 		IsBoolean:   true,
 	},
 	{
+		Name:        "confirm-on-quit",
+		Description: "Ask for confirmation before quitting the application.",
+		IsBoolean:   true,
+	},
+	{
 		Name:        "generate",
 		Description: "Generate configuration.",
 		IsBoolean:   true,
