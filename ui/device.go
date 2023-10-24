@@ -136,6 +136,7 @@ func getDeviceInfo() {
 		{"Adapter", filepath.Base(device.Adapter)},
 		{"Connected", yesno(device.Connected)},
 		{"Paired", yesno(device.Paired)},
+		{"Bonded", yesno(device.Bonded)},
 		{"Trusted", yesno(device.Trusted)},
 		{"Blocked", yesno(device.Blocked)},
 		{"LegacyPairing", yesno(device.LegacyPairing)},
@@ -274,11 +275,13 @@ func setDeviceTableInfo(row int, device bluez.Device) {
 	if device.Trusted {
 		props += "Trusted, "
 	}
-	if device.Paired {
-		props += "Paired, "
-	}
 	if device.Blocked {
 		props += "Blocked, "
+	}
+	if device.Bonded && device.Paired {
+		props += "Bonded, "
+	} else if !device.Bonded && device.Paired {
+		props += "Paired, "
 	}
 
 	if props != "" {

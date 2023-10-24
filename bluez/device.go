@@ -41,6 +41,7 @@ type Device struct {
 	Connected     bool
 	Trusted       bool
 	Blocked       bool
+	Bonded        bool
 	LegacyPairing bool
 	RSSI          int16
 	Class         uint32
@@ -189,6 +190,7 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 				Connected:     v["Connected"].Value().(bool),
 				Trusted:       v["Trusted"].Value().(bool),
 				Blocked:       v["Blocked"].Value().(bool),
+				Bonded:        v["Bonded"].Value().(bool),
 				LegacyPairing: v["LegacyPairing"].Value().(bool),
 			})
 		}
