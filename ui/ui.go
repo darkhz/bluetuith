@@ -32,9 +32,10 @@ type Application struct {
 	// network holds the current network connection.
 	Network *network.Network
 
-	suspend    bool
-	warn, page string
-	focus      tview.Primitive
+	suspend     bool
+	warn, page  string
+	focus       tview.Primitive
+	pageContext cmd.KeyContext
 
 	*tview.Application
 }
@@ -64,14 +65,25 @@ func StartUI() {
 
 	UI.focus = flex
 	UI.page = "main"
+	UI.pageContext = cmd.KeyContextApp
 	UI.Pages.AddPage("main", flex, true, true)
 	UI.Pages.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	UI.Pages.SetChangedFunc(func() {
 		page, _ := UI.Pages.GetFrontPage()
 
+		contexts := map[string]cmd.KeyContext{
+			"main":         cmd.KeyContextDevice,
+			"filepicker":   cmd.KeyContextFiles,
+			"progressview": cmd.KeyContextProgress,
+		}
+
 		switch page {
 		case "main", "filepicker", "progressview":
 			UI.page = page
+			UI.pageContext = contexts[page]
+
+		default:
+			UI.pageContext = cmd.KeyContextApp
 		}
 	})
 
