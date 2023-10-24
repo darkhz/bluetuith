@@ -411,9 +411,20 @@ func visiblePlayer(set ...string) bool {
 
 // connect retrieves the selected device, and toggles its connection state.
 func connect(set ...string) bool {
-	device := getDeviceFromSelection(true)
-	if device.Path == "" {
-		return false
+	var device bluez.Device
+
+	if set != nil {
+		for _, d := range UI.Bluez.GetDevices() {
+			if d.Address == set[0] {
+				device = d
+				break
+			}
+		}
+	} else {
+		device = getDeviceFromSelection(true)
+		if device.Path == "" {
+			return false
+		}
 	}
 
 	disconnectFunc := func() {

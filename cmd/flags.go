@@ -47,6 +47,10 @@ var options = []Option{
 		Description: "Specify adapter states to enable/disable. (For example, 'powered:yes,discoverable:yes,pairable:yes,scan:no')",
 	},
 	{
+		Name:        "connect-bdaddr",
+		Description: "Specify device address to connect (For example, 'AA:BB:CC:DD:EE:FF')",
+	},
+	{
 		Name:        "theme",
 		Description: "Specify a theme in the HJSON format. (For example, '{ Adapter: \"red\" }')",
 	},
@@ -96,6 +100,9 @@ func parse() {
 
 			case "adapter-states":
 				s += " [<property>:<state>]"
+
+			case "connect-bdaddr":
+				s += " <address>"
 
 			case "receive-dir":
 				s += " <dir>"
@@ -256,6 +263,34 @@ func cmdOptionAdapterStates() {
 	properties["sequence"] = strings.Join(sequence, ",")
 
 	AddProperty("adapter-states", properties)
+}
+
+func cmdOptionConnectBDAddr(b *bluez.Bluez) {
+	optionConnectBDAddr := GetProperty("connect-bdaddr")
+	if optionConnectBDAddr == "" {
+		return
+	}
+
+	adapter := b.GetCurrentAdapter()
+	if adapter == (bluez.Adapter{}) {
+		return
+	}
+
+	for _, device := range b.GetDevices() {
+		if device.Address == optionConnectBDAddr {
+			AddProperty("connect-bdaddr", device.Address)
+			return
+		}
+	}
+
+	PrintError(
+		fmt.Sprintf(
+			"No device with address '%s' found on adapter '%s' (%s)",
+			optionConnectBDAddr,
+			adapter.Name,
+			filepath.Base(adapter.Path),
+		),
+	)
 }
 
 func cmdOptionReceiveDir() {

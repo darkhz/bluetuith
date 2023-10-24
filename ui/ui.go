@@ -111,6 +111,7 @@ func StartUI() {
 	displayWarning()
 	updateAdapterStatus(UI.Bluez.GetCurrentAdapter())
 	setAdapterStates()
+	connectDeviceByAddress()
 
 	InfoMessage("bluetuith is ready.", false)
 

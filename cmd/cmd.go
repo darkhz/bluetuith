@@ -11,10 +11,11 @@ func Init(bluez *bluez.Bluez) {
 
 	parse()
 
-	cmdOptionListAdapters(bluez)
 	cmdOptionVersion()
 
+	cmdOptionListAdapters(bluez)
 	cmdOptionAdapter(bluez)
+	cmdOptionConnectBDAddr(bluez)
 	cmdOptionAdapterStates()
 
 	validateKeybindings()

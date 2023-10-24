@@ -81,6 +81,17 @@ func listDevices() {
 	DeviceTable.Select(0, 0)
 }
 
+// connectDeviceByAddress connects to a device based on the provided address
+// which was parsed from the "connect-bdaddr" command-line option.
+func connectDeviceByAddress() {
+	address := cmd.GetProperty("connect-bdaddr")
+	if address == "" || UI.Bluez == nil {
+		return
+	}
+
+	go connect(address)
+}
+
 // checkDeviceTable iterates through the DeviceTable and checks
 // if a device whose path matches the path parameter exists.
 func checkDeviceTable(path string) (int, bool) {
