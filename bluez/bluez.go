@@ -193,6 +193,9 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 				case "Bonded":
 					device.Bonded = value.Value().(bool)
 
+				case "Blocked":
+					device.Blocked = value.Value().(bool)
+
 				case "RSSI":
 					device.RSSI = value.Value().(int16)
 				}

@@ -102,6 +102,12 @@ var (
 				OnCreate: true,
 			},
 			{
+				Key:      cmd.KeyDeviceBlock,
+				Disabled: "Unblock",
+				OnClick:  true,
+				OnCreate: true,
+			},
+			{
 				Key:     cmd.KeyDeviceSendFiles,
 				OnClick: true,
 				Visible: true,

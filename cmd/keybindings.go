@@ -50,6 +50,7 @@ const (
 	KeyDeviceConnect               Key = "DeviceConnect"
 	KeyDevicePair                  Key = "DevicePair"
 	KeyDeviceTrust                 Key = "DeviceTrust"
+	KeyDeviceBlock                 Key = "DeviceBlock"
 	KeyDeviceAudioProfiles         Key = "DeviceAudioProfiles"
 	KeyDeviceInfo                  Key = "DeviceInfo"
 	KeyDeviceRemove                Key = "DeviceRemove"
@@ -212,6 +213,11 @@ var (
 			Title:   "Trust",
 			Context: KeyContextDevice,
 			Kb:      Keybinding{tcell.KeyRune, 't', tcell.ModNone},
+		},
+		KeyDeviceBlock: {
+			Title:   "Block",
+			Context: KeyContextDevice,
+			Kb:      Keybinding{tcell.KeyRune, 'b', tcell.ModNone},
 		},
 		KeyDeviceSendFiles: {
 			Title:   "Send",

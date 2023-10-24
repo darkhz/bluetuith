@@ -29,6 +29,7 @@ var functions = map[FunctionContext]map[cmd.Key]func(set ...string) bool{
 		cmd.KeyDeviceConnect:             connect,
 		cmd.KeyDevicePair:                pair,
 		cmd.KeyDeviceTrust:               trust,
+		cmd.KeyDeviceBlock:               block,
 		cmd.KeyDeviceSendFiles:           send,
 		cmd.KeyDeviceNetwork:             networkAP,
 		cmd.KeyDeviceAudioProfiles:       profiles,
@@ -45,6 +46,7 @@ var functions = map[FunctionContext]map[cmd.Key]func(set ...string) bool{
 		cmd.KeyAdapterTogglePairable:     createPairable,
 		cmd.KeyDeviceConnect:             createConnect,
 		cmd.KeyDeviceTrust:               createTrust,
+		cmd.KeyDeviceBlock:               createBlock,
 	},
 	FunctionVisible: {
 		cmd.KeyDeviceSendFiles:     visibleSend,
@@ -362,6 +364,16 @@ func createTrust(set ...string) bool {
 	return device.Trusted
 }
 
+// createBlock sets the oncreate handler for the block submenu option.
+func createBlock(set ...string) bool {
+	device := getDeviceFromSelection(false)
+	if device.Path == "" {
+		return false
+	}
+
+	return device.Blocked
+}
+
 // visibleSend sets the visible handler for the send submenu option.
 func visibleSend(set ...string) bool {
 	device := getDeviceFromSelection(false)
@@ -507,6 +519,23 @@ func trust(set ...string) bool {
 	}
 
 	setMenuItemToggle("device", cmd.KeyDeviceTrust, !device.Trusted)
+
+	return true
+}
+
+// block retrieves the selected device, and toggles its block property.
+func block(set ...string) bool {
+	device := getDeviceFromSelection(true)
+	if device.Path == "" {
+		return false
+	}
+
+	if err := UI.Bluez.SetDeviceProperty(device.Path, "Blocked", !device.Blocked); err != nil {
+		ErrorMessage(errors.New("Cannot set trusted property for " + device.Name))
+		return false
+	}
+
+	setMenuItemToggle("device", cmd.KeyDeviceBlock, !device.Blocked)
 
 	return true
 }
