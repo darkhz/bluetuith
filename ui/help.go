@@ -29,7 +29,7 @@ func showHelp() {
 		"Trust selected device":            "t",
 		"Remove device from adapter":       "d",
 		"Cancel operation":                 "Ctrl+x",
-		"Quit":                             "q",
+		"Quit":                             "q/Q",
 	}
 
 	filePickerKeyBindings := map[string]string{

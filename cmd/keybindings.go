@@ -35,6 +35,7 @@ const (
 	KeyCancel                      Key = "Cancel"
 	KeySuspend                     Key = "Suspend"
 	KeyQuit                        Key = "Quit"
+	KeyQuitWithConfirm             Key = "QuitWithConfirm"
 	KeySwitch                      Key = "Switch"
 	KeyClose                       Key = "Close"
 	KeyHelp                        Key = "Help"
@@ -104,6 +105,12 @@ var (
 			Title:   "Quit",
 			Context: KeyContextApp,
 			Kb:      Keybinding{tcell.KeyRune, 'Q', tcell.ModNone},
+			Global:  true,
+		},
+		KeyQuitWithConfirm: {
+			Title:   "QuitWithConfirm",
+			Context: KeyContextApp,
+			Kb:      Keybinding{tcell.KeyRune, 'q', tcell.ModNone},
 			Global:  true,
 		},
 		KeyMenu: {

@@ -105,6 +105,9 @@ func filePickerTable() *tview.Table {
 		case cmd.KeyQuit:
 			go quit()
 
+		case cmd.KeyQuitWithConfirm:
+			go quitWithConfirm()
+
 		case cmd.KeyHelp:
 			showHelp()
 

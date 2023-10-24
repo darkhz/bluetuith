@@ -83,6 +83,10 @@ var (
 				Key:     cmd.KeyQuit,
 				OnClick: true,
 			},
+			{
+				Key:     cmd.KeyQuitWithConfirm,
+				OnClick: true,
+			},
 		},
 		"device": {
 			{

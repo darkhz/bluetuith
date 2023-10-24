@@ -38,6 +38,7 @@ var functions = map[FunctionContext]map[cmd.Key]func() bool{
 		cmd.KeyProgressView:              progress,
 		cmd.KeyPlayerHide:                hideplayer,
 		cmd.KeyQuit:                      quit,
+		cmd.KeyQuitWithConfirm:           quitWithConfirm,
 	},
 	FunctionCreate: {
 		cmd.KeyAdapterTogglePower:        createPower,
@@ -247,6 +248,11 @@ func quit() bool {
 	StopUI()
 
 	return true
+}
+
+// quitWithConfirm first prompts user to confirm and then exits the application
+func quitWithConfirm() bool {
+	return confirmQuit() && quit()
 }
 
 // createPower sets the oncreate handler for the power submenu option.

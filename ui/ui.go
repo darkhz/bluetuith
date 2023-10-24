@@ -83,7 +83,7 @@ func StartUI() {
 
 	UI.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		operation := cmd.KeyOperation(event)
-		if operation != cmd.KeyQuit && event.Key() == tcell.KeyCtrlC {
+		if operation != cmd.KeyQuit && operation != cmd.KeyQuitWithConfirm && event.Key() == tcell.KeyCtrlC {
 			return nil
 		}
 
