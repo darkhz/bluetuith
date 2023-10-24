@@ -19,7 +19,7 @@ const (
 	FunctionVisible FunctionContext = "Visible"
 )
 
-var functions = map[FunctionContext]map[cmd.Key]func() bool{
+var functions = map[FunctionContext]map[cmd.Key]func(set ...string) bool{
 	FunctionClick: {
 		cmd.KeyAdapterTogglePower:        power,
 		cmd.KeyAdapterToggleDiscoverable: discoverable,
@@ -68,11 +68,13 @@ func KeyHandler(key cmd.Key, context FunctionContext) func() bool {
 		}
 	}
 
-	return handler
+	return func() bool {
+		return handler()
+	}
 }
 
 // power checks and toggles the adapter's powered state.
-func power() bool {
+func power(set ...string) bool {
 	var poweredText string
 
 	adapterPath := UI.Bluez.GetCurrentAdapter().Path
@@ -88,6 +90,15 @@ func power() bool {
 	if !ok {
 		ErrorMessage(errors.New("Cannot get powered state"))
 		return false
+	}
+
+	if set != nil {
+		state := set[0] == "yes"
+		if state == powered {
+			return false
+		}
+
+		powered = !state
 	}
 
 	if err := UI.Bluez.Power(adapterPath, !powered); err != nil {
@@ -109,7 +120,7 @@ func power() bool {
 }
 
 // discoverable checks and toggles the adapter's discoverable state.
-func discoverable() bool {
+func discoverable(set ...string) bool {
 	var discoverableText string
 
 	adapterPath := UI.Bluez.GetCurrentAdapter().Path
@@ -125,6 +136,15 @@ func discoverable() bool {
 	if !ok {
 		ErrorMessage(errors.New("Cannot get discoverable state"))
 		return false
+	}
+
+	if set != nil {
+		state := set[0] == "yes"
+		if state == discoverable {
+			return false
+		}
+
+		discoverable = !state
 	}
 
 	if err := UI.Bluez.SetAdapterProperty(adapterPath, "Discoverable", !discoverable); err != nil {
@@ -146,7 +166,7 @@ func discoverable() bool {
 }
 
 // pairable checks and toggles the adapter's pairable state.
-func pairable() bool {
+func pairable(set ...string) bool {
 	var pairableText string
 
 	adapterPath := UI.Bluez.GetCurrentAdapter().Path
@@ -162,6 +182,15 @@ func pairable() bool {
 	if !ok {
 		ErrorMessage(errors.New("Cannot get pairable state"))
 		return false
+	}
+
+	if set != nil {
+		state := set[0] == "yes"
+		if state == pairable {
+			return false
+		}
+
+		pairable = !state
 	}
 
 	if err := UI.Bluez.SetAdapterProperty(adapterPath, "Pairable", !pairable); err != nil {
@@ -183,7 +212,7 @@ func pairable() bool {
 }
 
 // scan checks the current adapter's state and starts/stops discovery.
-func scan() bool {
+func scan(set ...string) bool {
 	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
 	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
@@ -196,6 +225,15 @@ func scan() bool {
 	if !ok {
 		ErrorMessage(errors.New("Cannot get discovery state"))
 		return false
+	}
+
+	if set != nil {
+		state := set[0] == "yes"
+		if state == discover {
+			return false
+		}
+
+		discover = !state
 	}
 
 	if !discover {
@@ -218,7 +256,7 @@ func scan() bool {
 }
 
 // change launches a popup with the adapters list.
-func change() bool {
+func change(set ...string) bool {
 	UI.QueueUpdateDraw(func() {
 		adapterChange()
 	})
@@ -227,7 +265,7 @@ func change() bool {
 }
 
 // progress displays the progress view.
-func progress() bool {
+func progress(set ...string) bool {
 	UI.QueueUpdateDraw(func() {
 		progressView(true)
 	})
@@ -237,7 +275,7 @@ func progress() bool {
 
 // quit stops discovery mode for all existing adapters, closes the bluez connection
 // and exits the application.
-func quit() bool {
+func quit(set ...string) bool {
 	if cmd.IsPropertyEnabled("confirm-on-quit") && !confirmQuit() {
 		return false
 	}
@@ -254,7 +292,7 @@ func quit() bool {
 }
 
 // createPower sets the oncreate handler for the power submenu option.
-func createPower() bool {
+func createPower(set ...string) bool {
 	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
 	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
@@ -271,7 +309,7 @@ func createPower() bool {
 }
 
 // createDiscoverable sets the oncreate handler for the discoverable submenu option
-func createDiscoverable() bool {
+func createDiscoverable(set ...string) bool {
 	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
 	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
@@ -288,7 +326,7 @@ func createDiscoverable() bool {
 }
 
 // createPairable sets the oncreate handler for the pairable submenu option.
-func createPairable() bool {
+func createPairable(set ...string) bool {
 	adapterPath := UI.Bluez.GetCurrentAdapter().Path
 
 	props, err := UI.Bluez.GetAdapterProperties(adapterPath)
@@ -305,7 +343,7 @@ func createPairable() bool {
 }
 
 // createConnect sets the oncreate handler for the connect submenu option.
-func createConnect() bool {
+func createConnect(set ...string) bool {
 	device := getDeviceFromSelection(false)
 	if device.Path == "" {
 		return false
@@ -315,7 +353,7 @@ func createConnect() bool {
 }
 
 // createTrust sets the oncreate handler for the trust submenu option.
-func createTrust() bool {
+func createTrust(set ...string) bool {
 	device := getDeviceFromSelection(false)
 	if device.Path == "" {
 		return false
@@ -325,7 +363,7 @@ func createTrust() bool {
 }
 
 // visibleSend sets the visible handler for the send submenu option.
-func visibleSend() bool {
+func visibleSend(set ...string) bool {
 	device := getDeviceFromSelection(false)
 	if device.Path == "" {
 		return false
@@ -336,7 +374,7 @@ func visibleSend() bool {
 }
 
 // visibleNetwork sets the visible handler for the network submenu option.
-func visibleNetwork() bool {
+func visibleNetwork(set ...string) bool {
 	device := getDeviceFromSelection(false)
 	if device.Path == "" {
 		return false
@@ -349,7 +387,7 @@ func visibleNetwork() bool {
 }
 
 // visibleProfile sets the visible handler for the audio profiles submenu option.
-func visibleProfile() bool {
+func visibleProfile(set ...string) bool {
 	device := getDeviceFromSelection(false)
 	if device.Path == "" {
 		return false
@@ -360,7 +398,7 @@ func visibleProfile() bool {
 }
 
 // visiblePlayer sets the visible handler for the media player submenu option.
-func visiblePlayer() bool {
+func visiblePlayer(set ...string) bool {
 	device := getDeviceFromSelection(false)
 	if device.Path == "" {
 		return false
@@ -372,7 +410,7 @@ func visiblePlayer() bool {
 }
 
 // connect retrieves the selected device, and toggles its connection state.
-func connect() bool {
+func connect(set ...string) bool {
 	device := getDeviceFromSelection(true)
 	if device.Path == "" {
 		return false
@@ -414,7 +452,7 @@ func connect() bool {
 }
 
 // pair retrieves the selected device, and attempts to pair with it.
-func pair() bool {
+func pair(set ...string) bool {
 	device := getDeviceFromSelection(true)
 	if device.Path == "" {
 		return false
@@ -446,7 +484,7 @@ func pair() bool {
 }
 
 // trust retrieves the selected device, and toggles its trust property.
-func trust() bool {
+func trust(set ...string) bool {
 	device := getDeviceFromSelection(true)
 	if device.Path == "" {
 		return false
@@ -464,7 +502,7 @@ func trust() bool {
 
 // send gets a file list from the file picker and sends all selected files
 // to the target device.
-func send() bool {
+func send(set ...string) bool {
 	adapter := UI.Bluez.GetCurrentAdapter()
 	if !adapter.Lock.TryAcquire(1) {
 		return false
@@ -517,7 +555,7 @@ func send() bool {
 }
 
 // networkAP launches a popup with the available networks.
-func networkAP() bool {
+func networkAP(set ...string) bool {
 	UI.QueueUpdateDraw(func() {
 		networkSelect()
 	})
@@ -526,7 +564,7 @@ func networkAP() bool {
 }
 
 // profiles launches a popup with the available audio profiles.
-func profiles() bool {
+func profiles(set ...string) bool {
 	UI.QueueUpdateDraw(func() {
 		audioProfiles()
 	})
@@ -535,21 +573,21 @@ func profiles() bool {
 }
 
 // showplayer starts the media player.
-func showplayer() bool {
+func showplayer(set ...string) bool {
 	StartMediaPlayer()
 
 	return true
 }
 
 // hideplayer hides the media player.
-func hideplayer() bool {
+func hideplayer(set ...string) bool {
 	StopMediaPlayer()
 
 	return true
 }
 
 // info retreives the selected device, and shows the device information.
-func info() bool {
+func info(set ...string) bool {
 	UI.QueueUpdateDraw(func() {
 		getDeviceInfo()
 	})
@@ -558,7 +596,7 @@ func info() bool {
 }
 
 // remove retrieves the selected device, and removes it from the adapter.
-func remove() bool {
+func remove(set ...string) bool {
 	device := getDeviceFromSelection(true)
 	if device.Path == "" {
 		return false

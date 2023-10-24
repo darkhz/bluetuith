@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/darkhz/bluetuith/bluez"
 	"github.com/darkhz/bluetuith/cmd"
@@ -179,6 +180,58 @@ func updateAdapterStatus(adapter bluez.Adapter) {
 
 	adapterStatus.view.SetText(state)
 	adapterStatus.view.Highlight(regions...)
+}
+
+// setAdapterStates sets the adapter states which were parsed from
+// the "adapter-states" command-line option.
+func setAdapterStates() {
+	var lock sync.Mutex
+
+	properties := cmd.GetPropertyMap("adapter-states")
+	if len(properties) == 0 {
+		return
+	}
+
+	seq, ok := properties["sequence"]
+	if !ok {
+		InfoMessage("Cannot get adapter states", false)
+		return
+	}
+
+	sequence := strings.Split(seq, ",")
+	for _, property := range sequence {
+		var handler func(set ...string) bool
+
+		state, ok := properties[property]
+		if !ok {
+			InfoMessage("Cannot set adapter "+state+" state", false)
+			return
+		}
+
+		switch property {
+		case "powered":
+			handler = power
+
+		case "scan":
+			handler = scan
+
+		case "discoverable":
+			handler = discoverable
+
+		case "pairable":
+			handler = pairable
+
+		default:
+			continue
+		}
+
+		go func() {
+			lock.Lock()
+			defer lock.Unlock()
+
+			handler(state)
+		}()
+	}
 }
 
 // adapterEvent handles adapter-specific events.

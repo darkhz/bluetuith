@@ -43,6 +43,10 @@ var options = []Option{
 		Description: "Specify GSM number to dial. (Required for DUN)",
 	},
 	{
+		Name:        "adapter-states",
+		Description: "Specify adapter states to enable/disable. (For example, 'powered:yes,discoverable:yes,pairable:yes,scan:no')",
+	},
+	{
 		Name:        "theme",
 		Description: "Specify a theme in the HJSON format. (For example, '{ Adapter: \"red\" }')",
 	},
@@ -89,6 +93,9 @@ func parse() {
 			switch f.Name {
 			case "adapter":
 				s += " <adapter>"
+
+			case "adapter-states":
+				s += " [<property>:<state>]"
 
 			case "receive-dir":
 				s += " <dir>"
@@ -171,6 +178,84 @@ func cmdOptionListAdapters(b *bluez.Bluez) {
 	}
 
 	Print(strings.TrimRight(adapters, "\n"), 0)
+}
+
+func cmdOptionAdapterStates() {
+	optionAdapterStates := GetProperty("adapter-states")
+	if optionAdapterStates == "" {
+		return
+	}
+
+	properties := make(map[string]string)
+	propertyAndStates := strings.Split(optionAdapterStates, ",")
+
+	propertyOptions := []string{
+		"powered",
+		"scan",
+		"discoverable",
+		"pairable",
+	}
+
+	stateOptions := []string{
+		"yes", "no",
+		"y", "n",
+		"on", "off",
+	}
+
+	sequence := []string{}
+
+	for _, ps := range propertyAndStates {
+		property := strings.FieldsFunc(ps, func(r rune) bool {
+			return r == ' ' || r == ':'
+		})
+		if len(property) != 2 {
+			PrintError(
+				fmt.Sprintf(
+					"Provided property:state format '%s' is incorrect.",
+					ps,
+				),
+			)
+		}
+
+		for _, prop := range propertyOptions {
+			if property[0] == prop {
+				goto CheckState
+			}
+		}
+		PrintError(
+			fmt.Sprintf(
+				"Provided property '%s' is incorrect.\nValid properties are '%s.'",
+				property[0],
+				strings.Join(propertyOptions, ", "),
+			),
+		)
+
+	CheckState:
+		state := property[1]
+		switch state {
+		case "yes", "y", "on":
+			state = "yes"
+
+		case "no", "n", "off":
+			state = "no"
+
+		default:
+			PrintError(
+				fmt.Sprintf(
+					"Provided state '%s' for property '%s' is incorrect.\nValid states are '%s'.",
+					state, property[0],
+					strings.Join(stateOptions, ", "),
+				),
+			)
+		}
+
+		properties[property[0]] = state
+		sequence = append(sequence, property[0])
+	}
+
+	properties["sequence"] = strings.Join(sequence, ",")
+
+	AddProperty("adapter-states", properties)
 }
 
 func cmdOptionReceiveDir() {

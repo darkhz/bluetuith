@@ -15,8 +15,9 @@ func Init(bluez *bluez.Bluez) {
 	cmdOptionVersion()
 
 	cmdOptionAdapter(bluez)
-	validateKeybindings()
+	cmdOptionAdapterStates()
 
+	validateKeybindings()
 	cmdOptionGenerate()
 	cmdOptionTheme()
 

@@ -108,19 +108,24 @@ func ConfigPath(configType string) (string, error) {
 	return confPath, nil
 }
 
-// GetConfigProperty returns the value for the given property.
+// GetProperty returns the value for the given property.
 func GetProperty(property string) string {
 	return config.String(property)
+}
+
+// GetPropertyMap returns a map of values for the given property.
+func GetPropertyMap(property string) map[string]string {
+	return config.StringMap(property)
+}
+
+// AddProperty adds a property and its value to the properties store.
+func AddProperty(property string, value interface{}) {
+	config.Set(property, value)
 }
 
 // IsPropertyEnabled returns if a property is enabled.
 func IsPropertyEnabled(property string) bool {
 	return config.Bool(property)
-}
-
-// AddConfigProperty adds a property and its value to the properties store.
-func AddProperty(property string, value interface{}) {
-	config.Set(property, value)
 }
 
 // generate generates and updates the configuration.
