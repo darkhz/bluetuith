@@ -301,8 +301,8 @@ func progressView(switchToView bool) {
 				return
 			}
 
-			for _, region := range progressViewButtons.GetRegionInfos() {
-				if region.ID == added[0] {
+			for _, region := range progressViewButtons.GetRegionIDs() {
+				if region == added[0] {
 					switch added[0] {
 					case "resume":
 						ResumeProgress()

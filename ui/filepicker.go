@@ -140,8 +140,8 @@ func filePickerButtons() *tview.TextView {
 			return
 		}
 
-		for _, region := range filepicker.buttons.GetRegionInfos() {
-			if region.ID == added[0] {
+		for _, region := range filepicker.buttons.GetRegionIDs() {
+			if region == added[0] {
 				buttonHandler(added[0])
 				break
 			}

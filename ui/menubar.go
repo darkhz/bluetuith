@@ -146,13 +146,13 @@ func menuBar() *tview.TextView {
 			return
 		}
 
-		for _, region := range menu.bar.GetRegionInfos() {
-			if region.ID == added[0] {
-				if region.ID == "adapterchange" {
+		for _, region := range menu.bar.GetRegionIDs() {
+			if region == added[0] {
+				if region == "adapterchange" {
 					adapterChange()
 					menu.bar.Highlight("")
 				} else {
-					setMenu(region.FromX, 1, added[0])
+					setMenu(menu.bar.GetRegionStart(region), 1, added[0])
 				}
 
 				break
@@ -421,9 +421,9 @@ func switchMenu() {
 		return
 	}
 
-	for _, region := range menu.bar.GetRegionInfos() {
-		if highlighted[0] != region.ID && highlighted[0] != "adapterchange" {
-			menu.bar.Highlight(region.ID)
+	for _, region := range menu.bar.GetRegionIDs() {
+		if highlighted[0] != region && highlighted[0] != "adapterchange" {
+			menu.bar.Highlight(region)
 		}
 	}
 }
