@@ -116,6 +116,18 @@
 <a href="#list-adapters">list-adapters</a>
 </li>
 <li>
+<a href="#adapter-states">adapter-states</a>
+</li>
+<li>
+<a href="#connect-bdaddr">connect-bdaddr</a>
+</li>
+<li>
+<a href="#confirm-on-quit">confirm-on-quit</a>
+</li>
+<li>
+<a href="#no-warning">no-warning</a>
+</li>
+<li>
 <a href="#receive-dir">receive-dir</a>
 </li>
 <li>
@@ -147,6 +159,14 @@
 <li>
 <a href="#list-adapters">list-adapters</a>: List available adapters.</li>
 <li>
+<a href="#adapter-states">adapter-states</a>: Specify adapter states to enable/disable.</li>
+<li>
+<a href="#connect-bdaddr">connect-bdaddr</a>: Specify device address to connect.</li>
+<li>
+<a href="#confirm-on-quit">confirm-on-quit</a>: Ask for confirmation before quitting the application.</li>
+<li>
+<a href="#no-warning">no-warning</a>: Do not display warnings when the application has initialized.</li>
+<li>
 <a href="#receive-dir">receive-dir</a>: Specify a directory to store received files.</li>
 <li>
 <a href="#gsm-apn">gsm-apn</a>: Specify GSM APN to connect to.</li>
@@ -167,6 +187,27 @@
 </code></pre>
 <h2><a id="list-adapters" href="#list-adapters" class="Permalink" aria-hidden="true" title="Permalink">#</a>list-adapters</h2>
 <p>This option can be used to list the available bluetooth adapters.</p>
+<h2><a id="adapter-states" href="#adapter-states" class="Permalink" aria-hidden="true" title="Permalink">#</a>adapter-states</h2>
+<p>This option can be used to set various adapter properties and states on initialization.</p>
+<p>Valid properties are: <code>powered</code>, <code>scan</code>, <code>discoverable</code>, <code>pairable</code>.<br/>
+Valid states are: <code>yes/y/on</code> to <strong>enable</strong> a property and <code>no/n/off</code> to <strong>disable</strong> a property.</p>
+<p>The provided value must be in the <strong>[&lt;property&gt;:&lt;state&gt;]</strong> format.</p>
+<div class="Admonition Admonition--note"><p class="Admonition__title">Property sequence</p><p>Each property will be parsed and its state set based on the order in which you provide the properties.<br/><br/>
+For example, if <code>discoverable:yes, powered:yes</code> is provided:<br/>
+- The ‘discoverable’ state will be set first and<br/>
+- The ‘powered’ state will be set after it.<br/></p></div>
+<p>For example:</p>
+<pre><code>bluetuith --adapter=hci0 --adapter-states=&quot;powered:yes, discoverable:yes, pairable:yes, scan:no&quot;
+</code></pre>
+<h2><a id="connect-bdaddr" href="#connect-bdaddr" class="Permalink" aria-hidden="true" title="Permalink">#</a>connect-bdaddr</h2>
+<p>This option can be used to connect to a device based on its address.</p>
+<p>For example:</p>
+<pre><code>bluetuith --connect-bdaddr=&quot;AA:BB:CC:DD:EE:FF&quot;
+</code></pre>
+<h2><a id="confirm-on-quit" href="#confirm-on-quit" class="Permalink" aria-hidden="true" title="Permalink">#</a>confirm-on-quit</h2>
+<p>This option can be used to show a confirmation message before quitting the application.</p>
+<h2><a id="no-warning" href="#no-warning" class="Permalink" aria-hidden="true" title="Permalink">#</a>no-warning</h2>
+<p>This option can be used to hide warnings when the application has initialized.</p>
 <h2><a id="receive-dir" href="#receive-dir" class="Permalink" aria-hidden="true" title="Permalink">#</a>receive-dir</h2>
 <p>This option can be used to set the directory to receive transferred files.</p>
 <p>If this option is not set, the path will be set to <code>$HOME/bluetuith</code>.</p>

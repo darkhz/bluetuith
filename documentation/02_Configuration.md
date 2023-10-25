@@ -74,6 +74,12 @@ The keybinding types are as follows:
 | Switch                        | Yes      | App      | Tab                  | Switch between menuitems/buttons    |
 | Close                         | Yes      | App      | Esc                  | Close popups/pages                  |
 | Help                          | Yes      | App      | ?                    | Show help                           |
+| NavigateUp                    | Yes      | App      | Up                   | Navigate a step upwards             |
+| NavigateDown                  | Yes      | App      | Down                 | Navigate a step downwards           |
+| NavigateRight                 | Yes      | App      | Right                | Navigate a step right               |
+| NavigateLeft                  | Yes      | App      | Left                 | Navigate a step left                |
+| NavigateTop                   | Yes      | App      | PageUp               | Navigate to page beginning          |
+| NavigateBottom                | Yes      | App      | PageDown             | Navigate to page end                |
 | AdapterChange                 | No       | Device   | a                    | Change adapters                     |
 | AdapterTogglePower            | No       | Device   | o                    | Toggle adapter power state          |
 | AdapterToggleDiscoverable     | No       | Device   | S                    | Toggle adapter discoverable state   |
