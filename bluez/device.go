@@ -145,25 +145,63 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 		var rssi int16
 		var class uint32
 		var percentage int
+		var alias, address, addressType string
+		var paired, connected, trusted, blocked, bonded, legacyPairing bool
 
-		if n, ok := v["Name"].Value().(string); ok {
-			name = n
+		if val, ok := v["Name"].Value().(string); ok {
+			name = val
 		}
 
-		if i, ok := v["RSSI"].Value().(int16); ok {
-			rssi = i
+		if val, ok := v["RSSI"].Value().(int16); ok {
+			rssi = val
 		}
 
-		if c, ok := v["Class"].Value().(uint32); ok {
-			class = c
+		if val, ok := v["Class"].Value().(uint32); ok {
+			class = val
 		}
 
-		if u, ok := v["UUIDs"].Value().([]string); ok {
-			uuids = u
+		if val, ok := v["UUIDs"].Value().([]string); ok {
+			uuids = val
 		}
 
-		if m, ok := v["Modalias"].Value().(string); ok {
-			modalias = m
+		if val, ok := v["Modalias"].Value().(string); ok {
+			modalias = val
+		}
+
+		if val, ok := v["Alias"].Value().(string); ok {
+			alias = val
+		}
+
+		if val, ok := v["Address"].Value().(string); ok {
+			address = val
+		}
+
+		if val, ok := v["AddressType"].Value().(string); ok {
+			addressType = val
+		}
+
+		if val, ok := v["Paired"].Value().(bool); ok {
+			paired = val
+		}
+
+		if val, ok := v["Connected"].Value().(bool); ok {
+			connected = val
+		}
+
+		if val, ok := v["Trusted"].Value().(bool); ok {
+			trusted = val
+		}
+
+		if val, ok := v["Blocked"].Value().(bool); ok {
+			blocked = val
+		}
+
+		if val, ok := v["Bonded"].Value().(bool); ok {
+			bonded = val
+		}
+
+		if val, ok := v["LegacyPairing"].Value().(bool); ok {
+			legacyPairing = val
 		}
 
 		if p, err := b.GetBatteryPercentage(path); err == nil {
@@ -182,16 +220,16 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 				Modalias:      modalias,
 				Percentage:    percentage,
 				Type:          GetDeviceType(class),
-				Alias:         v["Alias"].Value().(string),
-				Address:       v["Address"].Value().(string),
-				AddressType:   v["AddressType"].Value().(string),
+				Alias:         alias,
+				Address:       address,
+				AddressType:   addressType,
 				Adapter:       string(adapter),
-				Paired:        v["Paired"].Value().(bool),
-				Connected:     v["Connected"].Value().(bool),
-				Trusted:       v["Trusted"].Value().(bool),
-				Blocked:       v["Blocked"].Value().(bool),
-				Bonded:        v["Bonded"].Value().(bool),
-				LegacyPairing: v["LegacyPairing"].Value().(bool),
+				Paired:        paired,
+				Connected:     connected,
+				Trusted:       trusted,
+				Blocked:       blocked,
+				Bonded:        bonded,
+				LegacyPairing: legacyPairing,
 			})
 		}
 	}
