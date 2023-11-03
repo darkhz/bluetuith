@@ -221,18 +221,6 @@ func (p *ProgressIndicator) FinishProgress(transferPath dbus.ObjectPath, path ..
 				break
 			}
 		}
-
-		if getProgressCount() == 0 {
-			if pg, _ := UI.Status.GetFrontPage(); pg == "progressview" {
-				UI.Status.RemovePage("progressview")
-			}
-
-			if pg, _ := UI.Pages.GetFrontPage(); pg == "progressview" {
-				UI.Pages.RemovePage("progressview")
-			}
-
-			UI.Status.SwitchToPage("messages")
-		}
 	})
 
 	if path != nil && p.status == "complete" {

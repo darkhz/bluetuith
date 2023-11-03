@@ -455,7 +455,7 @@ func menuInputHandler(event *tcell.EventKey) {
 		return
 	}
 
-	key := cmd.KeyOperation(event, UI.pageContext)
+	key := cmd.KeyOperation(event, UI.pageContext, cmd.KeyContextProgress)
 
 	for _, options := range menu.options {
 		for menuKey, option := range options {
