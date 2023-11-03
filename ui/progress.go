@@ -231,6 +231,7 @@ func (p *ProgressIndicator) FinishProgress(transferPath dbus.ObjectPath, path ..
 				UI.Pages.RemovePage("progressview")
 			}
 
+			UI.Pages.SwitchToPage("main")
 			UI.Status.SwitchToPage("messages")
 		}
 	})
