@@ -10,6 +10,8 @@ This is only available on Linux.
 
 This project is currently in the alpha stage.
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
+
 ## Features
 - Transfer and receive files via OBEX.
 - Perform pairing with authentication.
