@@ -20,6 +20,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/spf13/pflag v1.0.5
+	github.com/ugorji/go/codec v1.2.11
 	golang.org/x/sync v0.4.0
 	golang.org/x/text v0.13.0
 )

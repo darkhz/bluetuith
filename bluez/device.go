@@ -119,7 +119,7 @@ func (b *Bluez) GetDevices() []Device {
 }
 
 // ConvertToDevices converts a map of dbus objects to a common Device structure.
-func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.Variant) []Device {
+func (b *Bluez) ConvertToDevice(path string, values map[string]dbus.Variant, devices *[]Device) error {
 	/*
 		org.bluez.Device1
 			Icon => dbus.Variant{sig:dbus.Signature{str:"s"}, value:"audio-card"}
@@ -138,65 +138,23 @@ func (b *Bluez) ConvertToDevices(path string, values map[string]map[string]dbus.
 			Class => dbus.Variant{sig:dbus.Signature{str:"u"}, value:0x240418}
 
 	*/
-	devices := []Device{}
-	for k, v := range values {
-		var name, modalias string
-		var uuids []string
-		var rssi int16
-		var class uint32
-		var percentage int
+	var device Device
 
-		if n, ok := v["Name"].Value().(string); ok {
-			name = n
-		}
-
-		if i, ok := v["RSSI"].Value().(int16); ok {
-			rssi = i
-		}
-
-		if c, ok := v["Class"].Value().(uint32); ok {
-			class = c
-		}
-
-		if u, ok := v["UUIDs"].Value().([]string); ok {
-			uuids = u
-		}
-
-		if m, ok := v["Modalias"].Value().(string); ok {
-			modalias = m
-		}
-
-		if p, err := b.GetBatteryPercentage(path); err == nil {
-			percentage = int(p)
-		}
-
-		switch k {
-		case dbusBluezDeviceIface:
-			adapter, _ := v["Adapter"].Value().(dbus.ObjectPath)
-			devices = append(devices, Device{
-				Path:          path,
-				Name:          name,
-				Class:         class,
-				RSSI:          rssi,
-				UUIDs:         uuids,
-				Modalias:      modalias,
-				Percentage:    percentage,
-				Type:          GetDeviceType(class),
-				Alias:         v["Alias"].Value().(string),
-				Address:       v["Address"].Value().(string),
-				AddressType:   v["AddressType"].Value().(string),
-				Adapter:       string(adapter),
-				Paired:        v["Paired"].Value().(bool),
-				Connected:     v["Connected"].Value().(bool),
-				Trusted:       v["Trusted"].Value().(bool),
-				Blocked:       v["Blocked"].Value().(bool),
-				Bonded:        v["Bonded"].Value().(bool),
-				LegacyPairing: v["LegacyPairing"].Value().(bool),
-			})
-		}
+	if err := DecodeVariantMap(values, &device, "Name", "Address"); err != nil {
+		return err
 	}
 
-	return devices
+	device.Path = path
+	device.Type = GetDeviceType(device.Class)
+	if p, err := b.GetBatteryPercentage(path); err == nil {
+		device.Percentage = int(p)
+	}
+
+	if devices != nil {
+		*devices = append(*devices, device)
+	}
+
+	return nil
 }
 
 // GetDeviceType parses the device class and returns its type.

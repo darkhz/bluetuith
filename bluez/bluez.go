@@ -75,21 +75,38 @@ func (b *Bluez) RefreshStore() error {
 	b.StoreLock.Lock()
 	defer b.StoreLock.Unlock()
 
-	var store StoreObject
-
 	results, err := b.ManagedObjects()
 	if err != nil {
 		return err
 	}
 
-	devices := []Device{}
-	adapters := []Adapter{}
-	for k, v := range results {
-		adapters = append(adapters, b.ConvertToAdapters(string(k), v)...)
-		devices = append(devices, b.ConvertToDevices(string(k), v)...)
+	return b.ConvertAndStoreObjects(results)
+}
+
+func (b *Bluez) ConvertAndStoreObjects(objects map[dbus.ObjectPath]map[string]map[string]dbus.Variant) error {
+	var adapters []Adapter
+	var devices []Device
+
+	for path, object := range objects {
+		for iface, values := range object {
+			var err error
+
+			switch iface {
+			case dbusBluezAdapterIface:
+				err = b.ConvertToAdapter(string(path), values, &adapters)
+
+			case dbusBluezDeviceIface:
+				err = b.ConvertToDevice(string(path), values, &devices)
+			}
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	for _, adapter := range adapters {
+		var store StoreObject
+
 		if adapter == (Adapter{}) {
 			continue
 		}
@@ -156,16 +173,16 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 			for prop, value := range objMap {
 				switch prop {
 				case "Powered":
-					adapter.Powered = value.Value().(bool)
+					adapter.Powered, _ = value.Value().(bool)
 
 				case "Discoverable":
-					adapter.Discoverable = value.Value().(bool)
+					adapter.Discoverable, _ = value.Value().(bool)
 
 				case "Pairable":
-					adapter.Pairable = value.Value().(bool)
+					adapter.Pairable, _ = value.Value().(bool)
 
 				case "Discovering":
-					adapter.Discovering = value.Value().(bool)
+					adapter.Discovering, _ = value.Value().(bool)
 				}
 			}
 
@@ -182,22 +199,22 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 			for prop, value := range objMap {
 				switch prop {
 				case "Connected":
-					device.Connected = value.Value().(bool)
+					device.Connected, _ = value.Value().(bool)
 
 				case "Paired":
-					device.Paired = value.Value().(bool)
+					device.Paired, _ = value.Value().(bool)
 
 				case "Trusted":
-					device.Trusted = value.Value().(bool)
+					device.Trusted, _ = value.Value().(bool)
 
 				case "Bonded":
-					device.Bonded = value.Value().(bool)
+					device.Bonded, _ = value.Value().(bool)
 
 				case "Blocked":
-					device.Blocked = value.Value().(bool)
+					device.Blocked, _ = value.Value().(bool)
 
 				case "RSSI":
-					device.RSSI = value.Value().(int16)
+					device.RSSI, _ = value.Value().(int16)
 				}
 			}
 
@@ -206,20 +223,7 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 			return device
 
 		case dbusBluezMediaPlayerIface:
-			var media MediaProperties
-
-			for prop, value := range objMap {
-				switch prop {
-				case "Status":
-					media.Status = value.Value().(string)
-
-				case "Position":
-					media.Position = value.Value().(uint32)
-
-				case "Track":
-					media.Track = getTrackProperties(value.Value().(map[string]dbus.Variant))
-				}
-			}
+			media, _ := b.GetMediaProperties(objMap)
 
 			return media
 
@@ -229,8 +233,12 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 				return nil
 			}
 
-			device.Percentage = int(objMap["Percentage"].Value().(byte))
-			b.addDeviceToStore(device)
+			if v, ok := objMap["Percentage"]; ok {
+				if p, ok := v.Value().(byte); ok {
+					device.Percentage = int(p)
+					b.addDeviceToStore(device)
+				}
+			}
 
 			return device
 		}
@@ -252,9 +260,15 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 		for iftype := range objMap {
 			switch iftype {
 			case dbusBluezAdapterIface:
+				var adapters []Adapter
+
 				adapterPath := string(objPath)
 
-				adapters := b.ConvertToAdapters(adapterPath, objMap)
+				for _, values := range objMap {
+					if err := b.ConvertToAdapter(adapterPath, values, &adapters); err != nil {
+						continue
+					}
+				}
 				for _, adapter := range adapters {
 					b.addAdapterToStore(adapter)
 				}
@@ -262,9 +276,15 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 				return adapters
 
 			case dbusBluezDeviceIface:
+				var devices []Device
+
 				devicePath := string(objPath)
 
-				devices := b.ConvertToDevices(devicePath, objMap)
+				for _, values := range objMap {
+					if err := b.ConvertToDevice(devicePath, values, &devices); err != nil {
+						continue
+					}
+				}
 				for _, device := range devices {
 					b.addDeviceToStore(device)
 				}
@@ -282,8 +302,12 @@ func (b *Bluez) ParseSignalData(signal *dbus.Signal) interface{} {
 					return nil
 				}
 
-				device.Percentage = int(objMap[iftype]["Percentage"].Value().(byte))
-				b.addDeviceToStore(device)
+				if v, ok := objMap[iftype]["Percentage"]; ok {
+					if p, ok := v.Value().(byte); ok {
+						device.Percentage = int(p)
+						b.addDeviceToStore(device)
+					}
+				}
 
 				return map[string][]Device{devicePath: {device}}
 			}
