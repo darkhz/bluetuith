@@ -117,7 +117,7 @@ func (b *Bluez) GetCurrentAdapterID() string {
 }
 
 // ConvertToAdapters converts a map of dbus objects to a common Adapter structure.
-func (b *Bluez) ConvertToAdapters(path string, values map[string]map[string]dbus.Variant) []Adapter {
+func (b *Bluez) ConvertToAdapter(path string, values map[string]dbus.Variant, adapters *[]Adapter) error {
 	/*
 		/org/bluez/hci0
 			org.bluez.Adapter1
@@ -135,25 +135,21 @@ func (b *Bluez) ConvertToAdapters(path string, values map[string]map[string]dbus
 					Alias => dbus.Variant{sig:dbus.Signature{str:"s"}, value:"jonathan-Blade"}
 
 	*/
-	adapters := []Adapter{}
-	for k1, v1 := range values {
-		switch k1 {
-		case dbusBluezAdapterIface:
-			adapters = append(adapters, Adapter{
-				Path:         path,
-				Name:         v1["Name"].Value().(string),
-				Alias:        v1["Alias"].Value().(string),
-				Address:      v1["Address"].Value().(string),
-				Discoverable: v1["Discoverable"].Value().(bool),
-				Pairable:     v1["Pairable"].Value().(bool),
-				Powered:      v1["Powered"].Value().(bool),
-				Discovering:  v1["Discovering"].Value().(bool),
-				Lock:         semaphore.NewWeighted(1),
-			})
-		}
+
+	var adapter Adapter
+
+	if err := DecodeVariantMap(values, &adapter, "Address"); err != nil {
+		return err
 	}
 
-	return adapters
+	adapter.Path = path
+	adapter.Lock = semaphore.NewWeighted(1)
+
+	if adapters != nil {
+		*adapters = append(*adapters, adapter)
+	}
+
+	return nil
 }
 
 // GetAdapterProperties gathers all the properties for a bluetooth adapter.

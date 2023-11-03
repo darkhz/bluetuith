@@ -39,7 +39,7 @@ type ObexTransferProperties struct {
 	Size        uint64
 	Transferred uint64
 
-	Session dbus.ObjectPath
+	Session string
 }
 
 // ObexProperties stores the session and transfer paths of
@@ -129,10 +129,10 @@ func (o *Obex) SendFile(sessionPath dbus.ObjectPath, path string) (dbus.ObjectPa
 		return "", ObexTransferProperties{}, err
 	}
 
-	transferProperties := o.GetTransferProperties(transferPropertyMap)
+	transferProperties, err := o.GetTransferProperties(transferPropertyMap)
 	o.addTransferPropertiesToStore(transferPath, transferProperties)
 
-	return transferPath, transferProperties, nil
+	return transferPath, transferProperties, err
 }
 
 // ReceiveFile returns a path where the OBEX daemon (obexd) will receive the file, along with
@@ -154,7 +154,11 @@ func (o *Obex) ReceiveFile(sessionPath, transferPath dbus.ObjectPath) (string, s
 					continue
 				}
 
-				sessionProperty, _ = o.GetSessionProperties(sessionPath, value)
+				sessionProperty, err = o.GetSessionProperties(sessionPath, value)
+				if err != nil {
+					return "", "", ObexTransferProperties{}, errors.New("Session error")
+				}
+
 				o.addSessionPropertiesToStore(sessionPath, sessionProperty)
 			}
 
@@ -164,8 +168,8 @@ func (o *Obex) ReceiveFile(sessionPath, transferPath dbus.ObjectPath) (string, s
 					continue
 				}
 
-				transferProperty = o.GetTransferProperties(value)
-				if transferProperty.Status == "error" {
+				transferProperty, err = o.GetTransferProperties(value)
+				if err != nil || transferProperty.Status == "error" {
 					return "", "", ObexTransferProperties{}, errors.New("Transfer error")
 				}
 
@@ -204,7 +208,6 @@ func (o *Obex) RemoveSession(sessionPath dbus.ObjectPath) error {
 
 // GetSessionProperties converts a map of OBEX session properties to ObexSessionProperties.
 func (o *Obex) GetSessionProperties(sessionPath dbus.ObjectPath, sprop ...map[string]dbus.Variant) (ObexSessionProperties, error) {
-	var root, source, target string
 	var sessionProperties ObexSessionProperties
 
 	props := make(map[string]dbus.Variant)
@@ -216,64 +219,14 @@ func (o *Obex) GetSessionProperties(sessionPath dbus.ObjectPath, sprop ...map[st
 		props = sprop[0]
 	}
 
-	if t, ok := props["Root"].Value().(string); ok {
-		root = t
-	}
-
-	if s, ok := props["Source"].Value().(string); ok {
-		source = s
-	}
-
-	if t, ok := props["Target"].Value().(string); ok {
-		target = t
-	}
-
-	sessionProperties = ObexSessionProperties{
-		Root:        root,
-		Target:      target,
-		Source:      source,
-		Destination: props["Destination"].Value().(string),
-	}
-
-	return sessionProperties, nil
+	return sessionProperties, DecodeVariantMap(props, &sessionProperties)
 }
 
 // GetTransferProperties converts a map of transfer properties to ObexTransferProperties.
-func (o *Obex) GetTransferProperties(props map[string]dbus.Variant) ObexTransferProperties {
-	var size, transferred uint64
-	var name, ftype, fname string
+func (o *Obex) GetTransferProperties(props map[string]dbus.Variant) (ObexTransferProperties, error) {
+	var obexTransferProperties ObexTransferProperties
 
-	if n, ok := props["Name"].Value().(string); ok {
-		name = n
-	}
-
-	if t, ok := props["Type"].Value().(string); ok {
-		ftype = t
-	}
-
-	if f, ok := props["Filename"].Value().(string); ok {
-		fname = f
-	}
-
-	if s, ok := props["Size"].Value().(uint64); ok {
-		size = s
-	}
-
-	if t, ok := props["Transferred"].Value().(uint64); ok {
-		transferred = t
-	}
-
-	return ObexTransferProperties{
-		Name:     name,
-		Type:     ftype,
-		Status:   props["Status"].Value().(string),
-		Filename: fname,
-
-		Size:        size,
-		Transferred: transferred,
-
-		Session: props["Session"].Value().(dbus.ObjectPath),
-	}
+	return obexTransferProperties, DecodeVariantMap(props, &obexTransferProperties)
 }
 
 // ManagedObjects gets the currently managed objects from the OBEX DBus.
@@ -321,10 +274,10 @@ func (o *Obex) ParseSignalData(signal *dbus.Signal) interface{} {
 			for prop, value := range objMap {
 				switch prop {
 				case "Status":
-					props.TransferProperties.Status = value.Value().(string)
+					props.TransferProperties.Status, _ = value.Value().(string)
 
 				case "Transferred":
-					props.TransferProperties.Transferred = value.Value().(uint64)
+					props.TransferProperties.Transferred, _ = value.Value().(uint64)
 				}
 			}
 
@@ -374,11 +327,13 @@ func (o *Obex) addTransferPropertiesToStore(transferPath dbus.ObjectPath, transf
 	o.StoreLock.Lock()
 	defer o.StoreLock.Unlock()
 
-	obexProperties := o.Store[transferProperties.Session]
+	transferObjectPath := dbus.ObjectPath(transferProperties.Session)
+
+	obexProperties := o.Store[transferObjectPath]
 	obexProperties.TransferPath = transferPath
 	obexProperties.TransferProperties = transferProperties
 
-	o.Store[transferProperties.Session] = obexProperties
+	o.Store[transferObjectPath] = obexProperties
 }
 
 // getPropertiesFromStore gets the ObexProperties from the store.

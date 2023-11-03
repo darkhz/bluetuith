@@ -104,25 +104,39 @@ func (b *Bluez) Stop() error {
 }
 
 // GetMediaProperties gets the media properties of the currently playing track.
-func (b *Bluez) GetMediaProperties() (MediaProperties, error) {
-	var track map[string]dbus.Variant
+func (b *Bluez) GetMediaProperties(values ...map[string]dbus.Variant) (MediaProperties, error) {
+	var props MediaProperties
+	var mediaPlayer map[string]dbus.Variant
 
-	mediaPlayer, err := b.GetMediaPlayerProperties()
-	if err != nil {
-		return MediaProperties{}, err
+	if values != nil {
+		mediaPlayer = values[0]
+	} else {
+		mp, err := b.GetMediaPlayerProperties()
+		if err != nil {
+			return MediaProperties{}, err
+		}
+
+		mediaPlayer = mp
 	}
 
+	track := TrackProperties{
+		Artist: "<Unknown Artist>",
+		Album:  "<Unknown Album>",
+	}
 	if t, ok := mediaPlayer["Track"].Value().(map[string]dbus.Variant); ok {
-		track = t
-	}
+		if err := DecodeVariantMap(t, &track); err != nil {
+			return MediaProperties{}, err
+		}
 
-	props := MediaProperties{
-		Status:   mediaPlayer["Status"].Value().(string),
-		Position: mediaPlayer["Position"].Value().(uint32),
-		Track:    getTrackProperties(track),
+		if track.TrackNumber > 0 && track.TotalTracks == 0 {
+			track.TotalTracks = track.TrackNumber
+		}
 	}
+	delete(mediaPlayer, "Track")
 
-	return props, nil
+	props.Track = track
+
+	return props, DecodeVariantMap(mediaPlayer, &props)
 }
 
 // GetMediaPlayerProperties gets the media player properties.
@@ -201,50 +215,4 @@ func (b *Bluez) CallMediaPlayer(command string) error {
 	return b.conn.Object(dbusBluezName, player).
 		Call(dbusBluezMediaPlayerIface+"."+command, 0).
 		Store()
-}
-
-// getTrackProperties returns the track properties.
-func getTrackProperties(props map[string]dbus.Variant) TrackProperties {
-	var title, album, artist string
-	var number, total, duration uint32
-
-	artist = "<Unknown Artist>"
-	album = "<Unknown Album>"
-
-	if props == nil {
-		return TrackProperties{}
-	}
-
-	if t, ok := props["Title"].Value().(string); ok {
-		title = t
-	}
-
-	if b, ok := props["Album"].Value().(string); ok {
-		album = b
-	}
-
-	if a, ok := props["Artist"].Value().(string); ok {
-		artist = a
-	}
-
-	if d, ok := props["Duration"].Value().(uint32); ok {
-		duration = d
-	}
-
-	if n, ok := props["TrackNumber"].Value().(uint32); ok {
-		number = n
-	}
-
-	if s, ok := props["NumberOfTracks"].Value().(uint32); ok {
-		total = s
-	}
-
-	return TrackProperties{
-		Title:       title,
-		Album:       album,
-		Artist:      artist,
-		Duration:    duration,
-		TrackNumber: number,
-		TotalTracks: total,
-	}
 }
