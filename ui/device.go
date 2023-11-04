@@ -40,7 +40,7 @@ func deviceTable() *tview.Table {
 		return ignoreDefaultEvent(event)
 	})
 	DeviceTable.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
-		if action == tview.MouseRightClick {
+		if action == tview.MouseRightClick && DeviceTable.HasFocus() {
 			device := getDeviceFromSelection(false)
 			if device.Path == "" {
 				return action, event

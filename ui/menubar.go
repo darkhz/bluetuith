@@ -247,6 +247,7 @@ func setMenu(x, y int, menuID string, device ...struct{}) {
 	var width, skipped int
 
 	modal := menu.modal
+	modal.Table.SetSelectorWrap(false)
 	modal.Table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch cmd.KeyOperation(event) {
 		case cmd.KeyClose:
@@ -369,9 +370,7 @@ func setContextMenu(
 	})
 	modal.Table.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
 		if action == tview.MouseLeftClick && modal.Table.InRect(event.Position()) {
-			if selected != nil {
-				modal.Table.InputHandler()(tcell.NewEventKey(tcell.KeyEnter, ' ', tcell.ModNone), nil)
-			}
+			exitMenu()
 		}
 
 		return action, event

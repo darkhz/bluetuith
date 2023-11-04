@@ -399,8 +399,6 @@ func modalMouseHandler(event *tcell.EventMouse, action tview.MouseAction) (*tcel
 		case tview.MouseRightClick:
 			if menu.bar.InRect(x, y) {
 				return nil, action
-			} else if DeviceTable.InRect(x, y) {
-				menu.bar.Highlight("")
 			}
 
 		case tview.MouseLeftClick:
