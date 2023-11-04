@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"strings"
-
 	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
@@ -134,12 +132,7 @@ func NewMenuModal(name string, regionX, regionY int) *Modal {
 func NewDisplayModal(name, title, message string) {
 	message += "\n\nPress any key or click the 'X' button to close this dialog."
 
-	width := len(strings.Split(message, "\n")[0])
-	if width > 100 {
-		width = 100
-	}
-
-	height := len(tview.WordWrap(message, width)) * 4
+	width, height := getModalDimensions(message, "")
 
 	textview := tview.NewTextView()
 	textview.SetText(message)
@@ -148,7 +141,7 @@ func NewDisplayModal(name, title, message string) {
 	textview.SetTextColor(theme.GetColor(theme.ThemeText))
 	textview.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
-	modal := NewModal(name, title, textview, height, width)
+	modal := NewModal(name, title, textview, width, height)
 	textview.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		modal.Exit(false)
 
@@ -156,6 +149,10 @@ func NewDisplayModal(name, title, message string) {
 	})
 
 	go UI.QueueUpdateDraw(func() {
+		if m, ok := ModalExists(name); ok {
+			m.Exit(false)
+		}
+
 		modal.Show()
 	})
 }
@@ -165,6 +162,7 @@ func NewConfirmModal(name, title, message string) string {
 	var modal *Modal
 
 	message += "\n\nPress y/n to Confirm/Cancel, click the required button or click the 'X' button to close this dialog."
+	buttonsText := `["confirm"][::b][Confirm[] ["cancel"][::b][Cancel[]`
 
 	reply := make(chan string, 10)
 
@@ -176,20 +174,15 @@ func NewConfirmModal(name, title, message string) string {
 		}
 	}
 
-	width := len(strings.Split(message, "\n")[0])
-	if width > 100 {
-		width = 100
-	}
-
-	height := len(tview.WordWrap(message, width)) * 4
+	width, height := getModalDimensions(message, buttonsText)
 
 	buttons := tview.NewTextView()
 	buttons.SetRegions(true)
+	buttons.SetText(buttonsText)
 	buttons.SetDynamicColors(true)
 	buttons.SetTextAlign(tview.AlignCenter)
 	buttons.SetTextColor(theme.GetColor(theme.ThemeText))
 	buttons.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
-	buttons.SetText(`["confirm"][::b][Confirm[] ["cancel"][::b][Cancel[]`)
 	buttons.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if added == nil {
 			return
@@ -236,6 +229,10 @@ func NewConfirmModal(name, title, message string) string {
 	})
 
 	go UI.QueueUpdateDraw(func() {
+		if m, ok := ModalExists(name); ok {
+			m.Exit(false)
+		}
+
 		modal.Show()
 	})
 
@@ -421,4 +418,24 @@ func modalMouseHandler(event *tcell.EventMouse, action tview.MouseAction) (*tcel
 	}
 
 	return event, action
+}
+
+// getModalDimensions returns the height and width to set for the modal
+// according to the provided text.
+// Adapted from: https://github.com/rivo/tview/blob/1b91b8131c43011d923fe59855b4de3571dac997/modal.go#L156
+func getModalDimensions(text, buttons string) (int, int) {
+	_, _, screenWidth, _ := UI.Pages.GetRect()
+	buttonWidth := tview.TaggedStringWidth(buttons) - 2
+
+	width := screenWidth / 3
+	if width < buttonWidth {
+		width = buttonWidth
+	}
+
+	padding := 6
+	if buttonWidth < 0 {
+		padding -= 2
+	}
+
+	return width + 4, len(tview.WordWrap(text, width)) + padding
 }
