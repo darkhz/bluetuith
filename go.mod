@@ -5,11 +5,11 @@ go 1.18
 require (
 	github.com/Wifx/gonetworkmanager v0.5.0
 	github.com/alexeyco/simpletable v1.0.0
-	github.com/darkhz/tview v0.0.0-20231024170842-8ad8aa98b6bf
+	github.com/darkhz/tview v0.0.0-20231104100140-47fe281832ee
 	github.com/fatih/color v1.15.0
 	github.com/gdamore/tcell/v2 v2.6.1-0.20230827060410-08c7757cd1c9
 	github.com/godbus/dbus/v5 v5.1.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/hjson/hjson-go/v4 v4.3.1
 	github.com/knadh/koanf/parsers/hjson v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
@@ -21,8 +21,8 @@ require (
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/spf13/pflag v1.0.5
 	github.com/ugorji/go/codec v1.2.11
-	golang.org/x/sync v0.4.0
-	golang.org/x/text v0.13.0
+	golang.org/x/sync v0.5.0
+	golang.org/x/text v0.14.0
 )
 
 require (
@@ -37,6 +37,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 )
