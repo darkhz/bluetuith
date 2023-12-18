@@ -99,7 +99,7 @@
     <div class="Page__header">
         <h1><a href="Installation.html">Installation</a></h1>
                         <span class="EditOn">
-            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/01_Installation.md" target="_blank">
+            <a href="https://github.com/darkhz/bluetuith/tree/documentation/documentation/01_Installation.md" target="_blank">
                 Edit on GitHub            </a>
         </span>
             </div>
@@ -118,8 +118,8 @@
 <p>After installing the dependencies, you can install bluetuith using any one method listed below.</p>
 <h2><a id="package-manager" href="#package-manager" class="Permalink" aria-hidden="true" title="Permalink">#</a>Package manager</h2>
 <p>If your distribution’s repositories have bluetuith, you can install it directly with your package manager.
-For <strong>Arch Linux</strong>, The package bluetuith-bin is in the AUR. Install it using an AUR helper of your choice like so:<br/></p>
-<pre><code>&lt;aur-helper&gt; -S bluetuith-bin.
+For <strong>Arch Linux</strong>, The package bluetuith-bin is in the AUR. Install it using an AUR helper of your choice like so:</p>
+<pre><code class="hljs bash">&lt;aur-helper&gt; -S bluetuith-bin.
 </code></pre>
 <p>For more information on whether bluetuith is packaged for your distribution, check the <a href="https://repology.org/project/bluetuith/versions" class="Link--external" rel="noopener noreferrer">repology</a> page.</p>
 <h2><a id="releases" href="#releases" class="Permalink" aria-hidden="true" title="Permalink">#</a>Releases</h2>
@@ -138,34 +138,34 @@ For <strong>Arch Linux</strong>, The package bluetuith-bin is in the AUR. Instal
 <li>a ‘Linux’ distribution,</li>
 <li>on the ‘x86_64’ architecture,</li>
 </ul>
-<p>You would select:
-<code>bluetuith_0.1.7_Linux_x86_64.tar.gz</code></p>
+<p>You would select: <code>bluetuith_0.1.7_Linux_x86_64.tar.gz</code></p>
 <p>You can follow these steps for other Operating Systems as well. Note that for Apple computers like Macs, the Operating System is <strong>Darwin</strong>.</p>
-<h2><a id="go-toolchain" href="#go-toolchain" class="Permalink" aria-hidden="true" title="Permalink">#</a>GO Toolchain</h2>
-<p>Ensure that the <strong>go</strong> binary is present in your system before following the listed steps.</p>
+<h2><a id="go-toolchain" href="#go-toolchain" class="Permalink" aria-hidden="true" title="Permalink">#</a>Go Toolchain</h2>
+<p>Ensure that the <code>go</code> binary is present in your system before following the listed steps. <a href="https://go.dev/doc/install" class="Link--external" rel="noopener noreferrer">Visit the official Go documentation to learn how to install it</a>.</p>
 <h3><a id="install" href="#install" class="Permalink" aria-hidden="true" title="Permalink">#</a>Install</h3>
 <p>To install it directly from the repository without having to compile anything, use:</p>
-<pre><code>go install github.com/darkhz/bluetuith@latest
+<pre><code class="hljs bash">go install github.com/darkhz/bluetuith@latest
 </code></pre>
-<p>Note that the installed binary may be present in ~/go/bin, so ensure that your $PATH points to that directory as well.</p>
+<p>Note that the installed binary may be present in <code>~/go/bin</code> (may vary based on your Go environment configuration), so ensure that your <code>$PATH</code> points to that directory as well.</p>
 <h3><a id="compile" href="#compile" class="Permalink" aria-hidden="true" title="Permalink">#</a>Compile</h3>
 <ul>
 <li>
 <p>Clone the <a href="https://github.com/darkhz/bluetuith/" class="Link--external" rel="noopener noreferrer">source</a> into a folder using git, like so:<br/><br/></p>
-<pre><code>git clone https://github.com/darkhz/bluetuith/
+<pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/darkhz/bluetuith.git
 </code></pre>
 <p>The source should be cloned into a directory named “<strong>bluetuith</strong>”.<br/><br/></p>
 </li>
 <li>
 <p>Next, change the directory to the “<strong>bluetuith</strong>” folder:<br/><br/></p>
-<pre><code>cd bluetuith
+<pre><code class="hljs bash"><span class="hljs-built_in">cd</span> bluetuith
 </code></pre>
 </li>
 <li>
-<p>Finally, use the go toolchain to build the project:<br/><br/></p>
-<pre><code>go build main.go -o bluetuith-bin
+<p>Finally, use the Go toolchain to build the project:<br/><br/></p>
+<pre><code class="hljs bash">go get -v &amp;&amp; go build -v
 </code></pre>
-<p>After the build process, a binary named “<strong>bluetuith-bin</strong>” should be present in your current directory.</p>
+<p>After the build process finishes, a binary named <strong><code>bluetuith</code></strong> should be present in your current directory.</p>
+<p><em>To produce a binary named <code>bluetuith-bin</code>, update the above <code>go build</code> command to <code>go build -v -o bluetuith-bin</code>.</em></p>
 </li>
 </ul>
     </div>

@@ -99,7 +99,7 @@
     <div class="Page__header">
         <h1><a href="Configuration.html">Configuration</a></h1>
                         <span class="EditOn">
-            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/02_Configuration.md" target="_blank">
+            <a href="https://github.com/darkhz/bluetuith/tree/documentation/documentation/02_Configuration.md" target="_blank">
                 Edit on GitHub            </a>
         </span>
             </div>
@@ -111,7 +111,7 @@
 <p>The configuration file is in the <a href="https://hjson.github.io/" class="Link--external" rel="noopener noreferrer">HJSON</a> format.
 You can use the <a href="Usage/Command_Line_Options.html#generate">–generate</a> flag to generate the configuration.<br /><br />
 For example:</p>
-<pre><code>{
+<pre><code class="language-text">{
   adapter: hci0
   receive-dir: /home/user/files
   keybindings: {
@@ -121,7 +121,6 @@ For example:</p>
   	Adapter: red
   }
 }
-
 </code></pre>
 <h1><a id="keybindings" href="#keybindings" class="Permalink" aria-hidden="true" title="Permalink">#</a>Keybindings</h1>
 <p>The keybinding configuration is a list of <code>KeybindingType: keybinding</code> values.<br /></p>
@@ -129,13 +128,14 @@ For example:</p>
 It is possible to have duplicate keybindings amongst various non-global keybindings, provided<br />
 they are not part of the same context.</p>
 <p>For example, this is allowed:</p>
-<pre><code>keybindings: {
+<pre><code class="language-text">keybindings: {
 	FilebrowserSelect: Space
 	PlayerTogglePlay: Space
 }
+
 </code></pre>
 <p>But this isn’t:</p>
-<pre><code>keybindings: {
+<pre><code class="language-text">keybindings: {
 	Menu: Alt+m
 	Close: Alt+m
 }
@@ -154,7 +154,7 @@ For example, instead of :</p>
 <p>and so on.</p>
 <p>For the ‘+’ and the space characters, type Plus and Space respectively.
 For example,</p>
-<pre><code>keybindings: {
+<pre><code class="language-text">keybindings: {
 	AdapterChange: Ctrl+Plus
 	PlayerStop: Ctrl+Space
 }
@@ -508,7 +508,7 @@ For example,</p>
 <p>The theme configuration is a list of <code>ElementType: color</code> values.<br />
 Color names or hexadecimal values can be provided for each element type.</p>
 <p>For example:</p>
-<pre><code>theme: {
+<pre><code class="language-text">theme: {
 	Adapter: red
 	Device: #000000
 }

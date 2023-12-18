@@ -1,4 +1,5 @@
 # Device Screen
+
 | Operation                        | Keybinding                        |
 | -------------------------------- | -----------------------------     |
 | Open the menu                    | <kbd>`Alt`</kbd>+<kbd>`m`</kbd>   |
@@ -23,6 +24,7 @@
 | Quit                             | <kbd>`q`</kbd>                    |
 
 # File Picker
+
 | Operation                          | Keybinding                         |
 | ---------------------------------- | ------------------------------     |
 | Navigate between directory entries | <kbd>`Up`</kbd>/<kbd>`Down`</kbd>  |
@@ -37,6 +39,7 @@
 | Exit                               | <kbd>`Escape`</kbd>                |
 
 # Progress View
+
 | Operation                  | Keybinding                        |
 | -------------------------- | -----------------------------     |
 | Navigate between transfers | <kbd>`Up`</kbd>/<kbd>`Down`</kbd> |
@@ -46,6 +49,7 @@
 | Exit                       | <kbd>`Escape`</kbd>               |
 
 # Media Player
+
 | Operation         | Keybinding         |
 | ----------------- | ----------------   |
 | Toggle play/pause | <kbd>`Space`</kbd> |
@@ -54,4 +58,3 @@
 | Rewind            | <kbd>`Left`</kbd>  |
 | Fast forward      | <kbd>`Right`</kbd> |
 | Stop              | <kbd>`]`</kbd>     |
-

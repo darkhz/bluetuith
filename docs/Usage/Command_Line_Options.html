@@ -99,7 +99,7 @@
     <div class="Page__header">
         <h1><a href="../Usage/Command_Line_Options.html">Usage</a> <svg class="Page__header--separator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175"><path d="M360.73 229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1 0s-5.3 13.8 0 19.1l215.5 215.5-215.5 215.5c-5.3 5.3-5.3 13.8 0 19.1 2.6 2.6 6.1 4 9.5 4 3.4 0 6.9-1.3 9.5-4l225.1-225.1c5.3-5.2 5.3-13.8.1-19z"/></svg> <a href="../Usage/Command_Line_Options.html">Command Line Options</a></h1>
                         <span class="EditOn">
-            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/03_Usage/01_Command_Line_Options.md" target="_blank">
+            <a href="https://github.com/darkhz/bluetuith/tree/documentation/documentation/03_Usage/01_Command_Line_Options.md" target="_blank">
                 Edit on GitHub            </a>
         </span>
             </div>
@@ -148,10 +148,10 @@
 </ul>    </div>
 </div>
 <p>The general usage syntax is:</p>
-<pre><code>bluetuith [&lt;option&gt;=&lt;parameter&gt;]
+<pre><code class="language-text">bluetuith [&lt;option&gt;=&lt;parameter&gt;]
 </code></pre>
 <p>or</p>
-<pre><code>bluetuith [&lt;option&gt; &lt;parameter&gt;]
+<pre><code class="language-text">bluetuith [&lt;option&gt; &lt;parameter&gt;]
 </code></pre>
 <ul>
 <li>
@@ -183,7 +183,7 @@
 <h2><a id="adapter" href="#adapter" class="Permalink" aria-hidden="true" title="Permalink">#</a>adapter</h2>
 <p>This option can be used to select the adapter when the application has initialized.</p>
 <p>For example:</p>
-<pre><code>bluetuith --adapter=hci0
+<pre><code class="hljs bash">bluetuith --adapter=hci0
 </code></pre>
 <h2><a id="list-adapters" href="#list-adapters" class="Permalink" aria-hidden="true" title="Permalink">#</a>list-adapters</h2>
 <p>This option can be used to list the available bluetooth adapters.</p>
@@ -197,12 +197,12 @@ For example, if <code>discoverable:yes, powered:yes</code> is provided:<br/>
 - The ‘discoverable’ state will be set first and<br/>
 - The ‘powered’ state will be set after it.<br/></p></div>
 <p>For example:</p>
-<pre><code>bluetuith --adapter=hci0 --adapter-states=&quot;powered:yes, discoverable:yes, pairable:yes, scan:no&quot;
+<pre><code class="hljs bash">bluetuith --adapter=hci0 --adapter-states=<span class="hljs-string">"powered:yes, discoverable:yes, pairable:yes, scan:no"</span>
 </code></pre>
 <h2><a id="connect-bdaddr" href="#connect-bdaddr" class="Permalink" aria-hidden="true" title="Permalink">#</a>connect-bdaddr</h2>
 <p>This option can be used to connect to a device based on its address.</p>
 <p>For example:</p>
-<pre><code>bluetuith --connect-bdaddr=&quot;AA:BB:CC:DD:EE:FF&quot;
+<pre><code class="hljs bash">bluetuith --connect-bdaddr=<span class="hljs-string">"AA:BB:CC:DD:EE:FF"</span>
 </code></pre>
 <h2><a id="confirm-on-quit" href="#confirm-on-quit" class="Permalink" aria-hidden="true" title="Permalink">#</a>confirm-on-quit</h2>
 <p>This option can be used to show a confirmation message before quitting the application.</p>
@@ -220,7 +220,7 @@ If this option is set, the <code>gsm-apn</code> option must also be provided.</p
 <h2><a id="theme" href="#theme" class="Permalink" aria-hidden="true" title="Permalink">#</a>theme</h2>
 <p>This option can be used to set the theme for the application.
 For example:</p>
-<pre><code>bluetuith --theme='{ Adapter: &quot;red&quot; }'
+<pre><code class="hljs bash">bluetuith --theme=<span class="hljs-string">'{ Adapter: "red" }'</span>
 </code></pre>
 <p>To see the available element types and colors, use the <code>--help</code> option.</p>
 <h2><a id="generate" href="#generate" class="Permalink" aria-hidden="true" title="Permalink">#</a>generate</h2>

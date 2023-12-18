@@ -3,6 +3,7 @@
     "tagline": "A terminal-based Bluetooth manager for Linux",
     "author": "darkhz",
     "image": "images/banner.png",
+    "docs_directory": "./documentation",
     "live": {
         "clean_urls": true
     },
@@ -15,7 +16,7 @@
         "inherit_index": true,
 
         "repo": "darkhz/bluetuith",
-        "edit_on_github": "darkhz/bluetuith/blob/master/documentation/docs",
+        "edit_on_github": "https://github.com/darkhz/bluetuith/tree/documentation/documentation",
         "google_analytics": true,
         "plausible_domain": false,
         "links": {

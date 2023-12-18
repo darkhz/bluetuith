@@ -8,7 +8,8 @@ Typing `bluetuith --help` will show you the location of the config file.<br />
 The configuration file is in the [HJSON](https://hjson.github.io/) format.
 You can use the [--generate](03_Usage/01_Command_Line_Options.md#generate) flag to generate the configuration.<br /><br />
 For example:
-```
+
+```text
 {
   adapter: hci0
   receive-dir: /home/user/files
@@ -19,9 +20,10 @@ For example:
   	Adapter: red
   }
 }
-
 ```
+
 # Keybindings
+
 The keybinding configuration is a list of `KeybindingType: keybinding` values.<br />
 
 While defining keybindings, the global keybindings must not conflict with the non-global ones.<br />
@@ -29,14 +31,18 @@ It is possible to have duplicate keybindings amongst various non-global keybindi
 they are not part of the same context.
 
 For example, this is allowed:
-```
+
+```text
 keybindings: {
 	FilebrowserSelect: Space
 	PlayerTogglePlay: Space
 }
+
 ```
+
 But this isn't:
-```
+
+```text
 keybindings: {
 	Menu: Alt+m
 	Close: Alt+m
@@ -44,8 +50,10 @@ keybindings: {
 ```
 
 ## Modifiers
+
 The modifiers currently supported for keybindings are `Ctrl`, `Alt` and `Shift`. `Shift` should only be used in rare cases.
 For example, instead of :
+
 - `Shift+a`, type `A`
 - `Alt+Shift+e`, type `Alt+E`
 
@@ -53,7 +61,8 @@ and so on.
 
 For the '+' and the space characters, type Plus and Space respectively.
 For example,
-```
+
+```text
 keybindings: {
 	AdapterChange: Ctrl+Plus
 	PlayerStop: Ctrl+Space
@@ -61,6 +70,7 @@ keybindings: {
 ```
 
 ## Types
+
 Note that some keybinding combinations may be valid, but may not work due to the way your terminal/environment handles it.
 
 The keybinding types are as follows:
@@ -115,11 +125,13 @@ The keybinding types are as follows:
 | ProgressTransferCancel        | No       | Progress | x                    | Cancel Transfer                     |
 
 # Themes
+
 The theme configuration is a list of `ElementType: color` values.<br />
 Color names or hexadecimal values can be provided for each element type.
 
 For example:
-```
+
+```text
 theme: {
 	Adapter: red
 	Device: #000000

@@ -2,6 +2,7 @@ bluetuith is a TUI-based bluetooth connection manager, which can interact with b
 It aims to be a replacement to most bluetooth managers, like blueman.
 
 ## Features
+
 - Transfer and receive files via OBEX.
 - Perform pairing with authentication.
 - Connect to/disconnect from different devices.

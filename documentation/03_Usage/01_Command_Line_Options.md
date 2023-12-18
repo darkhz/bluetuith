@@ -2,13 +2,13 @@
 
 The general usage syntax is:
 
-```
+```text
 bluetuith [<option>=<parameter>]
 ```
 
-or 
+or
 
-```
+```text
 bluetuith [<option> <parameter>]
 ```
 
@@ -29,17 +29,21 @@ bluetuith [<option> <parameter>]
 	As of v0.1.7, the set-theme and set-theme-config options are deprecated. Use the `--theme` command-line option or specify a theme directive within the configuration file.
 
 ## adapter
-This option can be used to select the adapter when the application has initialized. 
+
+This option can be used to select the adapter when the application has initialized.
 
 For example:
-```
+
+```bash
 bluetuith --adapter=hci0
 ```
 
 ## list-adapters
+
 This option can be used to list the available bluetooth adapters.
 
 ## adapter-states
+
 This option can be used to set various adapter properties and states on initialization.
 
 Valid properties are: `powered`, `scan`, `discoverable`, `pairable`.<br/>
@@ -54,50 +58,62 @@ The provided value must be in the **[\<property\>:\<state\>]** format.
         - The 'powered' state will be set after it.<br/>
 
 For example:
-```
+
+```bash
 bluetuith --adapter=hci0 --adapter-states="powered:yes, discoverable:yes, pairable:yes, scan:no"
 ```
 
 ## connect-bdaddr
+
 This option can be used to connect to a device based on its address.
 
 For example:
-```
+
+```bash
 bluetuith --connect-bdaddr="AA:BB:CC:DD:EE:FF"
 ```
 
 ## confirm-on-quit
+
 This option can be used to show a confirmation message before quitting the application.
 
 ## no-warning
+
 This option can be used to hide warnings when the application has initialized.
 
 ## receive-dir
+
 This option can be used to set the directory to receive transferred files.
 
 If this option is not set, the path will be set to `$HOME/bluetuith`.
 
 ## gsm-apn
+
 This option can be used to specify the GSM APN to connect to.
 While performing DUN-base networking, this option is required and can be used along with the `gsm-number` option.
 
 ## gsm-number
+
 This option can be used to specify the GSM number to connect to.
 If this option is set, the `gsm-apn` option must also be provided.
 
 ## theme
+
 This option can be used to set the theme for the application.
 For example:
-```
+
+```bash
 bluetuith --theme='{ Adapter: "red" }'
 ```
 
 To see the available element types and colors, use the `--help` option.
 
 ## generate
+
 This option can be used to generate the configuration.
 
 Note that if you are regenerating the config, the existing values will be re-applied to the generated output.
 
 ## version
+
 This option can be used to print the current version of the application.
