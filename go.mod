@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Wifx/gonetworkmanager v0.5.0
 	github.com/alexeyco/simpletable v1.0.0
-	github.com/darkhz/tview v0.0.0-20231104100140-47fe281832ee
+	github.com/darkhz/tview v0.0.0-20231120115226-060874cdab9f
 	github.com/fatih/color v1.15.0
 	github.com/gdamore/tcell/v2 v2.6.1-0.20230827060410-08c7757cd1c9
 	github.com/godbus/dbus/v5 v5.1.0

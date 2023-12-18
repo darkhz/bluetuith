@@ -3,6 +3,7 @@
 ![demo](demo/demo.gif)
 
 # bluetuith
+
 bluetuith is a TUI-based bluetooth connection manager, which can interact with bluetooth adapters and devices.
 It aims to be a replacement to most bluetooth managers, like blueman.
 
@@ -13,6 +14,7 @@ This project is currently in the alpha stage.
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
 
 ## Features
+
 - Transfer and receive files via OBEX.
 - Perform pairing with authentication.
 - Connect to/disconnect from different devices.
@@ -22,6 +24,7 @@ This project is currently in the alpha stage.
 - Mouse support
 
 ## Documentation
+
 The documentation is now hosted [here](https://darkhz.github.io/bluetuith)
 
 The wiki is out-of-date.
