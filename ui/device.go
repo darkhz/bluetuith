@@ -131,6 +131,7 @@ func getDeviceInfo() {
 
 	props := [][]string{
 		{"Name", device.Name},
+		{"Alias", device.Alias},
 		{"Address", device.Address},
 		{"Class", strconv.FormatUint(uint64(device.Class), 10)},
 		{"Adapter", filepath.Base(device.Adapter)},
@@ -245,11 +246,20 @@ func getDeviceFromSelection(lock bool) bluez.Device {
 func setDeviceTableInfo(row int, device bluez.Device) {
 	var props string
 
+	data := []string{
+		theme.ColorWrap(theme.ThemeDeviceType, device.Type),
+	}
 	name := device.Name
 	if name == "" {
 		name = device.Address
 	}
-	name += theme.ColorWrap(theme.ThemeDeviceType, " ("+device.Type+")")
+	if device.Alias != device.Name {
+		data = append(
+			[]string{theme.ColorWrap(theme.ThemeDeviceAlias, device.Alias)},
+			data...,
+		)
+	}
+	name += " (" + strings.Join(data, ", ") + ")"
 
 	nameColor := theme.ThemeDevice
 	propColor := theme.ThemeDeviceProperty

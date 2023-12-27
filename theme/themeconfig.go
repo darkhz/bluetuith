@@ -23,6 +23,7 @@ const (
 	ThemeAdapterPairable          ThemeContext = "AdapterPairable"
 	ThemeDevice                   ThemeContext = "Device"
 	ThemeDeviceType               ThemeContext = "DeviceType"
+	ThemeDeviceAlias              ThemeContext = "DeviceAlias"
 	ThemeDeviceConnected          ThemeContext = "DeviceConnected"
 	ThemeDeviceDiscovered         ThemeContext = "DeviceDiscovered"
 	ThemeDeviceProperty           ThemeContext = "DeviceProperty"
@@ -52,6 +53,7 @@ var ThemeConfig = map[ThemeContext]string{
 
 	ThemeDevice:                   "white",
 	ThemeDeviceType:               "white",
+	ThemeDeviceAlias:              "white",
 	ThemeDeviceConnected:          "white",
 	ThemeDeviceDiscovered:         "white",
 	ThemeDeviceProperty:           "grey",
