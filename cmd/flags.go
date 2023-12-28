@@ -60,6 +60,11 @@ var options = []Option{
 		IsBoolean:   true,
 	},
 	{
+		Name:        "no-help-display",
+		Description: "Do not display help keybindings in the application.",
+		IsBoolean:   true,
+	},
+	{
 		Name:        "confirm-on-quit",
 		Description: "Ask for confirmation before quitting the application.",
 		IsBoolean:   true,

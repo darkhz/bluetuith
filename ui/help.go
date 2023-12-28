@@ -9,59 +9,158 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// Help describes the help item.
+type Help struct {
+	Title, Description string
+	Keys               []cmd.Key
+	ShowInStatus       bool
+}
+
+var (
+	helpPage string
+
+	// HelpTopics store the various help topics.
+	HelpTopics = map[string][]Help{
+		"Device Screen": {
+			{"Menu", "Open the menu", []cmd.Key{cmd.KeyMenu}, true},
+			{"Switch", "Navigate between menus", []cmd.Key{cmd.KeySwitch}, true},
+			{"Navigation", "Navigate between devices/options", []cmd.Key{cmd.KeyNavigateUp, cmd.KeyNavigateDown}, true},
+			{"Power", "Toggle adapter power state", []cmd.Key{cmd.KeyAdapterTogglePower}, true},
+			{"Discoverable", "Toggle discoverable state", []cmd.Key{cmd.KeyAdapterToggleDiscoverable}, false},
+			{"Pairable", "Toggle pairable state", []cmd.Key{cmd.KeyAdapterTogglePairable}, false},
+			{"Scan", "Toggle scan (discovery state)", []cmd.Key{cmd.KeyAdapterToggleScan}, true},
+			{"Adapter", "Change adapter", []cmd.Key{cmd.KeyAdapterChange}, true},
+			{"Send", "Send files", []cmd.Key{cmd.KeyDeviceSendFiles}, true},
+			{"Network", "Connect to network", []cmd.Key{cmd.KeyDeviceNetwork}, false},
+			{"Progress", "Progress view", []cmd.Key{cmd.KeyProgressView}, false},
+			{"Player", "Show/Hide player", []cmd.Key{cmd.KeyPlayerShow, cmd.KeyPlayerHide}, false},
+			{"Device Info", "Show device information", []cmd.Key{cmd.KeyDeviceInfo}, false},
+			{"Connect", "Connect to selected device", []cmd.Key{cmd.KeyDeviceConnect}, true},
+			{"Pair", "Pair with selected device", []cmd.Key{cmd.KeyDevicePair}, true},
+			{"Trust", "Trust selected device", []cmd.Key{cmd.KeyDeviceTrust}, false},
+			{"Remove", "Remove device from adapter", []cmd.Key{cmd.KeyDeviceRemove}, false},
+			{"Cancel", "Cancel operation", []cmd.Key{cmd.KeyCancel}, false},
+			{"Help", "Show help", []cmd.Key{cmd.KeyHelp}, true},
+			{"Quit", "Quit", []cmd.Key{cmd.KeyQuit}, false},
+		},
+		"File Picker": {
+			{"Navigation", "Navigate between directory entries", []cmd.Key{cmd.KeyNavigateUp, cmd.KeyNavigateDown}, true},
+			{"ChgDir Fwd/Back", "Enter/Go back a directory", []cmd.Key{cmd.KeyNavigateRight, cmd.KeyNavigateLeft}, true},
+			{"One", "Select one file", []cmd.Key{cmd.KeyFilebrowserSelect}, true},
+			{"Invert", "Invert file selection", []cmd.Key{cmd.KeyFilebrowserInvertSelection}, true},
+			{"All", "Select all files", []cmd.Key{cmd.KeyFilebrowserSelectAll}, true},
+			{"Refresh", "Refresh current directory", []cmd.Key{cmd.KeyFilebrowserRefresh}, false},
+			{"Hidden", "Toggle hidden files", []cmd.Key{cmd.KeyFilebrowserToggleHidden}, false},
+			{"Confirm", "Confirm file(s) selection", []cmd.Key{cmd.KeyFilebrowserConfirmSelection}, true},
+			{"Exit", "Exit", []cmd.Key{cmd.KeyClose}, false},
+		},
+		"Progress View": {
+			{"Navigation", "Navigate between transfers", []cmd.Key{cmd.KeyNavigateUp, cmd.KeyNavigateDown}, true},
+			{"Suspend", "Suspend transfer", []cmd.Key{cmd.KeyProgressTransferSuspend}, true},
+			{"Resume", "Resume transfer", []cmd.Key{cmd.KeyProgressTransferResume}, true},
+			{"Cancel", "Cancel transfer", []cmd.Key{cmd.KeyProgressTransferCancel}, true},
+			{"Exit", "Exit", []cmd.Key{cmd.KeyClose}, true},
+		},
+		"Media Player": {
+			{"Play/Pause", "Toggle play/pause", []cmd.Key{cmd.KeyNavigateUp, cmd.KeyNavigateDown}, false},
+			{"Next", "Next", []cmd.Key{cmd.KeyPlayerNext}, false},
+			{"Previous", "Previous", []cmd.Key{cmd.KeyPlayerPrevious}, false},
+			{"Rewind", "Rewind", []cmd.Key{cmd.KeyPlayerSeekBackward}, false},
+			{"Forward", "Fast forward", []cmd.Key{cmd.KeyPlayerSeekForward}, false},
+			{"Stop", "Stop", []cmd.Key{cmd.KeyPlayerStop}, false},
+		},
+	}
+)
+
+func showStatusHelp(page string) {
+	if cmd.IsPropertyEnabled("no-help-display") || helpPage == UI.page {
+		return
+	}
+
+	helpPage = UI.page
+	pages := map[string]string{
+		"main":         "Device Screen",
+		"filepicker":   "File Picker",
+		"progressview": "Progress View",
+	}
+
+	items, ok := HelpTopics[pages[page]]
+	if !ok {
+		UI.Status.Help.Clear()
+		return
+	}
+
+	groups := map[string][]Help{}
+
+	for _, item := range items {
+		if !item.ShowInStatus {
+			continue
+		}
+
+		var group string
+
+		for _, key := range item.Keys {
+			switch key {
+			case cmd.KeyMenu, cmd.KeySwitch:
+				group = "Open"
+
+			case cmd.KeyFilebrowserSelect, cmd.KeyFilebrowserInvertSelection, cmd.KeyFilebrowserSelectAll:
+				group = "Select"
+
+			case cmd.KeyProgressTransferSuspend, cmd.KeyProgressTransferResume, cmd.KeyProgressTransferCancel:
+				group = "Transfer"
+
+			case cmd.KeyDeviceConnect, cmd.KeyDevicePair, cmd.KeyAdapterToggleScan, cmd.KeyAdapterTogglePower:
+				group = "Toggle"
+			}
+		}
+		if group == "" {
+			group = item.Title
+		}
+
+		helpItem := groups[group]
+		if helpItem == nil {
+			helpItem = []Help{}
+		}
+
+		helpItem = append(helpItem, item)
+		groups[group] = helpItem
+	}
+
+	text := ""
+	count := 0
+	for group, items := range groups {
+		var names, keys []string
+
+		for _, item := range items {
+			if item.Title != group {
+				names = append(names, item.Title)
+			}
+			for _, k := range item.Keys {
+				keys = append(keys, cmd.KeyName(cmd.OperationData(k).Kb))
+			}
+		}
+		if names != nil {
+			group += " " + strings.Join(names, "/")
+		}
+
+		helpKeys := strings.Join(keys, "/")
+		if count < len(groups)-1 {
+			helpKeys += ", "
+		}
+
+		title := theme.ColorWrap(theme.ThemeText, group, "::bu")
+		helpKeys = theme.ColorWrap(theme.ThemeText, ": "+helpKeys)
+
+		text += title + helpKeys
+		count++
+	}
+
+	UI.Status.Help.SetText(text)
+}
+
 func showHelp() {
 	var row int
-
-	deviceKeyBindings := map[string][]cmd.Key{
-		"Open the menu":                    {cmd.KeyMenu},
-		"Navigate between menus":           {cmd.KeySwitch},
-		"Navigate between devices/options": {cmd.KeyNavigateUp, cmd.KeyNavigateDown},
-		"Toggle adapter power state":       {cmd.KeyAdapterTogglePower},
-		"Toggle discoverable state":        {cmd.KeyAdapterToggleDiscoverable},
-		"Toggle pairable state":            {cmd.KeyAdapterTogglePairable},
-		"Toggle scan (discovery state)":    {cmd.KeyAdapterToggleScan},
-		"Change adapter":                   {cmd.KeyAdapterChange},
-		"Send files":                       {cmd.KeyDeviceSendFiles},
-		"Connect to network":               {cmd.KeyDeviceNetwork},
-		"Progress view":                    {cmd.KeyProgressView},
-		"Show/Hide player":                 {cmd.KeyPlayerShow, cmd.KeyPlayerHide},
-		"Show device information":          {cmd.KeyDeviceInfo},
-		"Connect to selected device":       {cmd.KeyDeviceConnect},
-		"Pair with selected device":        {cmd.KeyDevicePair},
-		"Trust selected device":            {cmd.KeyDeviceTrust},
-		"Remove device from adapter":       {cmd.KeyDeviceRemove},
-		"Cancel operation":                 {cmd.KeyCancel},
-		"Quit":                             {cmd.KeyQuit},
-	}
-
-	filePickerKeyBindings := map[string][]cmd.Key{
-		"Navigate between directory entries": {cmd.KeyNavigateUp, cmd.KeyNavigateDown},
-		"Enter/Go back a directory":          {cmd.KeyNavigateRight, cmd.KeyNavigateLeft},
-		"Select one file":                    {cmd.KeyFilebrowserSelect},
-		"Invert file selection":              {cmd.KeyFilebrowserInvertSelection},
-		"Select all files":                   {cmd.KeyFilebrowserSelectAll},
-		"Refresh current directory":          {cmd.KeyFilebrowserRefresh},
-		"Toggle hidden files":                {cmd.KeyFilebrowserToggleHidden},
-		"Confirm file(s) selection":          {cmd.KeyFilebrowserConfirmSelection},
-		"Exit":                               {cmd.KeyClose},
-	}
-
-	progressViewKeyBindings := map[string][]cmd.Key{
-		"Navigate between transfers": {cmd.KeyNavigateUp, cmd.KeyNavigateDown},
-		"Suspend transfer":           {cmd.KeyProgressTransferSuspend},
-		"Resume transfer":            {cmd.KeyProgressTransferResume},
-		"Cancel transfer":            {cmd.KeyProgressTransferCancel},
-		"Exit":                       {cmd.KeyClose},
-	}
-
-	mediaPlayerKeyBindings := map[string][]cmd.Key{
-		"Toggle play/pause": {cmd.KeyNavigateUp, cmd.KeyNavigateDown},
-		"Next":              {cmd.KeyPlayerNext},
-		"Previous":          {cmd.KeyPlayerPrevious},
-		"Rewind":            {cmd.KeyPlayerSeekBackward},
-		"Fast forward":      {cmd.KeyPlayerSeekForward},
-		"Stop":              {cmd.KeyPlayerStop},
-	}
 
 	helpModal := NewModal("help", "Help", nil, 40, 60)
 	helpModal.Table.SetSelectionChangedFunc(func(row, col int) {
@@ -77,12 +176,7 @@ func showHelp() {
 		return action, event
 	})
 
-	for title, helpMap := range map[string]map[string][]cmd.Key{
-		"Device Screen": deviceKeyBindings,
-		"File Picker":   filePickerKeyBindings,
-		"Progress View": progressViewKeyBindings,
-		"Media Player":  mediaPlayerKeyBindings,
-	} {
+	for title, helpItems := range HelpTopics {
 		helpModal.Table.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft).
@@ -91,16 +185,16 @@ func showHelp() {
 
 		row++
 
-		for op, key := range helpMap {
+		for _, item := range helpItems {
 			var names []string
 
-			for _, k := range key {
+			for _, k := range item.Keys {
 				names = append(names, cmd.KeyName(cmd.OperationData(k).Kb))
 			}
 
 			keybinding := strings.Join(names, "/")
 
-			helpModal.Table.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, op)).
+			helpModal.Table.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, item.Description)).
 				SetExpansion(1).
 				SetAlign(tview.AlignLeft).
 				SetTextColor(theme.GetColor(theme.ThemeText)).

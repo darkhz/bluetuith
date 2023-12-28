@@ -85,12 +85,14 @@ func StartUI() {
 		default:
 			UI.pageContext = cmd.KeyContextApp
 		}
+
+		showStatusHelp(page)
 	})
 
 	UI.Layout = tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(UI.Pages, 0, 10, true).
-		AddItem(statusBar(), 1, 0, false)
+		AddItem(statusBar(), UI.Status.itemCount, 0, false)
 	UI.Layout.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
 	UI.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -126,6 +128,7 @@ func StartUI() {
 
 		return false
 	})
+	UI.Pages.SwitchToPage("main")
 
 	setupDevices()
 	displayWarning()

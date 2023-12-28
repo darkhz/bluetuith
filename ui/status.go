@@ -15,12 +15,17 @@ type Status struct {
 	// MessageBox is an area to display messages.
 	MessageBox *tview.TextView
 
+	// Help is an area to display help keybindings.
+	Help *tview.TextView
+
 	// InputField is an area to interact with messages.
 	InputField *tview.InputField
 
 	sctx    context.Context
 	scancel context.CancelFunc
 	msgchan chan message
+
+	itemCount int
 
 	*tview.Pages
 }
@@ -31,7 +36,7 @@ type message struct {
 }
 
 // statusBar sets up the statusbar.
-func statusBar() *tview.Pages {
+func statusBar() *tview.Flex {
 	UI.Status.Pages = tview.NewPages()
 	UI.Status.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
@@ -45,6 +50,10 @@ func statusBar() *tview.Pages {
 	UI.Status.MessageBox.SetDynamicColors(true)
 	UI.Status.MessageBox.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 
+	UI.Status.Help = tview.NewTextView()
+	UI.Status.Help.SetDynamicColors(true)
+	UI.Status.Help.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+
 	UI.Status.AddPage("input", UI.Status.InputField, true, true)
 	UI.Status.AddPage("messages", UI.Status.MessageBox, true, true)
 	UI.Status.SwitchToPage("messages")
@@ -54,7 +63,17 @@ func statusBar() *tview.Pages {
 
 	go startStatus()
 
-	return UI.Status.Pages
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(UI.Status.Pages, 1, 0, false)
+	if !cmd.IsPropertyEnabled("no-help-display") {
+		flex.AddItem(horizontalLine(), 1, 0, false)
+		flex.AddItem(UI.Status.Help, 1, 0, false)
+	}
+
+	UI.Status.itemCount = flex.GetItemCount()
+
+	return flex
 }
 
 // stopStatus stops the message event loop.
