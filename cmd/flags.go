@@ -377,7 +377,7 @@ func cmdOptionVersion() {
 
 	versionInfo := strings.Split(Version, "@")
 	if len(versionInfo) < 2 {
-		Print(fmt.Sprintf(text, versionInfo), 0)
+		Print(fmt.Sprintf(text, Version), 0)
 	}
 
 	text += " (%s)"
