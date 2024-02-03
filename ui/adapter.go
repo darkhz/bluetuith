@@ -164,22 +164,16 @@ func updateAdapterStatus(adapter bluez.Adapter) {
 			}
 		}
 
+		textColor := theme.ColorName(theme.BackgroundColor(status.Color))
+		bgColor := theme.ThemeConfig[status.Color]
+
 		region := strings.ToLower(status.Title)
-
-		textColor := theme.BackgroundColor(status.Color).Name()
-
-		state += theme.ColorWrap(
-			status.Color,
-			fmt.Sprintf("[\"%s\"] %s [\"\"]", region, status.Title), ":"+textColor+":b",
-		)
-
-		state += " "
+		state += fmt.Sprintf("[\"%s\"][%s:%s:b] %s [-:-:-][\"\"] ", region, textColor, bgColor, status.Title)
 
 		regions = append(regions, region)
 	}
 
 	adapterStatus.view.SetText(state)
-	adapterStatus.view.Highlight(regions...)
 }
 
 // setAdapterStates sets the adapter states which were parsed from

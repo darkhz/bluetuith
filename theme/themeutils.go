@@ -18,12 +18,23 @@ func ColorWrap(elementName ThemeContext, elementContent string, attributes ...st
 	return fmt.Sprintf("[%s%s]%s[-:-:-]", ThemeConfig[elementName], attr, elementContent)
 }
 
+// ColorName returns the name of the provided color.
+func ColorName(color tcell.Color) string {
+	for n, h := range tcell.ColorNames {
+		if color == h {
+			return n
+		}
+	}
+
+	return ""
+}
+
 // BackgroundColor checks whether the given color is a light
 // or dark color, and returns the appropriate color that is
 // visible on top of the given color.
 func BackgroundColor(themeContext ThemeContext) tcell.Color {
 	if isLightColor(GetColor(themeContext)) {
-		return tcell.Color16
+		return tcell.ColorBlack
 	}
 
 	return tcell.ColorWhite
