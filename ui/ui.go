@@ -97,9 +97,6 @@ func StartUI() {
 
 	UI.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		operation := cmd.KeyOperation(event)
-		if operation != cmd.KeyQuit && event.Key() == tcell.KeyCtrlC {
-			return nil
-		}
 
 		if e, ok := cmd.NavigationKey(operation, event); ok {
 			focused := UI.GetFocus()
@@ -117,7 +114,7 @@ func StartUI() {
 			cancelOperation(true)
 		}
 
-		return event
+		return tcell.NewEventKey(event.Key(), event.Rune(), event.Modifiers())
 	})
 	UI.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
 		return modalMouseHandler(event, action)
