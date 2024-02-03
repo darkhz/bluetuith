@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/darkhz/bluetuith/bluez"
+	"github.com/darkhz/bluetuith/cmd"
 	"github.com/darkhz/bluetuith/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
@@ -249,40 +250,37 @@ func setupMediaPlayer(deviceName string) (*tview.Flex, []*tview.TextView) {
 // playerEvents handles the media player events.
 func playerEvents(event *tcell.EventKey, button bool) {
 	var highlight string
-	var nokey, norune bool
+	var nokey bool
 
 	if UI.Layout.GetItemCount() <= 2 {
 		return
 	}
 
-	switch event.Key() {
-	case tcell.KeyRight:
+	operation := cmd.KeyOperation(event)
+
+	switch operation {
+	case cmd.KeyPlayerSeekForward:
 		UI.Bluez.FastForward()
 
 		setPlayerSkip(true)
 		highlight = "fastforward"
 
-	case tcell.KeyLeft:
+	case cmd.KeyPlayerSeekBackward:
 		UI.Bluez.Rewind()
 
 		setPlayerSkip(true)
 		highlight = "rewind"
 
-	default:
-		nokey = true
-	}
-
-	switch event.Rune() {
-	case '<':
+	case cmd.KeyPlayerPrevious:
 		UI.Bluez.Previous()
 
-	case '>':
+	case cmd.KeyPlayerNext:
 		UI.Bluez.Next()
 
-	case ']':
+	case cmd.KeyPlayerStop:
 		UI.Bluez.Stop()
 
-	case ' ':
+	case cmd.KeyPlayerTogglePlay:
 		if isPlayerSkip() {
 			UI.Bluez.Play()
 			setPlayerSkip(false)
@@ -293,10 +291,10 @@ func playerEvents(event *tcell.EventKey, button bool) {
 		UI.Bluez.TogglePlayPause()
 
 	default:
-		norune = true
+		nokey = true
 	}
 
-	if !nokey || !norune {
+	if !nokey {
 		if button {
 			select {
 			case mediaplayer.buttonEvent <- struct{}{}:
