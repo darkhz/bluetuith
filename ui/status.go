@@ -66,10 +66,6 @@ func statusBar() *tview.Flex {
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(UI.Status.Pages, 1, 0, false)
-	if !cmd.IsPropertyEnabled("no-help-display") {
-		flex.AddItem(horizontalLine(), 1, 0, false)
-		flex.AddItem(UI.Status.Help, 1, 0, false)
-	}
 
 	UI.Status.itemCount = flex.GetItemCount()
 

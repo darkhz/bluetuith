@@ -78,7 +78,9 @@ func mediaPlayerLoop(deviceName string) {
 	playerButtons := views[4]
 
 	UI.QueueUpdateDraw(func() {
+		statusHelpArea(false)
 		UI.Layout.AddItem(player, 8, 0, false)
+		statusHelpArea(true)
 	})
 
 	mediaSignal := UI.Bluez.WatchSignal()
@@ -137,7 +139,9 @@ PlayerLoop:
 	}
 
 	UI.QueueUpdateDraw(func() {
+		statusHelpArea(false)
 		UI.Layout.RemoveItem(player)
+		statusHelpArea(true)
 	})
 
 	UI.Bluez.Conn().RemoveSignal(mediaSignal)

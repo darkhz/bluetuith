@@ -16,8 +16,13 @@ type Help struct {
 	ShowInStatus       bool
 }
 
+type HelpArea struct {
+	page string
+	area *tview.Flex
+}
+
 var (
-	helpPage string
+	help HelpArea
 
 	// HelpTopics store the various help topics.
 	HelpTopics = map[string][]Help{
@@ -72,12 +77,32 @@ var (
 	}
 )
 
-func showStatusHelp(page string) {
-	if cmd.IsPropertyEnabled("no-help-display") || helpPage == UI.page {
+func statusHelpArea(add bool) {
+	if cmd.IsPropertyEnabled("no-help-display") {
 		return
 	}
 
-	helpPage = UI.page
+	if !add && help.area != nil {
+		UI.Layout.RemoveItem(help.area)
+		return
+	}
+
+	if help.area == nil {
+		help.area = tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(horizontalLine(), 1, 0, false).
+			AddItem(UI.Status.Help, 1, 0, false)
+	}
+
+	UI.Layout.AddItem(help.area, 2, 0, false)
+}
+
+func showStatusHelp(page string) {
+	if cmd.IsPropertyEnabled("no-help-display") || help.page == UI.page {
+		return
+	}
+
+	help.page = UI.page
 	pages := map[string]string{
 		"main":         "Device Screen",
 		"filepicker":   "File Picker",

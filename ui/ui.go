@@ -130,6 +130,8 @@ func StartUI() {
 	})
 	UI.Pages.SwitchToPage("main")
 
+	statusHelpArea(true)
+
 	setupDevices()
 	displayWarning()
 	updateAdapterStatus(UI.Bluez.GetCurrentAdapter())
