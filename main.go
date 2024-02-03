@@ -11,6 +11,8 @@ import (
 func main() {
 	var warn string
 
+	cmd.Parse()
+
 	bluezConn, err := bluez.NewBluez()
 	if err != nil {
 		cmd.PrintError("Could not initialize bluez DBus connection", err)
