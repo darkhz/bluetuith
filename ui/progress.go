@@ -221,6 +221,11 @@ func (p *ProgressIndicator) FinishProgress(transferPath dbus.ObjectPath, path ..
 				break
 			}
 		}
+
+		if getProgressCount() == 0 {
+			progressUI.status.Clear()
+			UI.Status.SwitchToPage("messages")
+		}
 	})
 
 	if path != nil && p.status == "complete" {
