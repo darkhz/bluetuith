@@ -40,7 +40,7 @@ var (
 			{"Progress", "Progress view", []cmd.Key{cmd.KeyProgressView}, false},
 			{"Player", "Show/Hide player", []cmd.Key{cmd.KeyPlayerShow, cmd.KeyPlayerHide}, false},
 			{"Device Info", "Show device information", []cmd.Key{cmd.KeyDeviceInfo}, false},
-			{"Connect", "Connect to selected device", []cmd.Key{cmd.KeyDeviceConnect}, true},
+			{"Connect", "Toggle connection with selected device", []cmd.Key{cmd.KeyDeviceConnect}, true},
 			{"Pair", "Pair with selected device", []cmd.Key{cmd.KeyDevicePair}, true},
 			{"Trust", "Trust selected device", []cmd.Key{cmd.KeyDeviceTrust}, false},
 			{"Remove", "Remove device from adapter", []cmd.Key{cmd.KeyDeviceRemove}, false},
