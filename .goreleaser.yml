@@ -1,4 +1,5 @@
 project_name: bluetuith
+version: 2
 
 builds:
   - env:
@@ -43,4 +44,4 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 
 changelog:
-  skip: true
+  disable: true
