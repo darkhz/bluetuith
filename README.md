@@ -12,7 +12,7 @@ This project is currently in the alpha stage.
 
 ## Project status
 This project has currently been confirmed to be sponsored by the [NLnet](https://nlnet.nl/project/bluetuith/) foundation.
-The draft is complete, and the review of the draft and the MoU signing is pending.
+The draft is complete, and the MoU has been signed. The work is now in progress.
 
 Although this repo seems to be currently inactive, please bear in mind that we are actively working on new features, namely:
 - Cross-platform support (Windows, MacOS, FreeBSD)
