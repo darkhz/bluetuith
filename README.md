@@ -31,6 +31,12 @@ The caller will be responsible for handling events and exit codes passed by the 
 A cross-platform daemon with a uniform protocol (currently MQTT) will be developed to facilitate communicating with the shim, and handle
 invoking bluetooth functions and communication with clients, using a proper pub/sub like mechanism (like DBus for example).
 
+#### Updates
+All development has now moved to [bluetuith-org](https://github.com/bluetuith-org).<br />
+This project will be moved to the organisation later.
+
+- A new Windows-based shim has been released at [bluetuith-shim-windows](https://github.com/bluetuith-org/bluetuith-shim-windows).
+
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
 
 ## Features
